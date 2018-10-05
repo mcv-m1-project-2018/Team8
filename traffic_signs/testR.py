@@ -10,6 +10,10 @@ import numpy as np
 signal_dicts = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5}
 
 class Signal(object):
+	"""
+	Basic Signal object that contains main characteristics of a Signal.
+	It can optionally contain images of different views of the image
+	"""
 	def __init__(self):
 		#Images
 		self.img_orig = None # Original image of the signal (training)
@@ -33,6 +37,9 @@ class Signal(object):
 		
 
 	def build_from_annotation(self, annotation, image, imageMask, saveImg=False):
+		"""
+		Given the annotations and different images, it builds the object attributes
+		"""
 		tly, tlx, bly, blx = annotation[:4]
 		tly, tlx, bly, blx = int(tly), int(tlx), int(bly), int(blx)
 		self.tly, self.tlx, self.bly, self.blx = tly, tlx, bly, blx
@@ -54,27 +61,17 @@ class Signal(object):
 			self.img_orig = img_orig
 			self.img_mask = img_mask
 
-# def extract_signal_from_annotation(rect, image, imageMask):
-
-
-	#filling and max and min calculations
-
-	
-	# maxList[signal_type] = max(maxList[signal_type],ones)
-	# minList[signal_type] = min(minList[signal_type],ones)
-	# fillingRatioList[signal_type].append(fratio)
-	
-	# print( tly,"\t", tlx,"\t", bly,"\t", blx,"\t {0:.0f}".format(ones),"\t{0:.0f}".format(total),"\t{0:.4f}".format(fratio))
-	#Frequency
-	# freqApparition[signal_type] += 1
 
 def extract_signals_im_training(imageNameFile, maskNameFile, gtNameFile):
+	"""
+	Given the paths of Image (original), Mask (of the signals), and the GT (with the annotations)
+	it builds a signal list of the signals in the image
+	"""
+
 	image = cv.imread(imageNameFile)
 	imageMask = cv.imread(maskNameFile)
 	annotations = load_annotations(gtNameFile)
 
-	# showImageAnnotationsAndMask(image,imageMask,annotations)
-	# print(annotations)
 	signal_list = []
 	for annotation in annotations:
 		signal = Signal()
@@ -82,27 +79,13 @@ def extract_signals_im_training(imageNameFile, maskNameFile, gtNameFile):
 		signal_list.append(signal)
 	return signal_list
 
-# def showImageAnnotationsAndMask(image, mask, annotations):
-# 	imageRects = np.copy(image)
-# 	for rect in annotations:
-# 		cv.rectangle(imageRects,(int(rect[1]),int(rect[0])),(int(rect[3]),int(rect[2])),(0,0,255),2)
-# 	cv.imshow("Image",imageRects)
-# 	cv.imshow("Mask",mask*255)
-
-# 	cv.waitKey(0)
 
 def calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_process=-1):
+	"""
+	Returns a list of All different signals object in all the files given the respective directories
+	"""
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
 
-	#database status variables
-	# maxList = [0]*len(signal_dicts)
-	# minList = [float('inf')]*len(signal_dicts)
-	# formFactorList = [[] for _ in range(len(signal_dicts))]
-	# fillingRatioList = [[] for _ in range(len(signal_dicts))]
-	# freqApparition = [0]*len(signal_dicts)
-
-	#For each file we extract and fill previous database status variables
-	# print("tly\t tlx\t bly\t blx\t ones\t total\t fratio")
 
 	all_signals_list = []
 	if(files_to_process > len(file_names)):
@@ -120,6 +103,10 @@ def calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_pr
 	# return maxList,minList,formFactorList,fillingRatioList
 	
 def create_signal_type_dict(signals_list):
+	"""
+	Given a list of signals (built from calculateImagesMetrics), it calculates a dictionary
+	that contains max, min, fratio, ffactor of all different types of signals (A, B, C, etc) 
+	"""
 	signal_type_dict = {}
 	for signal in signals_list:
 		if(signal.signal_type in signal_type_dict):
@@ -139,6 +126,9 @@ def create_signal_type_dict(signals_list):
 	return signal_type_dict
 
 def print_results_signal_type_dict(signal_type_dict):
+	"""
+	Print the dictionary of signals built in create_signal_type_dict
+	"""
 	print("\t", end='')
 	for signal_type in signal_type_dict:
 		print("\t",signal_type, end='')
@@ -157,7 +147,8 @@ def print_results_signal_type_dict(signal_type_dict):
 				else:
 					print("\t",value,end='')
 			print()
-def main():
+
+def get_dictionary():
 	im_directory = "./Dataset/train"
 	mask_directory = "./Dataset/train/mask"
 	gt_directory = "./Dataset/train/gt"
@@ -172,5 +163,9 @@ def main():
 	if(show_dict): print_results_signal_type_dict(signal_type_dict)
 
 	return signal_type_dict
+
+def main():
+	return get_dictionary()
+	
 if __name__ == '__main__':
 	main()
