@@ -8,9 +8,21 @@ from evaluation.load_annotations import load_annotations
 import numpy as np
 
 def whitePatch(im):
-	bmax, gmax, rmax = np.max(im,axis=2)
+	bmax, gmax, rmax = np.amax(np.amax(im,axis=0),axis=0)
 
 	print(bmax,gmax,rmax)
+
+
+def grayWorld(im):
+	bmean, gmean, rmean = np.mean(np.mean(im,axis=0),axis=0)
+
+	alpha = gmean/rmean
+	beta = gmean/bmean
+
+	im[:,:,2] = alpha*im[:,:,2]
+	im[:,:,0] = beta*im[:,:,0]
+
+	return im
 
 def segmentate(im_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
@@ -24,7 +36,9 @@ def segmentate(im_directory):
 		imageNameFile = im_directory + "/" + name
 		print(imageNameFile)
 		image = cv.imread(imageNameFile)
+		image = grayWorld(image)
 
+		
 		#red filter
 		mskr = image[:,:,2] > 70
 		mskr = mskr*(image[:,:,1] < 50)
