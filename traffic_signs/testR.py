@@ -49,10 +49,7 @@ for name in file_names[:10]:
     # showImageAnnotationsAndMask(image,imageMask,annotations)
     # print(annotations)
     for rect in annotations:
-        tly = int(rect[0])
-        tlx = int(rect[1])
-        bly = int(rect[2])
-        blx = int(rect[3])
+    	tly, tlx, bly, blx = rect[0:3]
         signal_type = signal_dicts[rect[4]]
 
         #form factor calculations
