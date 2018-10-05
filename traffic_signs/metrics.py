@@ -19,6 +19,10 @@ class Signal(object):
 		self.img_orig = None # Original image of the signal (training)
 		self.img_mask = None # Mask of the signal (training)
 		self.img_pred = None # Predicted signal (Test)
+
+		#Images dir paths
+		self.img_orig_path = None
+		self.img_mask_path = None
 		
 		#It's position in original images
 		self.tly = None
@@ -76,6 +80,8 @@ def extract_signals_im_training(imageNameFile, maskNameFile, gtNameFile):
 	for annotation in annotations:
 		signal = Signal()
 		signal.build_from_annotation(annotation, image, imageMask)
+		signal.img_orig_path = imageNameFile
+		signal.img_mask_path = maskNameFile
 		signal_list.append(signal)
 	return signal_list
 
