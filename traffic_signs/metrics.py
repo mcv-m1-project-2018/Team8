@@ -153,6 +153,7 @@ def print_results_signal_type_dict(signal_type_dict):
 				else:
 					print("\t",value,end='')
 			print()
+	print("-----------------")
 
 def get_dictionary():
 	im_directory = "./Dataset/train"
