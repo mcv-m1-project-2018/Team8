@@ -1,4 +1,5 @@
 import random
+from numpy import mean
 from metrics import get_dictionary
 
 def divide_training_test_SL(signal_list):
@@ -29,6 +30,7 @@ def divide(signals_type_dict):
 	
 def main():
 	signal_type_dict = get_dictionary()
+	
 	for key in signal_type_dict:
 		print("Key:", key, "has", len(signal_type_dict[key]['signal_list']))
 	print("-----------------")
@@ -40,7 +42,14 @@ def main():
 		train = len(tmp_stl['training'])
 		validation = len(tmp_stl['validation'])
 		total = train+validation
-		print("Key:", key, "has", total, "| Training ("+"{0:.2f}".format((train/total)*100)+"%):",train, " and validation("+"{0:.2f}".format((validation/total)*100)+"%):",validation, "")
+
+		trainPixelsMean = mean([signal.pixels for signal in tmp_stl['training']])
+		validPixelsMean = mean([signal.pixels for signal in tmp_stl['validation']])
+
+		print("Key:", key, "has", total, "| Training ("+"{0:.2f}".format((train/total)*100)+"%):", train, \
+							  		 " and validation("+"{0:.2f}".format((validation/total)*100)+"%):",validation, end="")
+		
+		print("   \t|","{0:.0f}".format(trainPixelsMean)," - ", "{0:.0f}".format(validPixelsMean))
 	
 if __name__ == '__main__':
 	main()
