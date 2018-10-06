@@ -47,18 +47,18 @@ def RGBMaskFilters(im):
 
 	return msk
 
-def HSVFilter(im):
-	imagen = im[:,:,:]
+# def HSVFilter(im):
+# 	imagen = im[:,:,:]
 
-	imagen = cv.cvtColor(imagen,cv.COLOR_BGR2HSV)
+# 	imagen = cv.cvtColor(imagen,cv.COLOR_BGR2HSV)
 
-	msk = imagen[:,:,0] < 21
-	msk = msk+(imagen[:,:,0] > 210)
-	msk = msk*(imagen[:,:,1] > 120)
-	msk = msk*(imagen[:,:,2] > 70)
-	msk = np.dstack([msk]*3)
+# 	msk = imagen[:,:,0] < 21
+# 	msk = msk+(imagen[:,:,0] > 210)
+# 	msk = msk*(imagen[:,:,1] > 120)
+# 	msk = msk*(imagen[:,:,2] > 70)
+# 	msk = np.dstack([msk]*3)
 
-	return msk
+# 	return msk
 
 def LabFilter(im):
 	imagen = im[:,:,:]
@@ -83,7 +83,7 @@ def LabFilter(im):
 	return msk
 
 
-def segmentate(im_directory, mask_directory):
+def segmentate(im_directory, mask_directory,maskOut_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
 
 	pixelTP = 0
@@ -92,11 +92,12 @@ def segmentate(im_directory, mask_directory):
 	pixelTN = 0
 
 	#For each file 
-	for name in file_names:
+	for name in file_names[:10]:
 		base, extension = os.path.splitext(name)
 		
 		imageNameFile = im_directory + "/" + name
 		maskNameFile = mask_directory + "/mask." + base + ".png"
+
 		print(imageNameFile)
 		image = cv.imread(imageNameFile)
 		maskImage = cv.imread(maskNameFile)
@@ -104,26 +105,29 @@ def segmentate(im_directory, mask_directory):
 		msk = LabFilter(image)
 
 		img = image*msk
-		# cv.imshow("masked image",img)
+		msk = msk.astype(float)
+
+		# cv.imshow("masked image",msk)
 		# cv.imshow("original image",image)
 		# cv.waitKey(0)
-
-		msk = msk.astype(int)
-		cv.imwrite(os.path.join(mask_directory,("mask." + base + ".png")),msk)
+		
+		# cv.imwrite(os.path.join(maskOut_directory,("mask." + base + ".png")),msk)
 		pTP, pFP, pFN, pTN = performance_accumulation_pixel(msk,maskImage)
 		pixelTP += pTP
 		pixelFP += pFP
 		pixelFN += pFN
 		pixelTN += pTN
-	
+
+	print("precision \t accuracy \t specificity \t sensitivity")
 	print(performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN))
 
 
 def main():
 	im_directory = "./Dataset/train"
 	mask_directory = "./Dataset/train/mask/"
+	maskOut_directory = "./Dataset/maskOut/"
 
-	segmentate(im_directory,mask_directory)
+	segmentate(im_directory,mask_directory,maskOut_directory)
 
 if __name__ == '__main__':
 	main()
