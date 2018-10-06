@@ -64,18 +64,6 @@ def RGBMaskFilters(im):
 
 	return msk
 
-# def HSVFilter(im):
-# 	imagen = im[:,:,:]
-
-# 	imagen = cv.cvtColor(imagen,cv.COLOR_BGR2HSV)
-
-# 	msk = imagen[:,:,0] < 21
-# 	msk = msk+(imagen[:,:,0] > 210)
-# 	msk = msk*(imagen[:,:,1] > 120)
-# 	msk = msk*(imagen[:,:,2] > 70)
-# 	msk = np.dstack([msk]*3)
-
-# 	return msk
 
 def LabFilter(im):
 	imagen = im[:,:,:]
@@ -99,98 +87,6 @@ def LabFilter(im):
 
 	return msk
 
-def HSLFilter(im):
-	imagen = im[:,:,:]
-
-	imagen = cv.cvtColor(imagen,cv.COLOR_BGR2Lab)
-
-	mskb = imagen[:,:,2] < 115
-	mskb = mskb*(imagen[:,:,0] > 40)
-	mskb = mskb*(imagen[:,:,1] < 200)
-	mskb = mskb*(imagen[:,:,2] > 35)
-	mskb = np.dstack([mskb]*3)
-
-	mskr = imagen[:,:,1] > 140
-	mskr = mskr*(imagen[:,:,0] > 20)
-	mskr = mskr*(imagen[:,:,0] < 220)
-	mskr = mskr*(imagen[:,:,2] < 150)
-	mskr = mskr*(imagen[:,:,2] > 125)
-	mskr = np.dstack([mskr]*3)
-
-	msk = mskr + mskb
-
-	return msk
-
-
-def trainModel(imPath, gtPath, maskPath):
-	file_names = sorted(fnmatch.filter(os.listdir(imPath), '*.jpg'))
-
-	histAll = [[[0] for _ in range(3)] for _ in range(6)]
-	for name in file_names[:3]:
-		base, extension = os.path.splitext(name)
-		
-		imageNameFile = imPath + "/" + name
-		maskNameFile = maskPath + "/mask." + base + ".png"
-		gtNameFile = gtPath + "/gt." + base + ".txt"
-
-		# print(imageNameFile)
-		image = cv.imread(imageNameFile)
-		# image = cv.cvtColor(image,cv.COLOR_BGR2HSV)
-		image = cv.cvtColor(image,cv.COLOR_BGR2HLS)
-		plt.figure()
-		ax1 = plt.subplot(131)
-		ax2 = plt.subplot(132)
-		ax3 = plt.subplot(133)
-		ax1.imshow(image[:,:,0])
-		ax2.imshow(image[:,:,1])
-		ax3.imshow(image[:,:,2])
-		plt.show()
-		maskImage = cv.imread(maskNameFile)
-		image = image * maskImage
-		annot = load_annotations(gtNameFile)
-
-		for rect in annot:
-			tly, tlx, bly, blx = rect[:4]
-			tly, tlx, bly, blx = int(tly), int(tlx), int(bly), int(blx)
-
-			color = ('b','g','r')
-			# vals = image[tly:bly,tlx:blx]
-			# plt.hist(vals[0][vals[0] != 0], histtype="step",color="blue")
-			# plt.hist(vals[1][vals[1] != 0], histtype="step",color="green")
-			# plt.hist(vals[2][vals[2] != 0], histtype="step",color="red")
-			# plt.figure()
-			# plt.show()
-			for i in range(3):
-				histr = cv.calcHist(image[tly:bly,tlx:blx,:],[i],None,[60],[0,256])
-				print("Píxels: ", len(image[tly:bly,tlx:blx,i]))
-				histr[0] = 0
-				histAll[ signal_dicts[rect[4]]][i] += histr
-				
-				# plt.plot(histr,color = color[i])
-				# plt.xlim([0,60])
-			print("-------")
-			# cv.imshow("asda",image[tly:bly,tlx:blx,:])
-			# plt.show()
-			# cv.waitKey()
-
-
-	print("histograting")
-	titles=["A","B","C","D","E","F"]
-	for j, hist_signal_type in enumerate(histAll):
-		color = ('b','g','r')
-		plt.figure()
-		plt.title(titles[j])
-		plt.ioff()
-		for i, col in enumerate(color):
-			hist_signal_type[i][0] = 0
-			plt.plot(hist_signal_type[i],color = col)
-			plt.xlim([0,60])
-		plt.savefig("C:/Users/richa/Desktop/"+titles[j]+".png")
-	# cv.waitKey()
-
-
-
-		
 
 def segmentate(im_directory, mask_directory,maskOut_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
@@ -219,7 +115,7 @@ def segmentate(im_directory, mask_directory,maskOut_directory):
 		img = image*msk
 		msk = msk.astype(float)
 
-		cv.imshow("masked image",msk)
+		cv.imshow("masked image",img)
 		cv.imshow("original image",image)
 		cv.waitKey(0)
 		
@@ -240,8 +136,7 @@ def main():
 	gt_directory = "./Dataset/train/gt"
 	maskOut_directory = "./Dataset/maskOut"
 
-	# segmentate(im_directory,mask_directory,maskOut_directory)
-	trainModel(im_directory,gt_directory,mask_directory)
+	segmentate(im_directory,mask_directory,maskOut_directory)
 
 if __name__ == '__main__':
 	main()
