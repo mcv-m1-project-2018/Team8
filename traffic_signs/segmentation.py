@@ -6,6 +6,7 @@ import sys
 import cv2 as cv
 from evaluation.load_annotations import load_annotations
 import numpy as np
+from evaluation.evaluation_funcs import performance_accumulation_pixel,performance_evaluation_pixel
 
 def whitePatch(im):
 	bmax, gmax, rmax = np.amax(np.amax(im,axis=0),axis=0)
@@ -29,7 +30,7 @@ def grayWorld(im):
 
 	return im
 
-def handPickedMaskFilters(im):
+def RGBMaskFilters(im):
 	#red colored signals
 	mskr = im[:,:,2] > 70
 	mskr = mskr*(im[:,:,1] < 50)
@@ -79,34 +80,48 @@ def LabFilter(im):
 
 	msk = mskr + mskb
 
-	return mskr
+	return msk
 
 
 def segmentate(im_directory, mask_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
+
+	pixelTP = 0
+	pixelFP = 0
+	pixelFN = 0
+	pixelTN = 0
 
 	#For each file 
 	for name in file_names:
 		base, extension = os.path.splitext(name)
 		
 		imageNameFile = im_directory + "/" + name
+		maskNameFile = mask_directory + "/mask." + base + ".png"
 		print(imageNameFile)
 		image = cv.imread(imageNameFile)
+		maskImage = cv.imread(maskNameFile)
 
 		msk = LabFilter(image)
 
 		img = image*msk
-		cv.imshow("masked image",img)
-		cv.imshow("original image",image)
-		cv.waitKey(0)
+		# cv.imshow("masked image",img)
+		# cv.imshow("original image",image)
+		# cv.waitKey(0)
 
 		msk = msk.astype(int)
 		cv.imwrite(os.path.join(mask_directory,("mask." + base + ".png")),msk)
+		pTP, pFP, pFN, pTN = performance_accumulation_pixel(msk,maskImage)
+		pixelTP += pTP
+		pixelFP += pFP
+		pixelFN += pFN
+		pixelTN += pTN
+	
+	print(performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN))
 
 
 def main():
 	im_directory = "./Dataset/train"
-	mask_directory = "./Dataset/maskOut"
+	mask_directory = "./Dataset/train/mask/"
 
 	segmentate(im_directory,mask_directory)
 
