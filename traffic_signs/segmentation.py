@@ -31,15 +31,15 @@ def grayWorld(im):
 
 def handPickedMaskFilters(im):
 	#red colored signals
-	mskr = image[:,:,2] > 70
-	mskr = mskr*(image[:,:,1] < 50)
-	mskr = mskr*(image[:,:,0] < 50)
+	mskr = im[:,:,2] > 70
+	mskr = mskr*(im[:,:,1] < 50)
+	mskr = mskr*(im[:,:,0] < 50)
 	mskr = np.dstack([mskr]*3)
 
 	#blue colored signals
-	mskb = image[:,:,2] < 50
-	mskb = mskb*(image[:,:,1] < 100)
-	mskb = mskb*(image[:,:,0] > 60)
+	mskb = im[:,:,2] < 50
+	mskb = mskb*(im[:,:,1] < 100)
+	mskb = mskb*(im[:,:,0] > 60)
 	mskb = np.dstack([mskb]*3)
 
 	msk = mskr + mskb
