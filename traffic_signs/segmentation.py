@@ -46,6 +46,41 @@ def handPickedMaskFilters(im):
 
 	return msk
 
+def HSVFilter(im):
+	imagen = im[:,:,:]
+
+	imagen = cv.cvtColor(imagen,cv.COLOR_BGR2HSV)
+
+	msk = imagen[:,:,0] < 21
+	msk = msk+(imagen[:,:,0] > 210)
+	msk = msk*(imagen[:,:,1] > 120)
+	msk = msk*(imagen[:,:,2] > 70)
+	msk = np.dstack([msk]*3)
+
+	return msk
+
+def LabFilter(im):
+	imagen = im[:,:,:]
+
+	imagen = cv.cvtColor(imagen,cv.COLOR_BGR2Lab)
+
+	mskb = imagen[:,:,2] < 115
+	mskb = mskb*(imagen[:,:,0] > 40)
+	mskb = mskb*(imagen[:,:,1] < 200)
+	mskb = mskb*(imagen[:,:,2] > 35)
+	mskb = np.dstack([mskb]*3)
+
+	mskr = imagen[:,:,1] > 140
+	mskr = mskr*(imagen[:,:,0] > 20)
+	mskr = mskr*(imagen[:,:,0] < 220)
+	mskr = mskr*(imagen[:,:,2] < 150)
+	mskr = mskr*(imagen[:,:,2] > 125)
+	mskr = np.dstack([mskr]*3)
+
+	msk = mskr + mskb
+
+	return mskr
+
 
 def segmentate(im_directory, mask_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
@@ -57,9 +92,8 @@ def segmentate(im_directory, mask_directory):
 		imageNameFile = im_directory + "/" + name
 		print(imageNameFile)
 		image = cv.imread(imageNameFile)
-		image = grayWorld(image)
 
-		msk = handPickedMaskFilters(image)
+		msk = LabFilter(image)
 
 		img = image*msk
 		cv.imshow("masked image",img)
