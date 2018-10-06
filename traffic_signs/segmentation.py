@@ -47,7 +47,7 @@ def handPickedMaskFilters(im):
 	return msk
 
 
-def segmentate(im_directory):
+def segmentate(im_directory, mask_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))
 
 	#For each file 
@@ -62,16 +62,19 @@ def segmentate(im_directory):
 		msk = handPickedMaskFilters(image)
 
 		img = image*msk
-
 		cv.imshow("masked image",img)
 		cv.imshow("original image",image)
 		cv.waitKey(0)
 
+		msk = msk.astype(int)
+		cv.imwrite(os.path.join(mask_directory,("mask." + base + ".png")),msk)
+
 
 def main():
 	im_directory = "./Dataset/train"
+	mask_directory = "./Dataset/maskOut"
 
-	segmentate(im_directory)
+	segmentate(im_directory,mask_directory)
 
 if __name__ == '__main__':
 	main()
