@@ -43,13 +43,4 @@ def main():
 	
 if __name__ == '__main__':
 	main()
-    random.shuffle(part)
-    number_signals = len(part)
-    split_position = int(0.7*number_signals)
-    training.append(part[:split_position])
-    test.append(part[split_position:]) 
-    first = first + 10
-    last = last + 10
-
-	return training, test
 		
