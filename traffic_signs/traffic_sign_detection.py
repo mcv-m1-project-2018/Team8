@@ -26,6 +26,7 @@ from argparse import ArgumentParser
 
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
+    from main import CONSOLE_ARGUMENTS
 
     pixelTP  = 0
     pixelFN  = 0
@@ -53,7 +54,12 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         validation.extend(validation_type)
 
     print("extracting mask")
-    for signal in training:
+    dataset = training
+    if(CONSOLE_ARGUMENTS.use_validation):
+        dataset = validation
+    # if(CONSOLE_ARGUMENTS.use_test):
+
+    for signal in dataset:
         signal_path = signal.img_orig_path
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)

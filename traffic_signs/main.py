@@ -20,6 +20,8 @@ def parse_arguments():
                         help="Test metric measures")
     test_group.add_argument("-ttsd", "--test_traffic_sign_detection", dest="ttsd", action="store_true",
                         help="Test traffic sign detection measures")
+    test_group.add_argument("-uv", "--use_validation", dest="use_validation", action="store_true",
+                        help="Use validation dataset for trafic sign detection instead of training")
                     
     main_group.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,
                         help="Number of files to process in (Task 1)", default=-1)
