@@ -1,49 +1,65 @@
 from metrics import test_metrics
 from traffic_sign_detection import test_tsd
+from split import test_split
+from histogramVisualization import do_hists
 
 from argparse import ArgumentParser
  
 def parse_arguments():
+    """
+	Parse line arguments
+	"""
     parser = ArgumentParser()
-    test_group = parser.add_argument_group("Test modules arguments")
-    print_group = parser.add_argument_group("Print arguments")
-    main_group = parser.add_argument_group("Optional main arguments")
-    color_test_group = parser.add_argument_group("Optional color testing arguments")
-
-    print_group.add_argument("-pT1", "--printT1", dest="printT1", action="store_false",
-                        help="Do not show the metrics required in Task 1")
-    print_group.add_argument("-pT2", "--printT2", dest="printT2", action="store_true",
-                    help="Do not show the lenghts before and after the split in Training and Validation of Task 2, \
-                    also shows the percentages and mean of pixels in each part respectively")
+    general_args = parser.add_argument_group("General arguments")
     
-    test_group.add_argument("-tm", "--test_metrics", dest="tm", action="store_true",
-                        help="Test metric measures")
-    test_group.add_argument("-ttsd", "--test_traffic_sign_detection", dest="ttsd", action="store_true",
-                        help="Test traffic sign detection measures")
-    test_group.add_argument("-uv", "--use_validation", dest="use_validation", action="store_true",
+    module_args_group = parser.add_argument_group("Module arguments")
+    module_group = module_args_group.add_mutually_exclusive_group(required=True)
+
+    tsd_args = parser.add_argument_group("Traffic Sign Detection Module arguments")
+    hist_args = parser.add_argument_group("Histogram Module arguments")
+    # print_group = parser.add_argument_group("Print arguments")
+    # print_group.add_argument("-pT1", "--printT1", dest="printT1", action="store_false",
+    #                     help="Do not show the metrics required in Task 1")
+    # print_group.add_argument("-pT2", "--printT2", dest="printT2", action="store_true",
+    #                 help="Do not show the lenghts before and after the split in Training and Validation of Task 2, \
+    #                 also shows the percentages and mean of pixels in each part respectively")
+    
+    module_group.add_argument("-tm", "--test_metrics", dest="tm", action="store_true",
+                        help="Activate Module Metrics and get the measures of annotations")
+    module_group.add_argument("-ts", "--test_split", dest="ts", action="store_true",
+                        help="Activate Module Split and get statistics of training-validation split")
+    module_group.add_argument("-ttsd", "--test_traffic_sign_detection", dest="ttsd", action="store_true",
+                        help="Activate Module Traffic Sign Detection and get statistical results")
+    module_group.add_argument("-hist", "--histograms", dest="do_histograms", action="store_true",
+                        help="Activate Module Histograms of Signals and save histogram plots in --", default=False)
+
+    
+    hist_args.add_argument("-histNorm", "--histogramNorm", dest="histogram_norm", action="store_true",
+                        help="Normalize color before doing histograms", default=False)
+    hist_args.add_argument("-outhistdir", "--out_hist_directory", dest="hist_save_directories",type=str,
+                        help="Path to output for histogram plots folder", default="./Dataset/histogramNormPrecise/")
+    hist_args.add_argument("-csh", "--color_spaces_histograms", dest="csh",nargs='+',
+                        help="Colorspaces in which signals' histogram will be calculated", type=str, default=None)
+    
+    tsd_args.add_argument("-uv", "--use_validation", dest="use_validation", action="store_true",
                         help="Use validation dataset for trafic sign detection instead of training")
-                    
-    main_group.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,
+    tsd_args.add_argument("-ps", "--pixel_selector", dest="pixel_selector",type=str,
+                        help="Pixel selector function", default="luv-rgb")
+    tsd_args.add_argument("-pps", "--prep_pixel_selector", dest="prep_pixel_selector",nargs='+',
+                        help="Preprocesses to do before pixel selector function", type=str)
+    
+
+    general_args.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,
                         help="Number of files to process in (Task 1)", default=-1)
-    main_group.add_argument("-imdir", "--im_directory", dest="im_directory",type=str,
+    general_args.add_argument("-imdir", "--im_directory", dest="im_directory",type=str,
                         help="Path to training dataset folder", default="./Dataset/train")
-    main_group.add_argument("-mkdir", "--mask_directory", dest="mask_directory",type=str,
+    general_args.add_argument("-mkdir", "--mask_directory", dest="mask_directory",type=str,
                         help="Path to training mask folder", default="./Dataset/train/mask")
-    main_group.add_argument("-gtdir", "--gt_directory", dest="gt_directory",type=str,
+    general_args.add_argument("-gtdir", "--gt_directory", dest="gt_directory",type=str,
                         help="Path to groundtruth dataset folder", default="./Dataset/train/gt")
-    main_group.add_argument("-outdir", "--out_directory", dest="out_directory",type=str,
+    general_args.add_argument("-outdir", "--out_directory", dest="out_directory",type=str,
                         help="Path to output dataset folder", default="./Dataset/train/maskOut")
     
-    main_group.add_argument("-ps", "--pixel_selector", dest="pixel_selector",type=str,
-                        help="Pixel selector function", default="luv-rgb")
-    main_group.add_argument("-pps", "--prep_pixel_selector", dest="prep_pixel_selector",nargs='+',
-                        help="Preprocesses to do before pixel selector function", type=str)
-
-
-    color_test_group.add_argument("-hist", "--histograms", dest="do_histograms", action="store_true",
-                        help="Create Histograms of signals", default=False)
-    color_test_group.add_argument("-histNorm", "--histogramNorm", dest="histogram_norm", action="store_true",
-                        help="Normalize color before doing histograms", default=False)
     return parser.parse_args()
 
 
@@ -55,10 +71,12 @@ def main():
 
     if CONSOLE_ARGUMENTS.tm:
         test_metrics()
-
+    if CONSOLE_ARGUMENTS.ts:
+        test_split()
     if CONSOLE_ARGUMENTS.ttsd:
         test_tsd()
-
+    if CONSOLE_ARGUMENTS.hist:
+        do_hists()
 if __name__ == '__main__':
 
     main()

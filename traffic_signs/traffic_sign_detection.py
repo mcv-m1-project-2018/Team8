@@ -27,6 +27,16 @@ from argparse import ArgumentParser
 
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
+    """
+	Calculates all statistical evaluation metrics of different pixel selector method
+	* Inputs:
+	- directory = path to train images
+	- outpit_dir = Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+	- pixel_method = pixel method that will segmentate the image
+    - window_method = -------
+	*Outputs:
+	- pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy
+	"""
     from main import CONSOLE_ARGUMENTS
 
     pixelTP  = 0
@@ -78,7 +88,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         if not os.path.exists(fd):
             os.makedirs(fd)
         
-        out_mask_name = '{}.png'.format(fd, base)
+        out_mask_name = '{}/{}.png'.format(fd, base)
         imageio.imwrite(out_mask_name, np.uint8(np.round(pixel_candidates)))
 
         

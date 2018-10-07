@@ -6,7 +6,13 @@ import cv2 as cv
 
 
 def masks_rgb(im):
-
+	"""
+	Performs RGB pixel candidate selection
+	* Inputs:
+	- im = RGB image
+	*Outputs:
+	- mskr, mskb: mask for Red pixels, mask for Blue pixels
+	"""
 	image = im[:,:,:]
 	
 	# filter for red signals:
@@ -22,6 +28,13 @@ def masks_rgb(im):
 	return mskr, mskb	
 
 def mask_luv(im):
+	"""
+	Performs Luv pixel candidate selection
+	* Inputs:
+	- im = Luv image
+	*Outputs:
+	- mskr, mskb: mask for Red pixels, mask for Blue pixels
+	"""
 	image = im[:,:,:]
 	image = cv.cvtColor(image,cv.COLOR_RGB2Luv)
 
@@ -33,6 +46,13 @@ def mask_luv(im):
 	return mskr, mskb
 
 def mask_lab(im):
+	"""
+	Performs Lab pixel candidate selection
+	* Inputs:
+	- im = Lab image
+	*Outputs:
+	- mskr, mskb: mask for Red pixels, mask for Blue pixels
+	"""
 	image = im[:,:,:]
 
 	image = cv.cvtColor(image,cv.COLOR_RGB2Lab)
@@ -52,10 +72,24 @@ def mask_lab(im):
 
 #############################################
 def candidate_generation_pixel_rgb(im):
+	"""
+	Performs WHOLE RGB pixel candidate selection
+	* Inputs:
+	- im = RGB image
+	*Outputs:
+	- pixel_candidates: pixels that are possible part of a signal
+	"""
 	mskr, mskb = masks_rgb(im)
 	return mskr+mskb
 
 def candidate_generation_pixel_hsv(im):
+	"""
+	Performs WHOLE HSV pixel candidate selection
+	* Inputs:
+	- im = HSV image
+	*Outputs:
+	- pixel_candidates: pixels that are possible part of a signal
+	"""
 	# convert input image to HSV color space
 	hsv_im = color.rgb2hsv(im)
 	
@@ -66,14 +100,35 @@ def candidate_generation_pixel_hsv(im):
 	return pixel_candidates
 
 def candidate_generation_pixel_lab(im):
+	"""
+	Performs WHOLE Lab pixel candidate selection
+	* Inputs:
+	- im = Lab image
+	*Outputs:
+	- pixel_candidates: pixels that are possible part of a signal
+	"""
 	mskr, mskb = mask_lab(im)
 	return mskr+mskb
 
 def candidate_generation_pixel_luv(im):
+	"""
+	Performs WHOLE Luv pixel candidate selection
+	* Inputs:
+	- im = Luv image
+	*Outputs:
+	- pixel_candidates: pixels that are possible part of a signal
+	"""
 	mskr, mskb = mask_luv(im)
 	return mskr, mskb 
 
 def candidate_generation_pixel_normrgb(im): 
+	"""
+	Performs WHOLE normrgb pixel candidate selection
+	* Inputs:
+	- im = normrgbs image
+	*Outputs:
+	- mskr:  mask for Red pixels
+	"""
 	im = preprocess_normrgb(im)
 
 	# filter to get noise:
@@ -102,14 +157,34 @@ def candidate_generation_pixel_blur_luvb_rgbr(im):
 
 def candidate_generation_pixel_gw_blur_luvb_rgbr(im):
 	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(preprocess_grayWorld(im)))
+def candidate_generation_pixel_normrgb_luvb_rgbr(im):
 
+  noiseMask = candidate_generation_pixel_normrgb(im)
+  msk = candidate_generation_pixel_luvb_rgbr(im)
+
+  msk = msk*(np.logical_not(noiseMask))
+  return msk
 ###############################
 def preprocess_blur(im):
+	"""
+	Performs Blur to the image
+	* Inputs:
+	- im = skimage.io image
+	*Outputs:
+	- im = image blurred
+	"""
 	window_mean = 5
 	blurred_img = cv.blur(im,(window_mean, window_mean))
 	return blurred_img
 
 def preprocess_normrgb(im):
+	"""
+	Performs Normalizes RGB color of the image
+	* Inputs:
+	- im = skimage.io image
+	*Outputs:
+	- im = image with rgb color normalized
+	"""
 	# convert input image to the normRGB color space
 
 	normrgb_im = np.zeros(im.shape)
@@ -125,6 +200,13 @@ def preprocess_normrgb(im):
 	return normrgb_im
 
 def preprocess_whitePatch(im):
+	"""
+	Performs WhitePatch to the image
+	* Inputs:
+	- im = skimage.io image
+	*Outputs:
+	- im = image with WhitePatch filter applied
+	"""
 	bmax, gmax, rmax = np.amax(np.amax(im,axis=0),axis=0)
 
 	alpha = gmax/rmax
@@ -143,6 +225,13 @@ def preprocess_whitePatch(im):
 	return im
 
 def preprocess_grayWorld(im):
+	"""
+	Performs GrayWorld to the image
+	* Inputs:
+	- im = skimage.io image
+	*Outputs:
+	- im = image with GrayWorld filter applied
+	"""
 	bmean, gmean, rmean = np.mean(np.mean(im,axis=0),axis=0)
 
 	alpha = gmean/rmean
@@ -162,8 +251,7 @@ def preprocess_grayWorld(im):
 
 def preprocess_neutre(im):  
 	"""
-	Funcio que neutralitza el color de la imatge. Util quan es esta tacat o hi
-	ha variancies.
+	Local color neutralizator
 	* Inputs:
 	- im = skimage.io image
 	*Outputs:
@@ -187,6 +275,16 @@ def preprocess_neutre(im):
 
 
 def switch_methods(im, color_space, preprocess=None):
+	"""
+	Performs pixel generator whith method selection
+	* Inputs:
+	- im = skimage.io image to be analized
+	- color_space = method selector (switcher variable below)
+	- preprocess_treatment = preprocess filter/function to be applied before candidate
+							 selection (multiple preprocess available)
+	*Outputs:
+	- pixel_candidates: mask of pixels candidates for possible signals
+	"""
 	from main import CONSOLE_ARGUMENTS
 
 	switcher = {
@@ -196,6 +294,7 @@ def switch_methods(im, color_space, preprocess=None):
 		'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
 		'Blur-luv-rgb' : candidate_generation_pixel_blur_luvb_rgbr,
 		'GW-Blur-luv-rgb' :candidate_generation_pixel_gw_blur_luvb_rgbr,
+		'normRGB-luv-rgb' : candidate_generation_pixel_normrgb_luvb_rgbr,
 		'GW-RGB'    : candidate_generation_pixel_gw_rgb,
 		'WP-RGB'    : candidate_generation_pixel_wp_rgb
 	}

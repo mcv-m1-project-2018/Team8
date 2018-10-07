@@ -30,7 +30,9 @@ def divide(signals_type_dict):
 		sig_subdict['signal_list']['validation'] = validation
 	
 	
-def main():
+def test_split():
+	from main import CONSOLE_ARGUMENTS
+	
 	signal_type_dict = get_dictionary()
 	
 	for key in signal_type_dict:
