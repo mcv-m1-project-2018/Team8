@@ -9,6 +9,7 @@ from evaluation.load_annotations import load_annotations
 import numpy as np
 from evaluation.evaluation_funcs import performance_accumulation_pixel,performance_evaluation_pixel
 from matplotlib import pyplot as plt
+from candidate_generation_pixel import preprocess_normrgb
 
 
 signal_dicts = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5}
@@ -28,8 +29,15 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 
 		if(colorSpace == "LAB"):
 			image = cv.cvtColor(image,cv.COLOR_BGR2Lab)
+		if(colorSpace == "Luv"):
+			image = cv.cvtColor(image,cv.COLOR_BGR2Luv)
+		if(colorSpace == "normRGB"):
+			image = cv.cvtColor(image,cv.COLOR_BGR2RGB)
+			image = preprocess_normrgb(image)
 		elif(colorSpace == "HSL" ):
 			image = cv.cvtColor(image,cv.COLOR_BGR2HLS)
+		elif(colorSpace == "HSV" ):
+			image = cv.cvtColor(image,cv.COLOR_BGR2HSV)
 		elif(colorSpace == "Yuv" ):
 			image = cv.cvtColor(image,cv.COLOR_BGR2YUV)
 		elif(colorSpace == "XYZ" ):
@@ -48,16 +56,9 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 			color = ('b','g','r')
 			for i in range(3):
 				histr = cv.calcHist(image[tly:bly,tlx:blx,:],[i],None,[60],[0,256])
-				print("Píxels: ", len(image[tly:bly,tlx:blx,i]))
 				histr[0] = 0
 				histAll[ signal_dicts[rect[4]]][i] += histr
 				
-				# plt.plot(histr,color = color[i])
-				# plt.xlim([0,60])
-			print("-------")
-			# cv.imshow("asda",image[tly:bly,tlx:blx,:])
-			# plt.show()
-			# cv.waitKey()
 
 	titles=["A","B","C","D","E","F"]
 	for j, hist_signal_type in enumerate(histAll):
@@ -69,7 +70,7 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 			hist_signal_type[i][0] = 0
 			plt.plot(hist_signal_type[i],color = col)
 			plt.xlim([0,60])
-		plt.savefig("./Dataset/histogram/"+titles[j]+".png")
+		plt.savefig("./Dataset/histogram/"+colorSpace+"/"+titles[j]+".png")
 
 
 def main():
@@ -77,7 +78,10 @@ def main():
 	mask_directory = "./Dataset/train/mask"
 	gt_directory = "./Dataset/train/gt"
 
-	visualizeHistograms(im_directory,gt_directory,mask_directory,"Lab")
+	colorSpaces = ["RGB", "LAB","Luv","normRGB","HSL","XYZ","YCrCb","HSV"]
+	for color in colorSpaces:
+		print(color)
+		visualizeHistograms(im_directory,gt_directory,mask_directory,color)
 
 if __name__ == '__main__':
 	main()
