@@ -58,7 +58,7 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 
 			color = ('b','g','r')
 			for i in range(3):
-				histr = cv.calcHist(image[tly:bly,tlx:blx,:],[i],None,[255],[0,256])
+				histr = cv.calcHist(image[tly:bly,tlx:blx,:],[i],None,[60],[0,256])
 				histr[0] = 0
 				histAll[ signal_dicts[rect[4]]][i] += histr
 				
@@ -72,7 +72,7 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 		for i, col in enumerate(color):
 			hist_signal_type[i][0] = 0
 			plt.plot(hist_signal_type[i],color = col)
-			plt.xlim([0,255])
+			plt.xlim([0,60])
 		
 		directory = "./Dataset/histogramNormPrecise/"+colorSpace
 		if not os.path.exists(directory):

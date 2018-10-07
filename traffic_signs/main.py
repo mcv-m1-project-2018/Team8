@@ -15,23 +15,29 @@ def main():
                         help="Number of files to process in (Task 1)")
     
     parser.add_argument("-imdir", "--im_directory", dest="im_directory", action="store_const",
-                        help="Path to training dataset folder")
+                        help="Path to training dataset folder", default="./Dataset/train")
     parser.add_argument("-mkdir", "--mask_directory", dest="mask_directory", action="store_const",
-                        help="Path to training mask folder")
+                        help="Path to training mask folder", default="./Dataset/train/mask")
     parser.add_argument("-gtdir", "--gt_directory", dest="gt_directory", action="store_const",
-                        help="Path to groundtruth dataset folder")
+                        help="Path to groundtruth dataset folder", default="./Dataset/train/gt")
     
     parser.add_argument("-hist", "--histograms", dest="do_histograms", action="store_true",
-                        help="Create Histograms of signals")
+                        help="Create Histograms of signals", default=False)
     parser.add_argument("-histNorm", "--histogramNorm", dest="histogram_norm", action="store_true",
-                        help="Normalize color before doing histograms")
+                        help="Normalize color before doing histograms", default=False)
     
+    parser.add_argument("-ps", "--pixel_selector", dest="pixel_selector", action="store_const",
+                        help="Pixel selector function", default="luv-rgb")
+    parser.add_argument("-pps", "--prep_pixel_selector", dest="prep_pixel_selector", action="store_const",
+                        help="Preprocesses to do before pixel selector function", default=["blur"])
     
+
 
     parser.add_argument("-q", "--quiet",
                         action="store_false", dest="verbose", default=True,
                         help="don't print status messages to stdout")
 
+    
 if __name__ == '__main__':
 	main()
 		
