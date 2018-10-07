@@ -4,6 +4,7 @@ import numpy as np
 from skimage import color
 import cv2 as cv
 
+
 def masks_rgb(im):
 
 	image = im[:,:,:]
@@ -186,6 +187,8 @@ def preprocess_neutre(im):
 
 
 def switch_methods(im, color_space, preprocess=None):
+	from main import CONSOLE_ARGUMENTS
+
 	switcher = {
 		'rgb': candidate_generation_pixel_rgb,
 		'luv'    : candidate_generation_pixel_luv,
@@ -204,6 +207,9 @@ def switch_methods(im, color_space, preprocess=None):
 		'grayWorld' : preprocess_grayWorld,
 		'neutralize': preprocess_neutre
 	}
+
+	print(CONSOLE_ARGUMENTS.prep_pixel_selector)
+	preprocess = CONSOLE_ARGUMENTS.prep_pixel_selector
 
 	if preprocess is not None:
 		if not isinstance(preprocess, list):

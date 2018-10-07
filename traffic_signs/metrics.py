@@ -6,6 +6,7 @@ import cv2 as cv
 from evaluation.load_annotations import load_annotations
 import numpy as np
 
+
 #Start declaring variables for signal analysis
 signal_dicts = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5}
 
@@ -156,9 +157,10 @@ def print_results_signal_type_dict(signal_type_dict):
 	print("-----------------")
 
 def get_dictionary(show_dict=False, files_to_process=-1):
-	im_directory = "./Dataset/train"
-	mask_directory = "./Dataset/train/mask"
-	gt_directory = "./Dataset/train/gt"
+	from main import CONSOLE_ARGUMENTS
+	im_directory = CONSOLE_ARGUMENTS.im_directory
+	mask_directory = CONSOLE_ARGUMENTS.mask_directory
+	gt_directory = CONSOLE_ARGUMENTS.gt_directory
 
 
 	signals_list = calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_process=files_to_process)
@@ -167,12 +169,16 @@ def get_dictionary(show_dict=False, files_to_process=-1):
 
 	return signal_type_dict
 
-def main():
-	print(sys.argv)
-	show_dict        = False if(not (len(sys.argv)>1)) else sys.argv[1] in ['True',1]
-	files_to_process = -1   if(not (len(sys.argv)>2)) else int(sys.argv[2])	
+def test_metrics():
+	from main import CONSOLE_ARGUMENTS
+	print(CONSOLE_ARGUMENTS)
+	show_dict = CONSOLE_ARGUMENTS.printT1
+	files_to_process = CONSOLE_ARGUMENTS.numFiles
 
 	return get_dictionary(show_dict=show_dict, files_to_process=files_to_process)
 	
 if __name__ == '__main__':
-	main()
+    # read arguments
+    from main import parse_arguments
+    parse_arguments()
+    test_metrics()

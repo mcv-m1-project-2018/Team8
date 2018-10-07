@@ -80,10 +80,13 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 		plt.savefig(directory+"/norm_"+titles[j]+".png")
 
 
+from traffic_sign_detection import CONSOLE_ARGUMENTS
+
 def main():
-	im_directory = "./Dataset/train"
-	mask_directory = "./Dataset/train/mask"
-	gt_directory = "./Dataset/train/gt"
+
+	im_directory = CONSOLE_ARGUMENTS.im_directory
+	mask_directory = CONSOLE_ARGUMENTS.mask_directory
+	gt_directory = CONSOLE_ARGUMENTS.gt_directory
 
 	colorSpaces = ["Luv"]
 	for color in colorSpaces:

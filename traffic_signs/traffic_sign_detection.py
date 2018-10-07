@@ -9,7 +9,7 @@ Options:
 """
 
 
-from docopt import docopt
+# from docopt import docopt
 import numpy as np
 import fnmatch
 import os
@@ -103,50 +103,13 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
 
 
-
-
-
-                
-if __name__ == '__main__':
-    # read arguments
-
-    parser = ArgumentParser()
-    parser.add_argument("-pT1", "--printT1", dest="printT1", action="store_true",
-                        help="Show the metrics required in Task 1")
-    parser.add_argument("-pT2", "--printT2", dest="printT2", action="store_true",
-                    help="Show the lenghts before and after the split in Training and Validation of Task 2, \
-                    also shows the percentages and mean of pixels in each part respectively")
-
-    parser.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,
-                        help="Number of files to process in (Task 1)", default=-1)
-    
-    parser.add_argument("-imdir", "--im_directory", dest="im_directory",type=str,
-                        help="Path to training dataset folder", default="./Dataset/train")
-    parser.add_argument("-mkdir", "--mask_directory", dest="mask_directory",type=str,
-                        help="Path to training mask folder", default="./Dataset/train/mask")
-    parser.add_argument("-gtdir", "--gt_directory", dest="gt_directory",type=str,
-                        help="Path to groundtruth dataset folder", default="./Dataset/train/gt")
-    parser.add_argument("-outdir", "--out_directory", dest="out_directory",type=str,
-                        help="Path to output dataset folder", default="./Dataset/train/gt")
-
-
-    parser.add_argument("-hist", "--histograms", dest="do_histograms", action="store_true",
-                        help="Create Histograms of signals", default=False)
-    parser.add_argument("-histNorm", "--histogramNorm", dest="histogram_norm", action="store_true",
-                        help="Normalize color before doing histograms", default=False)
-    
-    parser.add_argument("-ps", "--pixel_selector", dest="pixel_selector",type=str,
-                        help="Pixel selector function", default="luv-rgb")
-    parser.add_argument("-pps", "--prep_pixel_selector", dest="prep_pixel_selector",type=list,
-                        help="Preprocesses to do before pixel selector function", default=["blur"])
-
-    args = parser.parse_args()
-
-    images_dir = args.im_directory         # Directory with input images and annotations
+def test_tsd():
+    from main import CONSOLE_ARGUMENTS
+    images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
                                             # For instance, '../../DataSetDelivered/test'
-    output_dir = args.out_directory         # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+    output_dir = CONSOLE_ARGUMENTS.out_directory         # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
 
-    pixel_method =  args.pixel_selector
+    pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
 
     print(images_dir,output_dir,pixel_method)
 
@@ -162,5 +125,12 @@ if __name__ == '__main__':
     print("Pixel sensitivity", pixel_sensitivity)
     print("Pixel F1-Measure", pixel_fmeasure)
     print("Window Precision: ", window_precision, "Window accuracy", window_accuracy)
+
+if __name__ == '__main__':
+    # read arguments
+    test_tsd()
+
+
+    
 
     
