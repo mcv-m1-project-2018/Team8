@@ -45,6 +45,19 @@ def mask_luv(im):
 	mskr = mskr*(image[:,:,2] < 157)
 	return mskr, mskb
 
+def mask_luv_grayWorld(im):
+  image = im[:,:,:]
+  image = cv.cvtColor(image,cv.COLOR_RGB2Luv)
+
+  mskb = image[:,:,2] > 20
+  mskb = mskb*(image[:,:,2] < 90)
+  mskb = mskb*image[:,:,1] > 20
+  mskb = mskb*(image[:,:,1] < 100)
+
+  mskr = image[:,:,2] > 127
+  mskr = mskr*(image[:,:,2] < 157)
+  return mskr, mskb
+
 def mask_lab(im):
 	"""
 	Performs Lab pixel candidate selection
@@ -118,7 +131,12 @@ def candidate_generation_pixel_luv(im):
 	*Outputs:
 	- pixel_candidates: pixels that are possible part of a signal
 	"""
-	mskr, mskb = mask_luv(im)
+	from main import CONSOLE_ARGUMENTS
+
+	if "grayWorld" in CONSOLE_ARGUMENTS.prep_pixel_selector:
+		mskr, mskb = mask_luv_grayWorld(im)
+	else:
+		mskr, mskb = mask_luv(im)
 	return mskr, mskb 
 
 def candidate_generation_pixel_normrgb(im): 
@@ -157,13 +175,12 @@ def candidate_generation_pixel_blur_luvb_rgbr(im):
 
 def candidate_generation_pixel_gw_blur_luvb_rgbr(im):
 	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(preprocess_grayWorld(im)))
+
 def candidate_generation_pixel_normrgb_luvb_rgbr(im):
-
-  noiseMask = candidate_generation_pixel_normrgb(im)
-  msk = candidate_generation_pixel_luvb_rgbr(im)
-
-  msk = msk*(np.logical_not(noiseMask))
-  return msk
+	noiseMask = candidate_generation_pixel_normrgb(im)
+	msk = candidate_generation_pixel_luvb_rgbr(im)
+	msk = msk*(np.logical_not(noiseMask))
+	return msk
 ###############################
 def preprocess_blur(im):
 	"""
@@ -293,8 +310,8 @@ def switch_methods(im, color_space, preprocess=None):
 		'lab'    : candidate_generation_pixel_lab,
 		'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
 		'Blur-luv-rgb' : candidate_generation_pixel_blur_luvb_rgbr,
-		'GW-Blur-luv-rgb' :candidate_generation_pixel_gw_blur_luvb_rgbr,
 		'normRGB-luv-rgb' : candidate_generation_pixel_normrgb_luvb_rgbr,
+		'GW-Blur-luv-rgb' : candidate_generation_pixel_gw_blur_luvb_rgbr,
 		'GW-RGB'    : candidate_generation_pixel_gw_rgb,
 		'WP-RGB'    : candidate_generation_pixel_wp_rgb
 	}
