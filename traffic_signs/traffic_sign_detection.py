@@ -15,6 +15,7 @@ import fnmatch
 import os
 import sys
 import imageio
+import time
 from candidate_generation_pixel import candidate_generation_pixel
 from candidate_generation_window import candidate_generation_window
 from evaluation.load_annotations import load_annotations
@@ -58,7 +59,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     if(CONSOLE_ARGUMENTS.use_validation):
         dataset = validation
     # if(CONSOLE_ARGUMENTS.use_test):
-
+    totalTime = 0
     for signal in dataset:
         signal_path = signal.img_orig_path
         _, name = signal_path.rsplit('/', 1)
@@ -69,8 +70,9 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         print ('{}/{}'.format(directory,name))
 
         # Candidate Generation (pixel) ######################################
+        start = time.time()
         pixel_candidates = candidate_generation_pixel(im, pixel_method)
-
+        totalTime += time.time() - start
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)
         if not os.path.exists(fd):
@@ -106,6 +108,8 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
             # Plot performance evaluation
             [window_precision, window_sensitivity, window_accuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
     
+    print("meanTime", totalTime/len(dataset))
+    print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
 
 

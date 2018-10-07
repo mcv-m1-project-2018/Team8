@@ -171,7 +171,7 @@ def preprocess_neutre(im):
 	"""
 	
 	[x, y] = im.shape
-	sz = notZero(x/85)
+	sz = np.nonzero(x/85)
 	if (sz < 5):
 		sz = 5
 	kernel = np.ones((sz,sz),np.uint8)
@@ -227,10 +227,10 @@ def switch_methods(im, color_space, preprocess=None):
 
 def candidate_generation_pixel(im, color_space):
 	pixel_candidates = switch_methods(im, color_space)
-	msk = np.dstack([pixel_candidates]*3)
-	immask = msk*im
-	cv.imshow("test.png",immask)
-	cv.imshow("imageb",im)
-	cv.waitKey(0)
+	# msk = np.dstack([pixel_candidates]*3)
+	# immask = msk*im
+	# cv.imshow("test.png",immask)
+	# cv.imshow("imageb",im)
+	# cv.waitKey(0)
 
 	return pixel_candidates
