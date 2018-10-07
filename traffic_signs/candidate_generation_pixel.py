@@ -2,21 +2,20 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from skimage import color
+import cv2 as cv
 
 def candidate_generation_pixel_rgb(im):
 	
 	# Develop your method here:
 	# Example:
-	mskr = im[:,:,2] > 70
+	mskr = im[:,:,0] > 70
 	mskr = mskr*(im[:,:,1] < 50)
-	mskr = mskr*(im[:,:,0] < 50)
-	mskr = np.dstack([mskr]*3)
+	mskr = mskr*(im[:,:,2] < 50)
 
 	#blue colored signals
-	mskb = im[:,:,2] < 50
+	mskb = im[:,:,0] < 50
 	mskb = mskb*(im[:,:,1] < 100)
-	mskb = mskb*(im[:,:,0] > 60)
-	mskb = np.dstack([mskb]*3)
+	mskb = mskb*(im[:,:,2] > 60)
 
 	msk = mskr + mskb
 
@@ -37,20 +36,18 @@ def candidate_generation_pixel_hsv(im):
 def candidate_generation_pixel_lab(im):
 	image = im[:,:,:]
 
-	image = cv.cvtColor(image,cv.COLOR_BGR2Lab)
+	image = cv.cvtColor(image,cv.COLOR_RGB2Lab)
 
 	mskb = image[:,:,2] < 115
 	mskb = mskb*(image[:,:,0] > 40)
 	mskb = mskb*(image[:,:,1] < 200)
 	mskb = mskb*(image[:,:,2] > 35)
-	mskb = np.dstack([mskb]*3)
 
 	mskr = image[:,:,1] > 140
 	mskr = mskr*(image[:,:,0] > 20)
 	mskr = mskr*(image[:,:,0] < 220)
 	mskr = mskr*(image[:,:,2] < 150)
 	mskr = mskr*(image[:,:,2] > 125)
-	mskr = np.dstack([mskr]*3)
 
 	msk = mskr + mskb
 
@@ -58,7 +55,7 @@ def candidate_generation_pixel_lab(im):
 
 def preprocess_blur(im):
 	window_mean = 5
-	blurred_img = cv2.blur(im,(window_mean, window_mean))
+	blurred_img = cv.blur(im,(window_mean, window_mean))
 	
 	return blurred_img
 
@@ -118,12 +115,15 @@ def preprocess_grayWorld(im):
 # These functions should take an image as input and output the pixel_candidates mask image
 def candidate_generation_pixel_gw_rgb(im): 
 	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
+
 def candidate_generation_pixel_wp_rgb(im): 
 	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
+
 def candidate_generation_pixel_blur_rgb(im): 
-	return candidate_generation_pixel_rgb(preprocess_blur(preprocess_grayWorld(im)))
+	return candidate_generation_pixel_rgb(preprocess_blur(im))
+	
 def candidate_generation_pixel_gw_blur_rgb(im): 
-	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
+	return candidate_generation_pixel_rgb(preprocess_blur(preprocess_grayWorld(im)))
 
 
 def switch_methods(im, color_space):
@@ -135,7 +135,6 @@ def switch_methods(im, color_space):
 		'WP-RGB'    : candidate_generation_pixel_wp_rgb,
 		'Blur-RGB'    : candidate_generation_pixel_blur_rgb,
 		'GW-Blur-RGB'    : candidate_generation_pixel_gw_blur_rgb
-
 	}
 
 	# Get the function from switcher dictionary
@@ -150,13 +149,10 @@ def switch_methods(im, color_space):
 def candidate_generation_pixel(im, color_space):
 
 	pixel_candidates = switch_methods(im, color_space)
+	# msk = np.dstack([pixel_candidates]*3)
+	# immask = msk*im
+	# cv.imshow("asd",im)
+	# cv.imshow("asd",immask)
+	# cv.waitKey(0)
 
 	return pixel_candidates
-
-	
-if __name__ == '__main__':
-	pixel_candidates1 = candidate_generation_pixel(im, 'normrgb')
-	pixel_candidates2 = candidate_generation_pixel(im, 'hsv')
-	pixel_candidates3 = candidate_generation_pixel(im, 'Blur-RGB')
-
-	

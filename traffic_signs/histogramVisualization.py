@@ -77,7 +77,7 @@ def main():
 	mask_directory = "./Dataset/train/mask"
 	gt_directory = "./Dataset/train/gt"
 
-	visualizeHistograms(im_directory,gt_directory,mask_directory,"YCrCb")
+	visualizeHistograms(im_directory,gt_directory,mask_directory,"Lab")
 
 if __name__ == '__main__':
 	main()

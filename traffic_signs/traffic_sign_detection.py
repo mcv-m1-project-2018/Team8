@@ -54,7 +54,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
             os.makedirs(fd)
         
         out_mask_name = '{}.png'.format(fd, base)
-        imageio.imwrite (out_mask_name, np.uint8(np.round(pixel_candidates)))
+        imageio.imwrite(out_mask_name, np.uint8(np.round(pixel_candidates)))
 
         
         if window_method != 'None':
@@ -98,10 +98,12 @@ if __name__ == '__main__':
                                             # For instance, '../../DataSetDelivered/test'
     output_dir = args['<outPath>']          # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
 
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, 'normrgb', 'example1');
+    pixel_method =  args['<pixelMethod>']
 
+    window_method = 'None'
+    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy = traffic_sign_detection(images_dir, output_dir, pixel_method, window_method)
 
-
-    print (pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy)
+    print("Pixel Precision", pixel_precision,"Pixel Accuracy", pixel_accuracy,"Pixel specificity", pixel_specificity,"Pixel sensitivity", pixel_sensitivity)
+    print("Window Precision: ", window_precision, "Window accuracy", window_accuracy)
 
     
