@@ -155,15 +155,11 @@ def print_results_signal_type_dict(signal_type_dict):
 			print()
 	print("-----------------")
 
-def get_dictionary():
+def get_dictionary(show_dict=False, files_to_process=-1):
 	im_directory = "./Dataset/train"
 	mask_directory = "./Dataset/train/mask"
 	gt_directory = "./Dataset/train/gt"
 
-	print(sys.argv)
-
-	show_dict        = False if(not (len(sys.argv)>1)) else sys.argv[1] in ['True',1]
-	files_to_process = -1   if(not (len(sys.argv)>2)) else int(sys.argv[2])	
 
 	signals_list = calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_process=files_to_process)
 	signal_type_dict = create_signal_type_dict(signals_list)
@@ -172,7 +168,11 @@ def get_dictionary():
 	return signal_type_dict
 
 def main():
-	return get_dictionary()
+	print(sys.argv)
+	show_dict        = False if(not (len(sys.argv)>1)) else sys.argv[1] in ['True',1]
+	files_to_process = -1   if(not (len(sys.argv)>2)) else int(sys.argv[2])	
+
+	return get_dictionary(show_dict=show_dict, files_to_process=files_to_process)
 	
 if __name__ == '__main__':
 	main()

@@ -2,7 +2,7 @@ import random
 from numpy import mean
 from metrics import get_dictionary
 
-def divide_training_test_SL(signal_list):
+def divide_training_validation_SL(signal_list):
 	signal_sorted = sorted(signal_list, key=lambda x: x.pixels, reverse=True)
 	first = 0
 	last = 10
@@ -23,10 +23,11 @@ def divide_training_test_SL(signal_list):
 def divide(signals_type_dict):
 	for key in signals_type_dict:
 		sig_subdict = signals_type_dict[key]
-		training, validation = divide_training_test_SL(sig_subdict['signal_list'])
+		training, validation = divide_training_validation_SL(sig_subdict['signal_list'])
 		sig_subdict['signal_list'] = {}
 		sig_subdict['signal_list']['training'] = training
-		sig_subdict['signal_list']['validation'] = validation                        
+		sig_subdict['signal_list']['validation'] = validation
+	
 	
 def main():
 	signal_type_dict = get_dictionary()
