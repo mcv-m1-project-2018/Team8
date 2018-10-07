@@ -11,8 +11,8 @@ def main():
                     help="Show the lenghts before and after the split in Training and Validation of Task 2, \
                     also shows the percentages and mean of pixels in each part respectively")
 
-    parser.add_argument("-nfT1", "--numberFilesT1", dest="numFilesT1", action="store_const",
-                        help="Number of files to process in Task 1")
+    parser.add_argument("-nf", "--numberFiles", dest="numFiles", action="store_const",
+                        help="Number of files to process in (Task 1)")
     
     parser.add_argument("-imdir", "--im_directory", dest="im_directory", action="store_const",
                         help="Path to training dataset folder")
@@ -21,6 +21,13 @@ def main():
     parser.add_argument("-gtdir", "--gt_directory", dest="gt_directory", action="store_const",
                         help="Path to groundtruth dataset folder")
     
+    parser.add_argument("-hist", "--histograms", dest="do_histograms", action="store_true",
+                        help="Create Histograms of signals")
+    parser.add_argument("-histNorm", "--histogramNorm", dest="histogram_norm", action="store_true",
+                        help="Normalize color before doing histograms")
+    
+    
+
     parser.add_argument("-q", "--quiet",
                         action="store_false", dest="verbose", default=True,
                         help="don't print status messages to stdout")

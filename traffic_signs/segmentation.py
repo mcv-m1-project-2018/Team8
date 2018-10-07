@@ -8,7 +8,7 @@ from evaluation.load_annotations import load_annotations
 import numpy as np
 from evaluation.evaluation_funcs import performance_accumulation_pixel,performance_evaluation_pixel
 from matplotlib import pyplot as plt
-
+from candidate_generation_pixel import preprocess_normrgb
 signal_dicts = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5}
 
 def whitePatch(im):
@@ -87,6 +87,13 @@ def LabFilter(im):
 
 	return msk
 
+def LuvFilterTwoMaximums(im):
+	img = cv.cvtColor(im, cv.COLOR_BGR2RGB)
+	preprocess_normrgb(img)
+
+	img = cv.cvtColor(img, cv.COLOR_BGR2Luv)
+	
+	# histr = cv.calcHist(im[tly:bly,tlx:blx,:],[i],None,[60],[0,256])
 
 def segmentate(im_directory, mask_directory,maskOut_directory):
 	file_names = sorted(fnmatch.filter(os.listdir(im_directory), '*.jpg'))

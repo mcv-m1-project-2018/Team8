@@ -27,6 +27,9 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 
 		image = cv.imread(imageNameFile)
 
+		image = cv.cvtColor(image,cv.COLOR_BGR2RGB)
+		image = preprocess_normrgb(image)
+		image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
 		if(colorSpace == "LAB"):
 			image = cv.cvtColor(image,cv.COLOR_BGR2Lab)
 		if(colorSpace == "Luv"):
@@ -55,7 +58,7 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 
 			color = ('b','g','r')
 			for i in range(3):
-				histr = cv.calcHist(image[tly:bly,tlx:blx,:],[i],None,[60],[0,256])
+				histr = cv.calcHist(image[tly:bly,tlx:blx,:],[i],None,[255],[0,256])
 				histr[0] = 0
 				histAll[ signal_dicts[rect[4]]][i] += histr
 				
@@ -69,8 +72,12 @@ def visualizeHistograms(imPath, gtPath, maskPath, colorSpace = "RGB"):
 		for i, col in enumerate(color):
 			hist_signal_type[i][0] = 0
 			plt.plot(hist_signal_type[i],color = col)
-			plt.xlim([0,60])
-		plt.savefig("./Dataset/histogram/"+colorSpace+"/"+titles[j]+".png")
+			plt.xlim([0,255])
+		
+		directory = "./Dataset/histogramNormPrecise/"+colorSpace
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		plt.savefig(directory+"/norm_"+titles[j]+".png")
 
 
 def main():
@@ -78,7 +85,7 @@ def main():
 	mask_directory = "./Dataset/train/mask"
 	gt_directory = "./Dataset/train/gt"
 
-	colorSpaces = ["RGB", "LAB","Luv","normRGB","HSL","XYZ","YCrCb","HSV"]
+	colorSpaces = ["Luv"]
 	for color in colorSpaces:
 		print(color)
 		visualizeHistograms(im_directory,gt_directory,mask_directory,color)
