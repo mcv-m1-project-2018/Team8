@@ -86,7 +86,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
     print("extracting mask")
     dataset = training
-    if(CONSOLE_ARGUMENTS.use_validation):
+    if(CONSOLE_ARGUMENTS.use_dataset == 'validation'):
         dataset = validation
     # if(CONSOLE_ARGUMENTS.use_test):
     totalTime = 0
@@ -164,7 +164,7 @@ def test_tsd():
     pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy =\
          traffic_sign_detection_test(images_dir, output_dir, pixel_method, window_method)
 
-    pixel_fmeasure = 2*((pixel_precision)/(pixel_precision+pixel_sensitivity))
+    pixel_fmeasure = 2*((pixel_precision*pixel_sensitivity)/(pixel_precision+pixel_sensitivity))
 
     print("Pixel Precision", pixel_precision)
     print("Pixel Accuracy", pixel_accuracy)

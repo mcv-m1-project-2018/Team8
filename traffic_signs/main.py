@@ -40,7 +40,7 @@ def parse_arguments():
                         help="Path to output for histogram plots folder", default="./Dataset/histogramNormPrecise/")
     hist_args.add_argument("-csh", "--color_spaces_histograms", dest="csh",nargs='+', choices=["RGB","LAB","Luv","normRGB","HSL","HSV","Yuv","XYZ", "YCrCb"],
                         help="Colorspaces in which signals' histogram will be calculated", type=str, default=None)
-    
+     
     tsd_args.add_argument("-ud", "--use_dataset", dest="use_dataset", default="training", choices=['training','validation','test'],
                         help="Which dataset use for trafic sign detection instead of training")
     tsd_args.add_argument("-ps", "--pixel_selector", dest="pixel_selector",type=str,

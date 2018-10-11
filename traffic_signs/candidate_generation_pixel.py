@@ -27,6 +27,28 @@ def masks_rgb(im):
 
 	return mskr, mskb	
 
+
+def masks_hsv(im):
+	"""
+	Performs HSV pixel candidate selection
+	* Inputs:
+	- im = RGB image
+	*Outputs:
+	- mskr, mskb: mask for Red pixels, mask for Blue pixels
+	"""
+	image = im[:,:,:]
+	image = cv.cvtColor(image,cv.COLOR_RGB2HSV)
+	
+	# filter for red signals:
+	mskr = image[:,:,0] < 7
+	mskr = mskr+(image[:,:,0] > 229)
+
+	#blue colored signals
+	mskb = image[:,:,0] > 140
+	mskb = mskb*(image[:,:,0] < 191)
+
+	return mskr, mskb	
+
 def mask_luv(im):
 	"""
 	Performs Luv pixel candidate selection
@@ -104,13 +126,8 @@ def candidate_generation_pixel_hsv(im):
 	- pixel_candidates: pixels that are possible part of a signal
 	"""
 	# convert input image to HSV color space
-	hsv_im = color.rgb2hsv(im)
-	
-	# Develop your method here:
-	# Example:
-	pixel_candidates = hsv_im[:,:,1] > 0.4
-
-	return pixel_candidates
+	mskr, mskb = masks_hsv(im)
+	return mskr+mskb
 
 def candidate_generation_pixel_lab(im):
 	"""
@@ -307,6 +324,7 @@ def switch_methods(im, color_space, preprocess=None):
 	switcher = {
 		'rgb': candidate_generation_pixel_rgb,
 		'luv'    : candidate_generation_pixel_luv,
+		'hsv'	 : candidate_generation_pixel_hsv,
 		'lab'    : candidate_generation_pixel_lab,
 		'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
 		'Blur-luv-rgb' : candidate_generation_pixel_blur_luvb_rgbr,
@@ -318,7 +336,7 @@ def switch_methods(im, color_space, preprocess=None):
 
 	switcher_preprocess = {
 		'blur': preprocess_blur,
-		'normrgb' : preprocess_normrgb,
+		#'normrgb' : preprocess_normrgb,
 		'whitePatch': preprocess_whitePatch,
 		'grayWorld' : preprocess_grayWorld,
 		'neutralize': preprocess_neutre
@@ -343,10 +361,17 @@ def switch_methods(im, color_space, preprocess=None):
 
 def candidate_generation_pixel(im, color_space):
 	pixel_candidates = switch_methods(im, color_space)
-	# msk = np.dstack([pixel_candidates]*3)
+	pixel_candidates = pixel_candidates.astype('uint8')
+	pixel_candidates = remove_small_noise(pixel_candidates)
+	msk = np.dstack([pixel_candidates]*3)
 	# immask = msk*im
 	# cv.imshow("test.png",immask)
 	# cv.imshow("imageb",im)
 	# cv.waitKey(0)
 
 	return pixel_candidates
+
+def remove_small_noise(im):
+	kernel = cv.getStructuringElement(cv.MORPH_RECT,(500,500))
+	cv.morphologyEx(im, cv.MORPH_BLACKHAT, kernel)
+	return im
