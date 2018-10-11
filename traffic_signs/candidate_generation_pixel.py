@@ -362,7 +362,7 @@ def switch_methods(im, color_space, preprocess=None):
 def candidate_generation_pixel(im, color_space):
 	pixel_candidates = switch_methods(im, color_space)
 	pixel_candidates = pixel_candidates.astype('uint8')
-	pixel_candidates = remove_small_noise(pixel_candidates)
+	# pixel_candidates = remove_small_noise(pixel_candidates)
 	msk = np.dstack([pixel_candidates]*3)
 	# immask = msk*im
 	# cv.imshow("test.png",immask)
