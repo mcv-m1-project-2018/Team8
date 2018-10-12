@@ -86,26 +86,32 @@ def mask_lab(im):
 
 def mask_hsv(im):
 	"""
-	Performs Lab pixel candidate selection
+	Performs HSV pixel candidate selection
 	* Inputs:
 	- im = RGB image
 	*Outputs:
 	- mskr, mskb: mask for Red pixels, mask for Blue pixels
 	"""
-	image = im[:,:,:]
+	# image = im[:,:,:]
 
-	image = cv.cvtColor(image,cv.COLOR_RGB2HSV)
+	# image = cv.cvtColor(image,cv.COLOR_RGB2HSV)
 
-	mskr = (((image[:,:,0] < 15) | (image[:,:,0] > 350)))
-	mskr = mskr*(image[:,:,1] > 70)
-	mskr = mskr*(image[:,:,2] > 30)
+	# mskr = (((image[:,:,0] < 15) | (image[:,:,0] > 350)))
+	# mskr = mskr*(image[:,:,1] > 70)
+	# mskr = mskr*(image[:,:,2] > 30)
 	
 
-	mskb = ((image[:,:,0] > 200) & (image[:,:,0] < 255))
-	mskb = mskb*(image[:,:,1] > 70)
-	mskb = mskb*(image[:,:,2] > 30)
+	# mskb = ((image[:,:,0] > 200) & (image[:,:,0] < 255))
+	# mskb = mskb*(image[:,:,1] > 70)
+	# mskb = mskb*(image[:,:,2] > 30)
 
-	return mskr, mskb
+	hsv_im = color.rgb2hsv(im)
+
+	mask_red = (((hsv_im[:,:,0] < 0.04) | (hsv_im[:,:,0] > 0.8)))
+	mask_blue = ((hsv_im[:,:,0] > 0.55) & (hsv_im[:,:,0] < 0.75))
+
+
+	return mask_red, mask_blue
 
 
 #############################################
@@ -182,26 +188,32 @@ def candidate_generation_pixel_gw_rgb(im):
 	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
 
 def candidate_generation_pixel_hsvb_rgbr(im):
-
 	mskr, _ = masks_rgb(im)
 	_ , mskb = mask_hsv(im)
-	
 	return mskb+mskr
 
 
 def candidate_generation_pixel_luvb_rgbr(im): 
-
 	mskr, _ = masks_rgb(im)
+	_ , mskb = candidate_generation_pixel_luv(im)
+	return mskb+mskr
 
+def candidate_generation_pixel_blur_luvb_rgbr(im):
+	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(im))
+
+def candidate_generation_pixel_luvb_hsvr(im):
+	mskr, _ = mask_hsv(im)
 	_ , mskb = candidate_generation_pixel_luv(im)
 
 	return mskb+mskr
 
+def candidate_generation_pixel_blur_luvb_hsvr(im):
+	return candidate_generation_pixel_luvb_hsvr(preprocess_blur(im))
+
+
 def candidate_generation_pixel_wp_rgb(im): 
 	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
 
-def candidate_generation_pixel_blur_luvb_rgbr(im):
-	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(im))
 
 def candidate_generation_pixel_gw_blur_luvb_rgbr(im):
 	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(preprocess_grayWorld(im)))
@@ -343,6 +355,7 @@ def switch_methods(im, color_space, preprocess=None):
 		'lab'    : candidate_generation_pixel_lab,
 		'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
 		'Blur-luv-rgb' : candidate_generation_pixel_blur_luvb_rgbr,
+		'Blur-luv-hsv' : candidate_generation_pixel_blur_luvb_hsvr,
 		'normRGB-luv-rgb' : candidate_generation_pixel_normrgb_luvb_rgbr,
 		'GW-Blur-luv-rgb' : candidate_generation_pixel_gw_blur_luvb_rgbr,
 		'GW-RGB'    : candidate_generation_pixel_gw_rgb,

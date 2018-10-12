@@ -58,7 +58,7 @@ def parse_arguments():
     general_args.add_argument("-gtdir", "--gt_directory", dest="gt_directory",type=str,
                         help="Path to groundtruth dataset folder", default="./Dataset/train/gt")
     general_args.add_argument("-outdir", "--out_directory", dest="out_directory",type=str,
-                        help="Path to output dataset folder", default="./Dataset/output/maskOut")
+                        help="Path to output dataset folder", default="./Dataset/output/maskOut/")
     general_args.add_argument("-testdir", "--test_directory", dest="test_directory",type=str,
                         help="Path of input test dataset folder", default="./Dataset/test")
 
