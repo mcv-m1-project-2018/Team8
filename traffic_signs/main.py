@@ -1,5 +1,5 @@
 from metrics import test_metrics
-from traffic_sign_detection import main_tsd
+from traffic_sign_detection import traffic_sign_detection_test,traffic_sign_detection
 from split import test_split
 from histogramVisualization import do_hists
 
@@ -79,7 +79,29 @@ def main():
     if CONSOLE_ARGUMENTS.ts:
         test_split()
     if CONSOLE_ARGUMENTS.ttsd:
-        main_tsd()
+        use_dataset = CONSOLE_ARGUMENTS.use_dataset
+        images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
+        output_dir = CONSOLE_ARGUMENTS.out_directory        # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+        pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
+        print(images_dir,output_dir,pixel_method)
+        window_method = 'None'
+        if(use_dataset in ["training","validation"]):
+            #Carregar variables
+            #Executar funció
+            pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy =\
+            traffic_sign_detection_test(images_dir, output_dir, pixel_method, window_method, use_dataset=use_dataset)
+            
+            #Printar resultats
+            pixel_fmeasure = 2*((pixel_precision*pixel_sensitivity)/(pixel_precision+pixel_sensitivity))
+            print("Pixel Precision", pixel_precision)
+            print("Pixel Accuracy", pixel_accuracy)
+            print("Pixel specificity", pixel_specificity)
+            print("Pixel sensitivity", pixel_sensitivity)
+            print("Pixel F1-Measure", pixel_fmeasure)
+            print("Window Precision: ", window_precision, "Window accuracy", window_accuracy)
+        else:
+            print("Performing TSD with",use_dataset,"dataset")
+            traffic_sign_detection(images_dir, output_dir, pixel_method, window_method)
     if CONSOLE_ARGUMENTS.hist:
         do_hists()
 

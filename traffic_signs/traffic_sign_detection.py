@@ -46,7 +46,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
 
 
 
-def traffic_sign_detection_test(directory, output_dir, pixel_method, window_method):
+def traffic_sign_detection_test(directory, output_dir, pixel_method, window_method, use_dataset="training"):
     """
 	Calculates all statistical evaluation metrics of different pixel selector method (TRAINING AND VALIDATION)
 	* Inputs:
@@ -57,8 +57,6 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 	*Outputs:
 	- pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy
 	"""
-    from main import CONSOLE_ARGUMENTS
-
     pixelTP  = 0
     pixelFN  = 0
     pixelFP  = 0
@@ -86,7 +84,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
     print("extracting mask")
     dataset = training
-    if(CONSOLE_ARGUMENTS.use_dataset == 'validation'):
+    if(use_dataset == 'validation'):
         dataset = validation
     # if(CONSOLE_ARGUMENTS.use_test):
     totalTime = 0
@@ -142,48 +140,17 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
 
-def perform_tsd():
-    from main import CONSOLE_ARGUMENTS
-    images_dir = CONSOLE_ARGUMENTS.test_directory
-    output_dir = CONSOLE_ARGUMENTS.out_directory
-    pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
-    window_method = 'None'
-    traffic_sign_detection(images_dir, output_dir, pixel_method, window_method)
-
-def test_tsd():
-    from main import CONSOLE_ARGUMENTS
-    images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
-                                            # For instance, '../../DataSetDelivered/test'
-    output_dir = CONSOLE_ARGUMENTS.out_directory         # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
-
-    pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
-
-    print(images_dir,output_dir,pixel_method)
-
-    window_method = 'None'
-    pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy =\
-         traffic_sign_detection_test(images_dir, output_dir, pixel_method, window_method)
-
-    pixel_fmeasure = 2*((pixel_precision*pixel_sensitivity)/(pixel_precision+pixel_sensitivity))
-
-    print("Pixel Precision", pixel_precision)
-    print("Pixel Accuracy", pixel_accuracy)
-    print("Pixel specificity", pixel_specificity)
-    print("Pixel sensitivity", pixel_sensitivity)
-    print("Pixel F1-Measure", pixel_fmeasure)
-    print("Window Precision: ", window_precision, "Window accuracy", window_accuracy)
-
-def main_tsd():
-    from main import CONSOLE_ARGUMENTS
-    use_dataset = CONSOLE_ARGUMENTS.use_dataset
-    if(use_dataset in ["training","validation"]):
-        test_tsd()
-    else:
-        print("Performing TSD with",use_dataset,"dataset")
-        perform_tsd()
 if __name__ == '__main__':
     # read arguments
-    perform_tsd()
+    from main import CONSOLE_ARGUMENTS
+    use_dataset = CONSOLE_ARGUMENTS.use_dataset
+    images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
+    output_dir = CONSOLE_ARGUMENTS.out_directory        # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+    pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
+    print(images_dir,output_dir,pixel_method)
+    window_method = 'None'
+    print("Performing TSD with",use_dataset,"dataset")
+    traffic_sign_detection(images_dir, output_dir, pixel_method, window_method)
 
 
 

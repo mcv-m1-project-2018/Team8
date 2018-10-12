@@ -150,8 +150,11 @@ def candidate_generation_pixel_luv(im):
 	"""
 	from main import CONSOLE_ARGUMENTS
 
-	if "grayWorld" in CONSOLE_ARGUMENTS.prep_pixel_selector:
-		mskr, mskb = mask_luv_grayWorld(im)
+	if not(CONSOLE_ARGUMENTS.prep_pixel_selector is None):
+		if "grayWorld" in CONSOLE_ARGUMENTS.prep_pixel_selector:
+			mskr, mskb = mask_luv_grayWorld(im)
+		else:
+			mskr, mskb = mask_luv(im)
 	else:
 		mskr, mskb = mask_luv(im)
 	return mskr, mskb 
