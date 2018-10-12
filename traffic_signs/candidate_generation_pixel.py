@@ -28,27 +28,6 @@ def masks_rgb(im):
 	return mskr, mskb	
 
 
-def masks_hsv(im):
-	"""
-	Performs HSV pixel candidate selection
-	* Inputs:
-	- im = RGB image
-	*Outputs:
-	- mskr, mskb: mask for Red pixels, mask for Blue pixels
-	"""
-	image = im[:,:,:]
-	image = cv.cvtColor(image,cv.COLOR_RGB2HSV)
-	
-	# filter for red signals:
-	mskr = image[:,:,0] < 7
-	mskr = mskr+(image[:,:,0] > 229)
-
-	#blue colored signals
-	mskb = image[:,:,0] > 140
-	mskb = mskb*(image[:,:,0] < 191)
-
-	return mskr, mskb	
-
 def mask_luv(im):
 	"""
 	Performs Luv pixel candidate selection
@@ -105,6 +84,30 @@ def mask_lab(im):
 
 	return mskr, mskb
 
+def mask_hsv(im):
+	"""
+	Performs Lab pixel candidate selection
+	* Inputs:
+	- im = RGB image
+	*Outputs:
+	- mskr, mskb: mask for Red pixels, mask for Blue pixels
+	"""
+	image = im[:,:,:]
+
+	image = cv.cvtColor(image,cv.COLOR_RGB2HSV)
+
+	mskr = (((image[:,:,0] < 15) | (image[:,:,0] > 350)))
+	mskr = mskr*(image[:,:,1] > 70)
+	mskr = mskr*(image[:,:,2] > 30)
+	
+
+	mskb = ((image[:,:,0] > 200) & (image[:,:,0] < 255))
+	mskb = mskb*(image[:,:,1] > 70)
+	mskb = mskb*(image[:,:,2] > 30)
+
+	return mskr, mskb
+
+
 #############################################
 def candidate_generation_pixel_rgb(im):
 	"""
@@ -117,7 +120,7 @@ def candidate_generation_pixel_rgb(im):
 	mskr, mskb = masks_rgb(im)
 	return mskr+mskb
 
-def candidate_generation_pixel_hsv(im):
+def candidate_generation_pixel_hsv_team1(im):
 	"""
 	Performs WHOLE HSV pixel candidate selection
 	* Inputs:
@@ -125,8 +128,7 @@ def candidate_generation_pixel_hsv(im):
 	*Outputs:
 	- pixel_candidates: pixels that are possible part of a signal
 	"""
-	# convert input image to HSV color space
-	mskr, mskb = masks_hsv(im)
+	mskr,mskb = mask_hsv(im)
 	return mskr+mskb
 
 def candidate_generation_pixel_lab(im):
@@ -176,6 +178,14 @@ def candidate_generation_pixel_normrgb(im):
 def candidate_generation_pixel_gw_rgb(im): 
 	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
 
+def candidate_generation_pixel_hsvb_rgbr(im):
+
+	mskr, _ = masks_rgb(im)
+	_ , mskb = mask_hsv(im)
+	
+	return mskb+mskr
+
+
 def candidate_generation_pixel_luvb_rgbr(im): 
 
 	mskr, _ = masks_rgb(im)
@@ -198,6 +208,7 @@ def candidate_generation_pixel_normrgb_luvb_rgbr(im):
 	msk = candidate_generation_pixel_luvb_rgbr(im)
 	msk = msk*(np.logical_not(noiseMask))
 	return msk
+
 ###############################
 def preprocess_blur(im):
 	"""
@@ -324,7 +335,8 @@ def switch_methods(im, color_space, preprocess=None):
 	switcher = {
 		'rgb': candidate_generation_pixel_rgb,
 		'luv'    : candidate_generation_pixel_luv,
-		'hsv'	 : candidate_generation_pixel_hsv,
+		'hsv'	 : candidate_generation_pixel_hsv_team1,
+		'hsv-rgb': candidate_generation_pixel_hsvb_rgbr,
 		'lab'    : candidate_generation_pixel_lab,
 		'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
 		'Blur-luv-rgb' : candidate_generation_pixel_blur_luvb_rgbr,
