@@ -26,6 +26,16 @@ from split import divide_training_validation_SL
 from argparse import ArgumentParser
 
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
+    """
+    Calculates a mask result and saves it
+	* Inputs:
+	- directory = path to train images
+	- outpit_dir = Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+	- pixel_method = pixel method that will segmentate the image
+    - window_method = -------
+	*Outputs:
+	- pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy
+	"""
     from main import CONSOLE_ARGUMENTS
     # pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
     preprocess_method = CONSOLE_ARGUMENTS.prep_pixel_selector
