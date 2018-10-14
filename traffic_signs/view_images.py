@@ -60,13 +60,13 @@ smaller_kernel = np.ones((2,2), np.uint8)
 h_kernel = np.ones((1,4), np.uint8)
 v_kernel = np.ones((4,1), np.uint8)
 
-def fill_holes(im_th):
-    im2, contours, hierarchy = cv2.findContours(im_th,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+# def fill_holes(im_th):
+#     im2, contours, hierarchy = cv2.findContours(im_th,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-    for cnt in contours:
-        cv2.drawContours(im_th,[cnt],0,255,-1)
+#     for cnt in contours:
+#         cv2.drawContours(im_th,[cnt],0,255,-1)
 
-    return im_th
+#     return im_th
 
 for im_path in dirs:
     img = cv2.imread(directory+'/'+im_path)
