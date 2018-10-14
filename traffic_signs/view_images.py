@@ -29,7 +29,9 @@ def detectBoundingBoxes(im):
 def boundingBoxFilter(bb_list, im):
     image = im.copy()
     for x,y,w,h in bb_list:
-        if(w < 25 and h < 25):
+        f_ratio = np.sum(image[y:y+h, x:x+w] > 0)/float(w*h)
+        form_factor = float(w)/h
+        if(w*h < 900 or w*h > 60000 or f_ratio < 0.3 or form_factor < 0.7 or form_factor > 1.2):
             image[y:y+h, x:x+w] = np.zeros((h,w))
 
     return image
@@ -82,12 +84,13 @@ for im_path in dirs:
 
     bb_list = detectBoundingBoxes(imagen)
     imagen = boundingBoxFilter(bb_list,imagen)
+    for x,y,w,h in bb_list:
+        cv2.rectangle(imagen,(x,y),(x+w,y+h),(200,0,0),2)
 
     small_op = cv2.resize(opening, (0,0), fx=0.5, fy=0.5) 
     small_fill = cv2.resize(imagen, (0,0), fx=0.5, fy=0.5) 
     small_im = cv2.resize(img, (0,0), fx=0.5, fy=0.5)
 
-    cv2.imshow('mod',small_op*255)
     cv2.imshow('fill',small_fill)
     cv2.imshow('original', small_im*255)
     k = cv2.waitKey()

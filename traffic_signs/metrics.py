@@ -157,27 +157,29 @@ def print_results_signal_type_dict(signal_type_dict):
 			print()
 	print("-----------------")
 
-def get_dictionary(show_dict=False):
+def get_dictionary():
 	from main import CONSOLE_ARGUMENTS
 	im_directory = CONSOLE_ARGUMENTS.im_directory
 	mask_directory = CONSOLE_ARGUMENTS.mask_directory
 	gt_directory = CONSOLE_ARGUMENTS.gt_directory
 	files_to_process = CONSOLE_ARGUMENTS.numFiles
+	tm = CONSOLE_ARGUMENTS.tm
+
+
 
 
 	signals_list = calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_process=files_to_process)
 	signal_type_dict = create_signal_type_dict(signals_list)
-	if(show_dict): print_results_signal_type_dict(signal_type_dict)
+	if(tm): print_results_signal_type_dict(signal_type_dict)
 
 	return signal_type_dict
 
 def test_metrics():
 	from main import CONSOLE_ARGUMENTS
 	print(CONSOLE_ARGUMENTS)
-	show_dict = CONSOLE_ARGUMENTS.printT1
 	files_to_process = CONSOLE_ARGUMENTS.numFiles
 
-	return get_dictionary(show_dict=show_dict, files_to_process=files_to_process)
+	return get_dictionary()
 	
 if __name__ == '__main__':
     # read arguments
