@@ -25,6 +25,8 @@ from split import divide_training_validation_SL
 
 from argparse import ArgumentParser
 
+from tqdm import tqdm
+
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     from main import CONSOLE_ARGUMENTS
     # pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
@@ -76,7 +78,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     signals_type_dict = get_dictionary()
     
     training, validation = [], []
-    for key in signals_type_dict:
+    for key in tqdm(signals_type_dict, ascii=True, desc="Splitting signals"):
         sig_subdict = signals_type_dict[key]
         training_type, validation_type = divide_training_validation_SL(sig_subdict['signal_list'])
         training.extend(training_type)
@@ -88,14 +90,14 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
         dataset = validation
     # if(CONSOLE_ARGUMENTS.use_test):
     totalTime = 0
-    for signal in dataset:
+    for signal in tqdm(dataset, ascii=True, desc="Calculating Statistics"):
         signal_path = signal.img_orig_path
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
 
         # Read file
         im = imageio.imread('{}/{}'.format(directory,name))
-        print ('{}/{}'.format(directory,name))
+        # print ('{}/{}'.format(directory,name))
 
         # Candidate Generation (pixel) ######################################
         start = time.time()

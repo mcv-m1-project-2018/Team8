@@ -4,7 +4,6 @@ import numpy as np
 from skimage import color
 import cv2 as cv
 
-
 def masks_rgb(im):
 	"""
 	Performs RGB pixel candidate selection
@@ -337,6 +336,69 @@ def preprocess_neutre(im):
 	
 	return im
 
+def fill_holes(im):
+    # im_th = cv.cvtColor(im.copy(), cv.COLOR_RGB2GRAY)
+
+    _, contours, _ = cv.findContours(im,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+
+    for cnt in contours:
+        cv.drawContours(im,[cnt],0,255,-1)
+    
+    return im
+
+def morf_method1(im):
+	imggray = im.copy()
+	
+	# imggray = cv.cvtColor(im.copy(), cv.COLOR_RGB2GRAY)
+	opening = imggray.copy()
+	opening = cv.erode(opening,(2,2),iterations=1)
+#     opening = cv.morphologyEx(opening, cv.MORPH_OPEN, small_kernel)
+	# big_kernel = np.ones((6,6), np.uint8)
+	biger_kernel = np.ones((8,8), np.uint8)
+	bigerer_kernel = np.ones((14,14), np.uint8)
+	bigerest_kernel = np.ones((20,20), np.uint8)
+
+	# norm_kernel = np.ones((4,4), np.uint8)
+	small_kernel = np.ones((3,3), np.uint8)
+	# smaller_kernel = np.ones((2,2), np.uint8)
+	# smallest_kernel = np.ones((1,1), np.uint8)
+	h_kernel = np.ones((1,4), np.uint8)
+	v_kernel = np.ones((4,1), np.uint8)
+
+	opening = cv.morphologyEx(opening, cv.MORPH_CLOSE, bigerest_kernel)
+	opening = fill_holes(opening)
+	opening = cv.morphologyEx(opening, cv.MORPH_OPEN, small_kernel)
+	opening = cv.morphologyEx(opening, cv.MORPH_OPEN, h_kernel)
+	opening = cv.morphologyEx(opening, cv.MORPH_OPEN, v_kernel)
+	opening = cv.morphologyEx(opening, cv.MORPH_CLOSE, bigerer_kernel)
+	opening = cv.morphologyEx(opening, cv.MORPH_CLOSE, bigerest_kernel)
+	opening = fill_holes(opening)
+	opening = cv.morphologyEx(opening, cv.MORPH_OPEN, biger_kernel)
+	# opening = cv.erode(opening,bigerer_kernel,iterations=1)
+	# opening = cv.morphologyEx(opening, cv.MORPH_CLOSE, bigerest_kernel)
+	# opening = cv.dilate(opening,bigerest_kernel,iterations=1)
+	imagen = fill_holes(opening)
+
+	return imagen
+
+def detectBoundingBoxes(im):
+	_, contours, _ = cv.findContours(im,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+	bb_list = list()
+	for cnt in contours:
+		x,y,w,h = cv.boundingRect(cnt)   
+		bb_list.append((x,y,w,h))
+	return bb_list
+def boundingBoxFilter_method1(im):
+	image = im.copy()
+	bb_list = detectBoundingBoxes(im)
+	pixels = []
+	for x,y,w,h in bb_list:
+		f_ratio = np.sum(image[y:y+h, x:x+w] > 0)/float(w*h)
+		form_factor = float(w)/h
+		if(w*h < 700 or w*h > 20000 or f_ratio < 0.3 or form_factor < 0.333 or form_factor > 3):
+			image[y:y+h, x:x+w] = np.zeros((h,w))
+
+	return image	
 # Create your own candidate_generation_pixel_xxx functions for other color spaces/methods
 # Add them to the switcher dictionary in the switch_methods() function
 # These functions should take an image as input and output the pixel_candidates mask image
@@ -376,15 +438,18 @@ def switch_methods(im):
 	}
 
 	switcher_morf = {
-		'blur': preprocess_blur
+		'm1': morf_method1,
+		'm2': morf_method2
 	}
 	switcher_window = {
-		'blur': preprocess_blur
+		'm1': boundingBoxFilter_method1
 	}
 
-	print(CONSOLE_ARGUMENTS.prep_pixel_selector)
+	# print(CONSOLE_ARGUMENTS.prep_pixel_selector)
 	pixel_selector = CONSOLE_ARGUMENTS.pixel_selector
 	preprocess = CONSOLE_ARGUMENTS.prep_pixel_selector
+	morphology = CONSOLE_ARGUMENTS.morphology
+	window = CONSOLE_ARGUMENTS.window
 
 	# PIXEL PREPROCESS
 	if preprocess is not None:
@@ -392,14 +457,27 @@ def switch_methods(im):
 			preprocess = list(preprocess)
 		for preproc in preprocess:
 			func = switcher_preprocess.get(preproc, lambda: "Invalid preprocess")
-			pixel_candidates = func(im)
+			im = func(im)
 
 	# PIXEL SELECTOR
 	func = switcher.get(pixel_selector, lambda: "Invalid color segmentation method")
 	pixel_candidates = func(im)
-
+	pixel_candidates = pixel_candidates.astype('uint8')
 	# PIXEL MORPHOLOGY
-
+	if morphology is not None:
+		if not isinstance(morphology, list):
+			morphology = list(morphology)
+		for preproc in morphology:
+			func = switcher_morf.get(preproc, lambda: "Invalid morphology")
+			pixel_candidates = func(pixel_candidates)
+	
+	# PIXEL WINDOW
+	if window is not None:
+		if not isinstance(window, list):
+			window = list(window)
+		for preproc in window:
+			func = switcher_window.get(preproc, lambda: "Invalid window")
+			pixel_candidates = func(pixel_candidates)
 
 	return pixel_candidates
 

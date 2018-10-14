@@ -164,10 +164,7 @@ def get_dictionary():
 	gt_directory = CONSOLE_ARGUMENTS.gt_directory
 	files_to_process = CONSOLE_ARGUMENTS.numFiles
 	tm = CONSOLE_ARGUMENTS.tm
-
-
-
-
+	
 	signals_list = calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_process=files_to_process)
 	signal_type_dict = create_signal_type_dict(signals_list)
 	if(tm): print_results_signal_type_dict(signal_type_dict)
