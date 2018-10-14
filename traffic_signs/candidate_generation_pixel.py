@@ -378,6 +378,9 @@ def switch_methods(im):
 	switcher_morf = {
 		'blur': preprocess_blur
 	}
+	switcher_window = {
+		'blur': preprocess_blur
+	}
 
 	print(CONSOLE_ARGUMENTS.prep_pixel_selector)
 	pixel_selector = CONSOLE_ARGUMENTS.pixel_selector
