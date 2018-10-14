@@ -86,13 +86,9 @@ for im_path in dirs:
     small_op = cv2.resize(opening, (0,0), fx=0.5, fy=0.5) 
     small_fill = cv2.resize(imagen, (0,0), fx=0.5, fy=0.5) 
     small_im = cv2.resize(img, (0,0), fx=0.5, fy=0.5)
-<<<<<<< HEAD
 
     cv2.imshow('mod',small_op*255)
     cv2.imshow('fill',small_fill)
-=======
-    cv2.imshow('mod',small_op)
->>>>>>> 40bca0a446fefe42c7dc2c8d4f128f51068ea54d
     cv2.imshow('original', small_im*255)
     k = cv2.waitKey()
     if k==27: # Esc key to stop
