@@ -2,6 +2,11 @@ import imageio
 import fnmatch
 import os
 import sys
+
+f open("version.txt", "w")
+
+print(sys.version)
+
 import cv2 as cv
 from evaluation.load_annotations import load_annotations
 import numpy as np
