@@ -34,7 +34,7 @@ def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
         base, extension = os.path.splitext(filepath)
         imageNameFile = directory + "/" + base+extension
         im = imageio.imread(imageNameFile)	
-        pixel_candidates = candidate_generation_pixel(im, pixel_method)
+        pixel_candidates = candidate_generation_pixel(im)
         output_dir_selector = output_dir+"/"+pixel_method
         fd = '{}/{}_{}_{}'.format(output_dir_selector, pixel_method, preprocess_method, window_method)
         print("----------")
@@ -99,7 +99,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
         # Candidate Generation (pixel) ######################################
         start = time.time()
-        pixel_candidates = candidate_generation_pixel(im, pixel_method)
+        pixel_candidates = candidate_generation_pixel(im)
         totalTime += time.time() - start
         
         fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)

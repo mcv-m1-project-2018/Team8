@@ -107,7 +107,7 @@ def mask_hsv(im):
 
 	hsv_im = color.rgb2hsv(im)
 
-	mask_red = (((hsv_im[:,:,0] < 0.04) | (hsv_im[:,:,0] > 0.8)))
+	mask_red = (((hsv_im[:,:,0] < 0.027) | (hsv_im[:,:,0] > 0.93)))
 	mask_blue = ((hsv_im[:,:,0] > 0.55) & (hsv_im[:,:,0] < 0.75))
 
 
@@ -150,22 +150,29 @@ def candidate_generation_pixel_lab(im):
 
 def candidate_generation_pixel_luv(im):
 	"""
-	Performs WHOLE Luv pixel candidate selection
+	Performs Luv pixel candidate selection
 	* Inputs:
 	- im = Luv image
 	*Outputs:
 	- pixel_candidates: pixels that are possible part of a signal
 	"""
-	from main import CONSOLE_ARGUMENTS
 
-	if not(CONSOLE_ARGUMENTS.prep_pixel_selector is None):
-		if "grayWorld" in CONSOLE_ARGUMENTS.prep_pixel_selector:
-			mskr, mskb = mask_luv_grayWorld(im)
-		else:
-			mskr, mskb = mask_luv(im)
-	else:
-		mskr, mskb = mask_luv(im)
+	mskr, mskb = mask_luv(im)
 	return mskr, mskb 
+
+def candidate_generation_GW_pixel_luv(im):
+	"""
+	Performs GrayWorld Luv pixel candidate selection
+	* Inputs:
+	- im = Luv image
+	*Outputs:
+	- pixel_candidates: pixels that are possible part of a signal
+	"""
+
+	mskr, mskb = mask_luv_grayWorld(im)
+
+	return mskr, mskb 
+
 
 def candidate_generation_pixel_normrgb(im): 
 	"""
@@ -184,9 +191,6 @@ def candidate_generation_pixel_normrgb(im):
 
 	return mskr
 
-def candidate_generation_pixel_gw_rgb(im): 
-	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
-
 def candidate_generation_pixel_hsvb_rgbr(im):
 	mskr, _ = masks_rgb(im)
 	_ , mskb = mask_hsv(im)
@@ -198,26 +202,11 @@ def candidate_generation_pixel_luvb_rgbr(im):
 	_ , mskb = candidate_generation_pixel_luv(im)
 	return mskb+mskr
 
-def candidate_generation_pixel_blur_luvb_rgbr(im):
-	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(im))
-
 def candidate_generation_pixel_luvb_hsvr(im):
 	mskr, _ = mask_hsv(im)
 	_ , mskb = candidate_generation_pixel_luv(im)
 
 	return mskb+mskr
-
-def candidate_generation_pixel_blur_luvb_hsvr(im):
-	return candidate_generation_pixel_luvb_hsvr(preprocess_blur(im))
-
-
-def candidate_generation_pixel_wp_rgb(im): 
-	return candidate_generation_pixel_rgb(preprocess_grayWorld(im))
-
-
-def candidate_generation_pixel_gw_blur_luvb_rgbr(im):
-	return candidate_generation_pixel_luvb_rgbr(preprocess_blur(preprocess_grayWorld(im)))
-
 def candidate_generation_pixel_normrgb_luvb_rgbr(im):
 	noiseMask = candidate_generation_pixel_normrgb(im)
 	msk = candidate_generation_pixel_luvb_rgbr(im)
@@ -322,7 +311,6 @@ def preprocess_neutre(im):
 	[x, y, z] = im.shape
 	sz = int(x/10)
 	kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (sz, sz))
-	print("SIZE:",sz, "From:",x, "where", x/85)
 	capes = [r,g,b]
 	noms = ["r","g","b"]
 	cv.imshow('original',im)
@@ -330,19 +318,20 @@ def preprocess_neutre(im):
 	for i, cn in enumerate(zip(capes, noms)):
 		capa = cn[0]
 		nom = cn[1]
-		cv.imshow('capa '+nom+" before",capa)
+		# cv.imshow('capa '+nom+" before",capa)
 		resd = cv.morphologyEx(capa, cv.MORPH_CLOSE, kernel)
 		# resd = cv.erode(cv.dilate(np.int16(capa),kernel,1),kernel,1)
 
 		resd = np.array(resd, dtype=np.float)
 		resultat = np.divide(capa,resd)
-		cv.imshow('capa '+nom+" after",resultat)
+		# cv.imshow('capa '+nom+" after",resultat)
 		# im[:,:,i] = resultat
 		if(len(res)):
 			res = res + (resultat,)
 		else:
 			res = (resultat,)
 	im = np.dstack(res)
+	print(type(im),)
 	cv.imshow('neutralizada',im)
 	cv.waitKey()
 	
@@ -353,7 +342,7 @@ def preprocess_neutre(im):
 # These functions should take an image as input and output the pixel_candidates mask image
 
 
-def switch_methods(im, color_space, preprocess=None):
+def switch_methods(im):
 	"""
 	Performs pixel generator whith method selection
 	* Inputs:
@@ -373,12 +362,9 @@ def switch_methods(im, color_space, preprocess=None):
 		'hsv-rgb': candidate_generation_pixel_hsvb_rgbr,
 		'lab'    : candidate_generation_pixel_lab,
 		'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
-		'Blur-luv-rgb' : candidate_generation_pixel_blur_luvb_rgbr,
-		'Blur-luv-hsv' : candidate_generation_pixel_blur_luvb_hsvr,
-		'normRGB-luv-rgb' : candidate_generation_pixel_normrgb_luvb_rgbr,
-		'GW-Blur-luv-rgb' : candidate_generation_pixel_gw_blur_luvb_rgbr,
-		'GW-RGB'    : candidate_generation_pixel_gw_rgb,
-		'WP-RGB'    : candidate_generation_pixel_wp_rgb
+		'GW-luv-rgb': candidate_generation_GW_pixel_luv,
+		'luv-hsv' : candidate_generation_pixel_luvb_hsvr,
+		'normRGB-luv-rgb' : candidate_generation_pixel_normrgb_luvb_rgbr
 	}
 
 	switcher_preprocess = {
@@ -389,25 +375,33 @@ def switch_methods(im, color_space, preprocess=None):
 		'neutralize': preprocess_neutre
 	}
 
+	switcher_morf = {
+		'blur': preprocess_blur
+	}
+
 	print(CONSOLE_ARGUMENTS.prep_pixel_selector)
+	pixel_selector = CONSOLE_ARGUMENTS.pixel_selector
 	preprocess = CONSOLE_ARGUMENTS.prep_pixel_selector
 
+	# PIXEL PREPROCESS
 	if preprocess is not None:
 		if not isinstance(preprocess, list):
 			preprocess = list(preprocess)
 		for preproc in preprocess:
-			im = switcher_preprocess[preproc](im)
-	
-	# Get the function from switcher dictionary
-	func = switcher.get(color_space, lambda: "Invalid color space")
+			func = switcher_preprocess.get(preproc, lambda: "Invalid preprocess")
+			pixel_candidates = func(im)
 
-	# Execute the function
+	# PIXEL SELECTOR
+	func = switcher.get(pixel_selector, lambda: "Invalid color segmentation method")
 	pixel_candidates = func(im)
+
+	# PIXEL MORPHOLOGY
+
 
 	return pixel_candidates
 
-def candidate_generation_pixel(im, color_space):
-	pixel_candidates = switch_methods(im, color_space)
+def candidate_generation_pixel(im):
+	pixel_candidates = switch_methods(im)
 	pixel_candidates = pixel_candidates.astype('uint8')
 	# pixel_candidates = remove_small_noise(pixel_candidates)
 	msk = np.dstack([pixel_candidates]*3)
