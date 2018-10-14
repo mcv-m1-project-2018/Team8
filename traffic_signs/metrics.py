@@ -3,10 +3,6 @@ import fnmatch
 import os
 import sys
 
-f open("version.txt", "w")
-
-print(sys.version)
-
 import cv2 as cv
 from evaluation.load_annotations import load_annotations
 import numpy as np
@@ -161,11 +157,12 @@ def print_results_signal_type_dict(signal_type_dict):
 			print()
 	print("-----------------")
 
-def get_dictionary(show_dict=False, files_to_process=-1):
+def get_dictionary(show_dict=False):
 	from main import CONSOLE_ARGUMENTS
 	im_directory = CONSOLE_ARGUMENTS.im_directory
 	mask_directory = CONSOLE_ARGUMENTS.mask_directory
 	gt_directory = CONSOLE_ARGUMENTS.gt_directory
+	files_to_process = CONSOLE_ARGUMENTS.numFiles
 
 
 	signals_list = calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_process=files_to_process)

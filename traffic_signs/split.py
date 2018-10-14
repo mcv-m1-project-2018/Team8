@@ -31,7 +31,6 @@ def divide(signals_type_dict):
 	
 	
 def test_split():
-	from main import CONSOLE_ARGUMENTS
 	
 	signal_type_dict = get_dictionary()
 	

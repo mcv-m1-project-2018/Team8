@@ -103,8 +103,11 @@ def segmentate(im_directory, mask_directory,maskOut_directory):
 	pixelFN = 0
 	pixelTN = 0
 
+
+	from main import CONSOLE_ARGUMENTS
+	nf = CONSOLE_ARGUMENTS.numFiles
 	#For each file 
-	for name in file_names[:100]:
+	for name in file_names[:nf]:
 		base, extension = os.path.splitext(name)
 		
 		imageNameFile = im_directory + "/" + name

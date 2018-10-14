@@ -317,16 +317,35 @@ def preprocess_neutre(im):
 	*Outputs:
 	- im = imatge amb color neutralitzat
 	"""
-	
-	[x, y] = im.shape
-	sz = np.nonzero(x/85)
-	if (sz < 5):
-		sz = 5
-	kernel = np.ones((sz,sz),np.uint8)
-	resd = cv.erode(cv.dilate(np.int16(im),kernel,1),kernel,1)
+	r, g, b = im[:,:,0], im[:,:,1], im[:,:,2]
 
-	resd = np.array(resd, dtype=np.float)
-	im = np.divide(im,resd)
+	[x, y, z] = im.shape
+	sz = int(x/10)
+	kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (sz, sz))
+	print("SIZE:",sz, "From:",x, "where", x/85)
+	capes = [r,g,b]
+	noms = ["r","g","b"]
+	cv.imshow('original',im)
+	res = ()
+	for i, cn in enumerate(zip(capes, noms)):
+		capa = cn[0]
+		nom = cn[1]
+		cv.imshow('capa '+nom+" before",capa)
+		resd = cv.morphologyEx(capa, cv.MORPH_CLOSE, kernel)
+		# resd = cv.erode(cv.dilate(np.int16(capa),kernel,1),kernel,1)
+
+		resd = np.array(resd, dtype=np.float)
+		resultat = np.divide(capa,resd)
+		cv.imshow('capa '+nom+" after",resultat)
+		# im[:,:,i] = resultat
+		if(len(res)):
+			res = res + (resultat,)
+		else:
+			res = (resultat,)
+	im = np.dstack(res)
+	cv.imshow('neutralizada',im)
+	cv.waitKey()
+	
 	return im
 
 # Create your own candidate_generation_pixel_xxx functions for other color spaces/methods
