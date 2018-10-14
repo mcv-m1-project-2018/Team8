@@ -1,7 +1,43 @@
 import cv2
 import os
+from PIL import Image, ImageDraw
 from main import CONSOLE_ARGUMENTS
+import matplotlib.pyplot as plt
 import numpy as np
+
+
+def fill_holes(im):
+    im_th = cv2.cvtColor(im.copy(), cv2.COLOR_RGB2GRAY)
+
+    _, contours, _ = cv2.findContours(im_th,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+    for cnt in contours:
+        cv2.drawContours(im_th,[cnt],0,255,-1)
+    
+    return im_th
+
+def detectBoundingBoxes(im):
+    _, contours, _ = cv2.findContours(im,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    bb_list = list()
+    for cnt in contours:
+        x,y,w,h = cv2.boundingRect(cnt)   
+        bb_list.append((x,y,w,h))
+
+
+    return bb_list
+
+def boundingBoxFilter(bb_list, im):
+    image = im.copy()
+    for x,y,w,h in bb_list:
+        f_ratio = np.sum(image[y:y+h, x:x+w] > 0)/float(w*h)
+        form_factor = float(w)/h
+        if(w*h < 900 or w*h > 60000 or f_ratio < 0.3 or form_factor < 0.7 or form_factor > 1.2):
+            image[y:y+h, x:x+w] = np.zeros((h,w))
+
+    return image
+
+
+    
 
 directory = CONSOLE_ARGUMENTS.im_directory
 dirs = os.listdir(directory)
@@ -44,10 +80,18 @@ for im_path in dirs:
     # opening = cv2.erode(opening,bigerer_kernel,iterations=1)
     # opening = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, biger_kernel)
     # opening = cv2.dilate(opening,bigerest_kernel,iterations=1)
+    imagen = fill_holes(opening)
+
+    bb_list = detectBoundingBoxes(imagen)
+    imagen = boundingBoxFilter(bb_list,imagen)
+    for x,y,w,h in bb_list:
+        cv2.rectangle(imagen,(x,y),(x+w,y+h),(200,0,0),2)
 
     small_op = cv2.resize(opening, (0,0), fx=0.5, fy=0.5) 
+    small_fill = cv2.resize(imagen, (0,0), fx=0.5, fy=0.5) 
     small_im = cv2.resize(img, (0,0), fx=0.5, fy=0.5)
-    cv2.imshow('mod',small_op)
+
+    cv2.imshow('fill',small_fill)
     cv2.imshow('original', small_im*255)
     k = cv2.waitKey()
     if k==27: # Esc key to stop
