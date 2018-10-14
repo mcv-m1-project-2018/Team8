@@ -7,6 +7,7 @@ import cv2 as cv
 from evaluation.load_annotations import load_annotations
 import numpy as np
 
+from tqdm import tqdm
 
 #Start declaring variables for signal analysis
 signal_dicts = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5}
@@ -98,7 +99,7 @@ def calculateImagesMetrics(im_directory,mask_directory,gt_directory, files_to_pr
     all_signals_list = []
     if(files_to_process > len(file_names)):
         raise(ValueError("Files to process is too large! Given", files_to_process, "Max:", len(file_names)))
-    for name in file_names[:files_to_process]:
+    for name in tqdm(file_names[:files_to_process],ascii=True, desc="Calculating Metrics"):
         base, extension = os.path.splitext(name)
 
         imageNameFile = im_directory + "/" + name

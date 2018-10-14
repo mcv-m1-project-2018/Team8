@@ -438,8 +438,7 @@ def switch_methods(im):
 	}
 
 	switcher_morf = {
-		'm1': morf_method1,
-		'm2': morf_method2
+		'm1': morf_method1
 	}
 	switcher_window = {
 		'm1': boundingBoxFilter_method1

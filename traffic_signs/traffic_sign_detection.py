@@ -71,20 +71,20 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     window_precision = 0
     window_accuracy  = 0
 
-    print("splitting in trainning test")
+    # print("splitting in trainning test")
     # Load image names in the given directory
-    file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
+    # file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
     
     signals_type_dict = get_dictionary()
     
     training, validation = [], []
-    for key in tqdm(signals_type_dict, ascii=True, desc="Splitting signals"):
+    for key in signals_type_dict:
         sig_subdict = signals_type_dict[key]
         training_type, validation_type = divide_training_validation_SL(sig_subdict['signal_list'])
         training.extend(training_type)
         validation.extend(validation_type)
 
-    print("extracting mask")
+    # print("extracting mask")
     dataset = training
     if(use_dataset == 'validation'):
         dataset = validation

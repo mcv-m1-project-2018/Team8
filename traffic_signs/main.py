@@ -97,12 +97,13 @@ def main():
             
             #Printar resultats
             pixel_fmeasure = 2*((pixel_precision*pixel_sensitivity)/(pixel_precision+pixel_sensitivity))
-            print("Pixel Precision", pixel_precision)
-            print("Pixel Accuracy", pixel_accuracy)
-            print("Pixel specificity", pixel_specificity)
-            print("Pixel sensitivity", pixel_sensitivity)
-            print("Pixel F1-Measure", pixel_fmeasure)
-            print("Window Precision: ", window_precision, "Window accuracy", window_accuracy)
+            print("Pixel Precision:\t", "{0:.1f}".format(pixel_precision*100),end='%\n')
+            print("Pixel Accuracy: \t", "{0:.1f}".format(pixel_accuracy*100),end='%\n')
+            print("Pixel specificity:\t","{0:.1f}".format(pixel_specificity*100),end='%\n')
+            print("Pixel sensitivity:\t","{0:.1f}".format(pixel_sensitivity*100),end='%\n')
+            print("Pixel F1-Measure:\t","{0:.1f}".format(pixel_fmeasure*100),end='%\n')
+            print("Window Precision:\t","{0:.1f}".format(window_precision*100),end='%\n')
+            print("Window accuracy:\t","{0:.1f}".format(window_accuracy*100),end='%\n' )
         else:
             print("Performing TSD with",use_dataset,"dataset")
             traffic_sign_detection(images_dir, output_dir, pixel_method, window_method)
