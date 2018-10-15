@@ -79,7 +79,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     
     training, validation = [], []
     for key in signals_type_dict:
-        sig_subdict = signals_type_dict[key]
+        sig_subdict = signals_type_dict[key] 
         training_type, validation_type = divide_training_validation_SL(sig_subdict['signal_list'])
         training.extend(training_type)
         validation.extend(validation_type)

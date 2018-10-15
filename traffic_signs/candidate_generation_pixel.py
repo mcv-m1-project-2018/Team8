@@ -381,7 +381,7 @@ def morf_method1(im):
 
 	return imagen
 
-def detectBoundingBoxes(im):
+def boundingBox_ccl(im):
 	# im = cv.cvtColor(im.copy(), cv.COLOR_RGB2GRAY)
 	_, contours, _ = cv.findContours(im,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
 	bb_list = list()
@@ -390,9 +390,21 @@ def detectBoundingBoxes(im):
 		bb_list.append((x,y,w,h))
 	return bb_list
 
-def boundingBoxFilter_method1(im):
+def boundingBox_sw(im):
+	
+	bb_list = list()
+	# n,m = im.shape
+	# sw_size = 5 #args Dani needed
+	# for row in range(n-sw_size)
+	# 	for col in range(m-sw_size)
+	# 		im[]
+	# for cnt in contours:
+	# 	x,y,w,h = cv.boundingRect(cnt)   
+	# 	bb_list.append((x,y,w,h))
+	return bb_list
+
+def boundingBoxFilter_method1(im, bb_list):
 	image = im.copy()
-	bb_list = detectBoundingBoxes(im)
 	pixels = []
 	for x,y,w,h in bb_list:
 		f_ratio = np.sum(image[y:y+h, x:x+w] > 0)/float(w*h)
@@ -400,7 +412,10 @@ def boundingBoxFilter_method1(im):
 		if(w*h < 700 or w*h > 20000 or f_ratio < 0.3 or form_factor < 0.333 or form_factor > 3):
 			image[y:y+h, x:x+w] = np.zeros((h,w))
 
-	return image	
+	return image
+
+
+
 # Create your own candidate_generation_pixel_xxx functions for other color spaces/methods
 # Add them to the switcher dictionary in the switch_methods() function
 # These functions should take an image as input and output the pixel_candidates mask image
@@ -442,8 +457,15 @@ def switch_methods(im):
 	switcher_morf = {
 		'm1': morf_method1
 	}
+	
+	switcher_bb = {
+		'ccl': boundingBox_ccl,
+		'sw': boundingBox_sw
+	}
+
 	switcher_window = {
-		'm1': boundingBoxFilter_method1
+		'm1': boundingBoxFilter_method1,
+		'm2': boundingBoxFilter_method2
 	}
 
 	# print(CONSOLE_ARGUMENTS.prep_pixel_selector)
@@ -473,13 +495,23 @@ def switch_methods(im):
 			func = switcher_morf.get(preproc, lambda: "Invalid morphology")
 			pixel_candidates = func(pixel_candidates)
 	
+	bb_list = None
+	# PIXEL BB
+	if boundingBox is not None:
+		if not isinstance(boundingBox, list):
+			boundingBox = list(boundingBox)
+		for preproc in boundingBox:
+			func = switcher_bb.get(preproc, lambda: "Invalid bounding box")
+			bb_list = func(pixel_candidates)
+
 	# PIXEL WINDOW
-	if window is not None:
+	if window is not None and bb_list is not None:
 		if not isinstance(window, list):
 			window = list(window)
 		for preproc in window:
 			func = switcher_window.get(preproc, lambda: "Invalid window")
-			pixel_candidates = func(pixel_candidates)
+			pixel_candidates = func(pixel_candidates, bb_list)
+
 
 	return pixel_candidates
 
