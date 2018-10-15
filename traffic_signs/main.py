@@ -49,6 +49,8 @@ def parse_arguments():
                         help="Preprocesses to do before pixel selector function", type=str, default=None)
     tsd_args.add_argument("-m", "--morphology", dest="morphology",nargs='+',
                         help="Morphology method", type=str, default=None)
+    tsd_args.add_argument("-bb", "--bounding_box", dest="boundingBox",nargs='+',
+                        help="Bounding Box extractor type", type=str, default=None)
     tsd_args.add_argument("-w", "--window", dest="window",nargs='+',
                         help="Window CCL method", type=str, default=None)
     
@@ -87,6 +89,7 @@ def main():
         images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
         output_dir = CONSOLE_ARGUMENTS.out_directory        # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
         pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
+
         print(images_dir,output_dir,pixel_method)
         window_method = 'None'
         if(use_dataset in ["training","validation"]):

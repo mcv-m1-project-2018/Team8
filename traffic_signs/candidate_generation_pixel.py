@@ -391,16 +391,23 @@ def boundingBox_ccl(im):
 	return bb_list
 
 def boundingBox_sw(im):
-	
+	# window with anchor on top left point
 	bb_list = list()
-	# n,m = im.shape
-	# sw_size = 5 #args Dani needed
-	# for row in range(n-sw_size)
-	# 	for col in range(m-sw_size)
-	# 		im[]
-	# for cnt in contours:
-	# 	x,y,w,h = cv.boundingRect(cnt)   
-	# 	bb_list.append((x,y,w,h))
+	n,m = im.shape
+	sw_size = 25 #args Dani needed
+	for x in range(n-sw_size):
+		for y in range(m-sw_size):
+			window_img = im[x:x+sw_size,y:y+sw_size]
+			fRatio = np.count_nonzero(window_img)/(sw_size*sw_size)
+			if(fRatio > 0.4):
+				bb_list.append((x,y,sw_size,sw_size))
+				
+	for x,y,w,h in bb_list:
+		cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
+		
+	print(len(bb_list))
+	cv.imshow('sw', im)
+	cv.waitKey()
 	return bb_list
 
 def boundingBoxFilter_method1(im, bb_list):
@@ -464,14 +471,14 @@ def switch_methods(im):
 	}
 
 	switcher_window = {
-		'm1': boundingBoxFilter_method1,
-		'm2': boundingBoxFilter_method2
+		'm1': boundingBoxFilter_method1
 	}
 
 	# print(CONSOLE_ARGUMENTS.prep_pixel_selector)
 	pixel_selector = CONSOLE_ARGUMENTS.pixel_selector
 	preprocess = CONSOLE_ARGUMENTS.prep_pixel_selector
 	morphology = CONSOLE_ARGUMENTS.morphology
+	boundingBox = CONSOLE_ARGUMENTS.boundingBox 
 	window = CONSOLE_ARGUMENTS.window
 
 	# PIXEL PREPROCESS
