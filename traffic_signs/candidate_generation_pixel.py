@@ -337,18 +337,14 @@ def preprocess_neutre(im):
 	return im
 
 def fill_holes(im):
-    # im_th = cv.cvtColor(im.copy(), cv.COLOR_RGB2GRAY)
-
-    _, contours, _ = cv.findContours(im,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
-
-    for cnt in contours:
-        cv.drawContours(im,[cnt],0,255,-1)
-    
-    return im
+	_, contours, _ = cv.findContours(im,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+	for cnt in contours:
+		cv.drawContours(im,[cnt],0,255,-1)
+	return im
 
 def morf_method1(im):
 	imggray = im.copy()
-	
+	# print(im.shape)
 	# imggray = cv.cvtColor(im.copy(), cv.COLOR_RGB2GRAY)
 	opening = imggray.copy()
 	opening = cv.erode(opening,(2,2),iterations=1)
@@ -379,15 +375,21 @@ def morf_method1(im):
 	# opening = cv.dilate(opening,bigerest_kernel,iterations=1)
 	imagen = fill_holes(opening)
 
+	rows,cols= imagen.shape
+	M = np.float32([[1,0,-5],[0,1,-5]])
+	imagen = cv.warpAffine(imagen,M,(cols,rows))
+
 	return imagen
 
 def detectBoundingBoxes(im):
+	# im = cv.cvtColor(im.copy(), cv.COLOR_RGB2GRAY)
 	_, contours, _ = cv.findContours(im,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
 	bb_list = list()
 	for cnt in contours:
 		x,y,w,h = cv.boundingRect(cnt)   
 		bb_list.append((x,y,w,h))
 	return bb_list
+
 def boundingBoxFilter_method1(im):
 	image = im.copy()
 	bb_list = detectBoundingBoxes(im)
@@ -462,6 +464,7 @@ def switch_methods(im):
 	func = switcher.get(pixel_selector, lambda: "Invalid color segmentation method")
 	pixel_candidates = func(im)
 	pixel_candidates = pixel_candidates.astype('uint8')
+	# print("\nPIX:", pixel_candidates.shape)
 	# PIXEL MORPHOLOGY
 	if morphology is not None:
 		if not isinstance(morphology, list):

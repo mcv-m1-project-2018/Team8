@@ -1,30 +1,12 @@
-import cv2
+import cv2 as cv
 import os
 from PIL import Image, ImageDraw
 from main import CONSOLE_ARGUMENTS
 import matplotlib.pyplot as plt
 import numpy as np
-from candidate_generation_pixel import morf_method1, boundingBoxFilter_method1
-
-def fill_holes(im):
-    im_th = cv2.cvtColor(im.copy(), cv2.COLOR_RGB2GRAY)
-
-    _, contours, _ = cv2.findContours(im_th,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-
-    for cnt in contours:
-        cv2.drawContours(im_th,[cnt],0,255,-1)
-    
-    return im_th
-
-def detectBoundingBoxes(im):
-    _, contours, _ = cv2.findContours(im,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    bb_list = list()
-    for cnt in contours:
-        x,y,w,h = cv2.boundingRect(cnt)   
-        bb_list.append((x,y,w,h))
+from candidate_generation_pixel import morf_method1, boundingBoxFilter_method1,detectBoundingBoxes
 
 
-    return bb_list
 
 def boundingBoxFilter(bb_list, im):
     image = im.copy()
@@ -61,36 +43,38 @@ h_kernel = np.ones((1,4), np.uint8)
 v_kernel = np.ones((4,1), np.uint8)
 
 # def fill_holes(im_th):
-#     im2, contours, hierarchy = cv2.findContours(im_th,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+#     im2, contours, hierarchy = cv.findContours(im_th,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
 
 #     for cnt in contours:
-#         cv2.drawContours(im_th,[cnt],0,255,-1)
+#         cv.drawContours(im_th,[cnt],0,255,-1)
 
 #     return im_th
 
 for im_path in dirs:
-    img = cv2.imread(directory+'/'+im_path)
+    img = cv.imread(directory+'/'+im_path)
+    imggray = cv.cvtColor(img.copy(), cv.COLOR_RGB2GRAY)
     base, extension = os.path.splitext(im_path)
-    imorg = cv2.imread("./Dataset/train/"+base+".jpg")
+    imorg = cv.imread("./Dataset/train/"+base+".jpg")
     # Opening
-    opening = img.copy()
+    opening = imggray.copy()
     imagen = morf_method1(opening)
 
     bb_list = detectBoundingBoxes(imagen)
-    imagen = boundingBoxFilter_method1(bb_list,imagen)
+    imagen = boundingBoxFilter_method1(imagen)
+
 #     for x,y,w,h in bb_list:
-#         cv2.rectangle(imagen,(x,y),(x+w,y+h),(200,0,0),2)
+#         cv.rectangle(imagen,(x,y),(x+w,y+h),(200,0,0),2)
     masked = imorg*(np.dstack([imagen]*3))
 
-    small_im = cv2.resize(img, (0,0), fx=0.5, fy=0.5)
-    small_op = cv2.resize(opening, (0,0), fx=0.5, fy=0.5) 
-    small_fill = cv2.resize(imagen, (0,0), fx=0.5, fy=0.5) 
-    small_masked = cv2.resize(masked, (0,0), fx=0.5, fy=0.5) 
+    small_im = cv.resize(img, (0,0), fx=0.5, fy=0.5)
+    small_op = cv.resize(opening, (0,0), fx=0.5, fy=0.5) 
+    small_fill = cv.resize(imagen, (0,0), fx=0.5, fy=0.5) 
+    small_masked = cv.resize(masked, (0,0), fx=0.5, fy=0.5) 
 
 
-    cv2.imshow('fill',small_fill)
-    cv2.imshow('original', small_im*255)
-    cv2.imshow('masked', small_masked)
-    k = cv2.waitKey()
+    cv.imshow('fill',small_fill)
+    cv.imshow('original', small_im)
+    cv.imshow('masked', small_masked)
+    k = cv.waitKey()
     if k==27: # Esc key to stop
         break

@@ -50,7 +50,7 @@ def parse_arguments():
     tsd_args.add_argument("-m", "--morphology", dest="morphology",nargs='+',
                         help="Morphology method", type=str, default=None)
     tsd_args.add_argument("-w", "--window", dest="window",nargs='+',
-                        help="Sliding window method", type=str, default=None)
+                        help="Window CCL method", type=str, default=None)
     
 
     general_args.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,
