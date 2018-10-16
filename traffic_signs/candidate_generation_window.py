@@ -1,19 +1,27 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 def candidate_generation_window_example1(im, pixel_candidates):
-    window_candidates = [[17.0, 12.0, 49.0, 44.0], [60.0,90.0,100.0,130.0]]
+    window_candidates = [[17.0, 12.0, 49.0, 44.0], [60.0, 90.0, 100.0, 130.0]]
 
     return window_candidates
  
 def candidate_generation_window_example2(im, pixel_candidates):
-    window_candidates = [[21.0, 14.0, 54.0, 47.0], [63.0,92.0,103.0,132.0],[200.0,200.0,250.0,250.0]]
+    window_candidates = [[21.0, 14.0, 54.0, 47.0], [63.0, 92.0, 103.0, 132.0], [200.0, 200.0, 250.0, 250.0]]
 
     return window_candidates
  
 # Create your own candidate_generation_window_xxx functions for other methods
 # Add them to the switcher dictionary in the switch_method() function
 # These functions should take an image, a pixel_candidates mask (and perhaps other parameters) as input and output the window_candidates list.
+
+stepSize = 8
+winW, winH = (128, 128)
+def sliding_window(im, stepSize, windowSize):
+    for y in range(0, im.shape[0], stepSize):
+        for x in range(0, im.shape[1], stepSize):
+            yield(x, y, im[y:y + windowSize[1], x:x + windowSize[0]])
+
+
  
 def switch_method(im, pixel_candidates, method):
     switcher = {
