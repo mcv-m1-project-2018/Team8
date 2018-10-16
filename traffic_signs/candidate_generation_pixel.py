@@ -394,16 +394,16 @@ def boundingBox_sw(im):
     # window with anchor on top left point
     bb_list = list()
     n, m = im.shape
-    sw_size = 15 #args Dani needed
-    step = 8
-    for x in range(0, n-sw_size, step):
-        for y in range(0, m-sw_size, step):
+    sw_size = 45 #args Dani needed
+    step = 32
+    for x in range(0, m-sw_size, step):
+        for y in range(0, n-sw_size, step):
             #print(x,x+sw_size,y,y+sw_size) #The output coordinates are given as x1,x2,y1,y2
-            window_img = im[x:x+sw_size,y:y+sw_size]
+            window_img = im[y:y+sw_size,x:x+sw_size]
             fRatio = np.count_nonzero(window_img)/(sw_size*sw_size)
-            if(fRatio > 0.1):
-                bb_list.append((y,x,sw_size,sw_size))
-
+            if(fRatio > 0.5):
+                bb_list.append((x,y,sw_size,sw_size))
+    overlapped_windows(bb_list)
     for x,y,w,h in bb_list:
         cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
 
@@ -411,6 +411,44 @@ def boundingBox_sw(im):
     cv.imshow('sw', im)
     cv.waitKey()
     return bb_list
+
+def is_intersect(x1,y1,w1,h1,x2,y2,w2,h2):
+    is_intersecting = True
+    if(x1 > x2+w2 or x1+w1 < x2):
+        is_intersecting = False
+    if(y1 > y2+h2 or y1+h1 < y2):
+        is_intersecting = False
+    return is_intersecting
+
+def overlapped_windows(bb_list):
+    # bb_overlaped = (bb,[related_bb_index])
+    bb_overlapped = list()
+    for x1,y1,w1,h1 in bb_list:
+        related_bb_index = list()
+        i=0
+        for (x2,y2,w2,h2),_ in bb_overlapped:
+            if is_intersect(x1,y1,w1,h1,x2,y2,w2,h2):
+                related_bb_index.append(i)
+            i +=1
+        bb_overlapped.append(((x1,y1,w1,h1),related_bb_index))
+    print("bb relations list", bb_overlapped)
+
+    corespondence_dict = dict()
+    bb_cell = list()
+    i = 0
+    for bb,index_list in bb_overlapped:
+        if(len(index_list) > 0):
+            print("dict", corespondence_dict)
+            bb_cell[corespondence_dict[index_list[0]]].append(bb)
+        else:
+            bb_cell.append([bb])
+            corespondence_dict[i] = len(bb_cell)-1 #esto habria que hacerlo para todas las posiciones de la lista
+        i += 1
+
+    return bb_cell
+
+
+
 
 def boundingBoxFilter_method1(im, bb_list):
     image = im.copy()
