@@ -395,7 +395,7 @@ def boundingBox_sw(im):
     bb_list = list()
     n, m = im.shape
     sw_size = 45 #args Dani needed
-    step = 32
+    step = 8
     for x in range(0, m-sw_size, step):
         for y in range(0, n-sw_size, step):
             #print(x,x+sw_size,y,y+sw_size) #The output coordinates are given as x1,x2,y1,y2
@@ -403,14 +403,13 @@ def boundingBox_sw(im):
             fRatio = np.count_nonzero(window_img)/(sw_size*sw_size)
             if(fRatio > 0.5):
                 bb_list.append((x,y,sw_size,sw_size))
-    overlapped_windows(bb_list)
-    for x,y,w,h in bb_list:
+    newbb = overlapped_windows(bb_list)
+    for x,y,w,h in newbb:
         cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
 
-    print(len(bb_list))
     cv.imshow('sw', im)
     cv.waitKey()
-    return bb_list
+    return newbb
 
 def is_intersect(x1,y1,w1,h1,x2,y2,w2,h2):
     is_intersecting = True
@@ -431,21 +430,30 @@ def overlapped_windows(bb_list):
                 related_bb_index.append(i)
             i +=1
         bb_overlapped.append(((x1,y1,w1,h1),related_bb_index))
-    print("bb relations list", bb_overlapped)
 
     corespondence_dict = dict()
     bb_cell = list()
     i = 0
     for bb,index_list in bb_overlapped:
         if(len(index_list) > 0):
-            print("dict", corespondence_dict)
             bb_cell[corespondence_dict[index_list[0]]].append(bb)
+            corespondence_dict[i] = corespondence_dict[index_list[0]]
         else:
             bb_cell.append([bb])
             corespondence_dict[i] = len(bb_cell)-1 #esto habria que hacerlo para todas las posiciones de la lista
         i += 1
 
-    return bb_cell
+    final_bbs = list()
+    for group in bb_cell:
+        x, y, x2, y2 = float('inf'),float('inf'),0,0
+        for bb in group:
+            x = min(bb[0],x)
+            y = min(bb[1],y)
+            x2 = max(bb[0]+bb[2], x2)
+            y2 = max(bb[1]+bb[3], y2)
+        final_bbs.append((x,y,x2-x,y2-y))
+
+    return final_bbs
 
 
 
