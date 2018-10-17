@@ -18,8 +18,22 @@ Using `-ttsd` you can activate the module that directly extracts the pixel candi
 #### Used dataset
 You can change the dataset with `-ud` or `--use_dataset` flag, adding `training`, `validation` or `test` to select different datasets. If you select the TEST dataset this will automatically save the results in `./Dataset/test`. You can change the output directory with `-outdir OUTPUT_PATH` flag.
 
-#### Pixel Selector and Image Preprocess
-With `-ps [rgb|luv|lab|luv-rgb|Blur-luv-rgb|normRGB-luv-rgb|GW-Blur-luv-rgb|GW-RGB|WP-RGB]` you can change the pixel selector (mask creation) that is specially handpicked for each colorspace. Note that some pixel selector has preprocess of the image in it. You can add more preprocess steps using the flag `-pps [PREPROCESS[PREPROCESS[...]]`. Where `PREPROCESS` can be `[neutralize|grayWorld|whitePatch|normrgb|blur]`. Is important to put the `-pps` flat the lastest.
+#### Select Candidates ####
+You can control diferent predefined thresholds and how the pixel candidates are selected.
+##### Color Mask #####
+With `-ps [rgb|luv|hsv|hsv-rgb|lab|luv-rgb|GW-luv-rgb|luv-hsv|normRGB-luv-rgb]` you can change the pixel selector (mask creation) that is specially handpicked for each colorspace. Note that some pixel selector has preprocess of the image in it. 
+
+##### Image Preprocess #####
+You can add more preprocess steps using the flag `-pps [PREPROCESS [PREPROCESS [...]]`. Where `PREPROCESS` can be `[neutralize|grayWorld|whitePatch|normrgb|blur]`. 
+
+##### Morphology #####
+Different sets of morphology operations can be controled with `-m [MORPHOLOGY [MORPHOLOGY [...]]`, where `MORPHOLOGY` can be `[m1]`.
+
+##### CCL Window Processing #####
+Once the image is binarized, small and odd objects can be deleted using CCL Window processing (or Sliding Window seen in next paragraph). To activate this function use `-w [CCL_WIN_TYPE [CCL_WIN_TYPE [...]]` where `CCL_WIN_TYPE` can be `[m1]`.
+
+##### Sliding Window #####
+Once the image is binarized, small and odd objects can be deleted using Sliding Window processing. To activate this function use `-sw [S_WIN_TYPE [S_WIN_TYPE [...]]` where `S_WIN_TYPE` can be `[m1]`.
 
 #### Other variables
 `-nf NUMBER` Number of files to process from `-imdir`.
@@ -43,10 +57,14 @@ You can analyze the histogram of every type of signal (A,B,C,D,E,F) in different
 # Examples
 Examples of code can be:
 
-## Traffic Sign Detection
-Saving results of `luv-rgb` with `blur` and `grayWorld` preprocesses using the `test` dataset. First you have to activate `-ttsd` module. Last the `-pps` flag (important, this has to be the last).
+## Example 1
+Saving results of `luv-rgb` with `blur` and `grayWorld` preprocesses using the `test` dataset. 
+
 ```bash
 python main.py -ttsd -ud test -ps luv-rgb -pps blur grayWorld
 ```
+
+## Example 2
+Add more examples here :)
 
 
