@@ -1,5 +1,30 @@
 #!/usr/bin/python
 
+def reduce_win_size(w, img):
+    small_img = img[w[1]:(w[1]+w[3]),w[0]:(w[0]+w[2])]
+    column = small_img.sum(0)
+    row =    small_img.sum(1)
+    
+    new_x = 0
+    new_w = 1
+    new_y = 0
+    new_h = 1
+
+    while not column[ new_x]: new_x+=1
+    while not column[-new_w]: new_w+=1
+    while not    row[ new_y]: new_y+=1
+    while not    row[-new_h]: new_h+=1
+
+    new_win = (w[0] + new_x, w[1] + new_y, w[2] - new_w - new_x + 1, w[3] - new_h - new_y+1)
+    
+    return new_win
+
+def reduce_winds_sizes(windows, img):
+    for i, window in enumerate(windows):
+        windows[i] = reduce_win_size(window, img)
+    return windows
+    
+    
 def candidate_generation_window_example1(im, pixel_candidates):
     window_candidates = [[17.0, 12.0, 49.0, 44.0], [60.0, 90.0, 100.0, 130.0]]
 

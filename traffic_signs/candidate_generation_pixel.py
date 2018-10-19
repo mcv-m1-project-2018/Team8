@@ -4,6 +4,8 @@ import numpy as np
 from skimage import color
 import cv2 as cv
 
+from candidate_generation_window import reduce_winds_sizes
+
 def masks_rgb(im):
     """
     Performs RGB pixel candidate selection
@@ -404,11 +406,11 @@ def boundingBox_sw(im):
             if(fRatio > 0.5):
                 bb_list.append((x,y,sw_size,sw_size))
     newbb = overlapped_windows(bb_list)
-    for x,y,w,h in newbb:
-        cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
+#    for x,y,w,h in newbb:
+#        cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
 
-    cv.imshow('sw', im)
-    cv.waitKey()
+#    cv.imshow('sw', im)
+#    cv.waitKey()
     return newbb
 
 def is_intersect(x1,y1,w1,h1,x2,y2,w2,h2):
@@ -528,7 +530,9 @@ def switch_methods(im):
     morphology = CONSOLE_ARGUMENTS.morphology
     boundingBox = CONSOLE_ARGUMENTS.boundingBox
     window = CONSOLE_ARGUMENTS.window
-
+    reduce_bbs = CONSOLE_ARGUMENTS.reduce_bbs
+    view_img = CONSOLE_ARGUMENTS.view_imgs
+    
     # PIXEL PREPROCESS
     if preprocess is not None:
         if not isinstance(preprocess, list):
@@ -551,6 +555,7 @@ def switch_methods(im):
             pixel_candidates = func(pixel_candidates)
 
     bb_list = None
+            
     # PIXEL BB
     if boundingBox is not None:
         if not isinstance(boundingBox, list):
@@ -558,6 +563,25 @@ def switch_methods(im):
         for preproc in boundingBox:
             func = switcher_bb.get(preproc, lambda: "Invalid bounding box")
             bb_list = func(pixel_candidates)
+            
+            if(view_img):
+                pc_copy = pixel_candidates.copy()
+                for x,y,w,h in bb_list:
+                    cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+                small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
+                cv.imshow('not_reduced',small_pc)
+                
+            if(reduce_bbs): bb_list = reduce_winds_sizes(bb_list, pixel_candidates)
+            
+            if(view_img):
+                pc_copy = pixel_candidates.copy()
+                for x,y,w,h in bb_list:
+                    cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+                small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
+                cv.imshow('reduced!',small_pc)
+                k = cv.waitKey()
+                if k==27: # Esc key to stop
+                    exit()
 
     # PIXEL WINDOW
     if window is not None and bb_list is not None:
@@ -567,7 +591,17 @@ def switch_methods(im):
             func = switcher_window.get(preproc, lambda: "Invalid window")
             pixel_candidates = func(pixel_candidates, bb_list)
 
-
+#    if(view_img):
+#        small_pc = cv.resize(pixel_candidates, (0,0), fx=0.5, fy=0.5)
+#        small_op = cv.resize(opening, (0,0), fx=0.5, fy=0.5) 
+#        small_fill = cv.resize(imagen, (0,0), fx=0.5, fy=0.5) 
+#        small_masked = cv.resize(masked, (0,0), fx=0.5, fy=0.5)
+#        cv.imshow('fill',small_fill)
+#        cv.imshow('original', small_im)
+#        cv.imshow('masked', small_masked)
+#        k = cv.waitKey()
+#        if k==27: # Esc key to stop
+#            exit()
     return pixel_candidates
 
 def candidate_generation_pixel(im):
