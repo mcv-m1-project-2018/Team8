@@ -53,7 +53,11 @@ def parse_arguments():
                         help="Bounding Box extractor type", type=str, default=None)
     tsd_args.add_argument("-w", "--window", dest="window",nargs='+',
                         help="Window CCL method", type=str, default=None)
-    
+    tsd_args.add_argument("-rbbs", "--reduce_bb", dest="reduce_bbs",action="store_true",
+                        help="Reduce Bounding Boxes size?", default=False)
+    tsd_args.add_argument("-vi", "--view_images", dest="view_imgs",action="store_true",
+                        help="View images?", default=False)
+
 
     general_args.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,
                         help="Number of files to process in (Task 1)", default=-1)
