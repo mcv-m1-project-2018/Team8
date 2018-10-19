@@ -567,8 +567,52 @@ def switch_methods(im):
             func = switcher_window.get(preproc, lambda: "Invalid window")
             pixel_candidates = func(pixel_candidates, bb_list)
 
+    bb_class_list = template_matching_with_metrics(pixel_candidates,bb_list)
+    print(bb_class_list)
+    for x,y,w,h,name in bb_class_list:
+        cv.rectangle(pixel_candidates,(x,y),(x+w,y+h),(200,0,0),2)
+        cv.putText(pixel_candidates,name,(x,y), cv.QT_FONT_NORMAL, 1,(150,150,150),2,cv.LINE_AA)
+        # cv.putText(pixel_candidates[y:y+h,x:x+w], name,cv.QT_FONT_NORMAL, 2, (0,255,0))
+    cv.imshow('sw', pixel_candidates)
+    cv.waitKey()
 
     return pixel_candidates
+
+def template_matching_with_metrics(mask, bb_list):
+    """
+    bb_classified = list of (x,y,w,h,type)
+    """
+    bb_classified = list()
+    for x,y,w,h in bb_list:
+        type = "none"
+        window = mask[y:y+h,x:x+w]
+        n_white = np.count_nonzero(window)
+        fratio = n_white/float(w*h)
+        print("fratio",fratio)
+        if(fratio<0.60 and fratio>0.40):
+            n_white_top = np.count_nonzero(window[:round(h/2),:])
+            n_white_bottom = np.count_nonzero(window[round(h/2)+1:,:])
+            if (n_white_top > n_white_bottom):
+                #If the top is bigger than the bottom is a yield-like signal 
+                type = "B"
+            else:
+                type = "A"
+        elif(fratio<0.85 and fratio>0.7):
+            type = "CDE"
+        elif(fratio > 0.85):
+            type = "F"
+        bb_classified.append((x,y,w,h,type))
+    return bb_classified
+
+def template_matching_with_correlation(mask, bb_list):
+    """
+    bb_classified = list of (x,y,w,h,type)
+    """
+    pass
+
+
+
+
 
 def candidate_generation_pixel(im):
     pixel_candidates = switch_methods(im)
