@@ -591,7 +591,6 @@ def switch_methods(im):
             func = switcher_window.get(preproc, lambda: "Invalid window")
             pixel_candidates = func(pixel_candidates, bb_list)
 
-<<<<<<< HEAD
     bb_class_list = template_matching_with_metrics(pixel_candidates,bb_list)
     print(bb_class_list)
     for x,y,w,h,name in bb_class_list:
@@ -601,7 +600,6 @@ def switch_methods(im):
     cv.imshow('sw', pixel_candidates)
     cv.waitKey()
 
-=======
 #    if(view_img):
 #        small_pc = cv.resize(pixel_candidates, (0,0), fx=0.5, fy=0.5)
 #        small_op = cv.resize(opening, (0,0), fx=0.5, fy=0.5) 
@@ -613,7 +611,6 @@ def switch_methods(im):
 #        k = cv.waitKey()
 #        if k==27: # Esc key to stop
 #            exit()
->>>>>>> 4ba65a02fb5e67b7f918f48cdf1249f076f6c02c
     return pixel_candidates
 
 def template_matching_with_metrics(mask, bb_list):
