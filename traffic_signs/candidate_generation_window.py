@@ -15,7 +15,7 @@ def reduce_win_size(w, img):
     while not    row[ new_y]: new_y+=1
     while not    row[-new_h]: new_h+=1
 
-    new_win = (w[0] + new_x, w[1] + new_y, w[2] - new_w - new_x + 1, w[3] - new_h - new_y+1)
+    new_win = (w[0] + new_x , w[1] + new_y, w[2] - new_w - new_x + 1, w[3] - new_h - new_y+1)
     
     return new_win
 

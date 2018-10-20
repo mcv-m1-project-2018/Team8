@@ -563,25 +563,9 @@ def switch_methods(im):
         for preproc in boundingBox:
             func = switcher_bb.get(preproc, lambda: "Invalid bounding box")
             bb_list = func(pixel_candidates)
-            
-            if(view_img):
-                pc_copy = pixel_candidates.copy()
-                for x,y,w,h in bb_list:
-                    cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
-                small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
-                cv.imshow('not_reduced',small_pc)
-                
             if(reduce_bbs): bb_list = reduce_winds_sizes(bb_list, pixel_candidates)
             
-            if(view_img):
-                pc_copy = pixel_candidates.copy()
-                for x,y,w,h in bb_list:
-                    cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
-                small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
-                cv.imshow('reduced!',small_pc)
-                k = cv.waitKey()
-                if k==27: # Esc key to stop
-                    exit()
+
 
     # PIXEL WINDOW
     if window is not None and bb_list is not None:
@@ -591,17 +575,6 @@ def switch_methods(im):
             func = switcher_window.get(preproc, lambda: "Invalid window")
             pixel_candidates = func(pixel_candidates, bb_list)
 
-#    if(view_img):
-#        small_pc = cv.resize(pixel_candidates, (0,0), fx=0.5, fy=0.5)
-#        small_op = cv.resize(opening, (0,0), fx=0.5, fy=0.5) 
-#        small_fill = cv.resize(imagen, (0,0), fx=0.5, fy=0.5) 
-#        small_masked = cv.resize(masked, (0,0), fx=0.5, fy=0.5)
-#        cv.imshow('fill',small_fill)
-#        cv.imshow('original', small_im)
-#        cv.imshow('masked', small_masked)
-#        k = cv.waitKey()
-#        if k==27: # Esc key to stop
-#            exit()
     return pixel_candidates
 
 def candidate_generation_pixel(im):
