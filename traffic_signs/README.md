@@ -1,6 +1,6 @@
 # Project 1: Traffic Sign Detection
 
-[![alt text](http://www.cvc.uab.es/wp-content/uploads/2016/07/copy-logo3.svg "Centre de Visió per Computador")]
+[![alt text](http://www.cvc.uab.es/wp-content/uploads/2016/07/copy-logo3.svg "Centre de Visió per Computador")](http://cvc.cat/)
 
 Project 1 aims to create a program capable of detect traffic signs in the road at real-time using classical computer vision tecniques.
 
