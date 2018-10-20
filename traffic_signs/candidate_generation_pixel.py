@@ -5,6 +5,7 @@ from skimage import color
 import cv2 as cv
 
 from candidate_generation_window import reduce_winds_sizes
+from preprocess import preprocess_normrgb
 
 def masks_rgb(im):
     """
