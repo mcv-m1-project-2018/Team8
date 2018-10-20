@@ -85,8 +85,9 @@ def get_pixel_candidates(filepath):
 
     if(view_img):
         pc_copy = msk.copy()
-        for x,y,w,h in bb_list:
-            cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+        if(bb_list is not None):
+            for x,y,w,h in bb_list:
+                cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
         small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
         cv.imshow('window1',small_pc)
         

@@ -7,7 +7,7 @@ import cv2 as cv
 from candidate_generation_window import reduce_winds_sizes
 from preprocess import preprocess_normrgb
 
-def masks_rgb(im):
+def masks_rgb(im, rest=0):
     """
     Performs RGB pixel candidate selection
     * Inputs:
@@ -19,18 +19,18 @@ def masks_rgb(im):
 
     # filter for red signals:
     mskr = image[:,:,0] > 70
-    mskr = mskr*(image[:,:,1] < 50)
-    mskr = mskr*(image[:,:,2] < 50)
+    mskr = mskr*(image[:,:,1] < 50-rest)
+    mskr = mskr*(image[:,:,2] < 50+rest)
 
     #blue colored signals
     mskb = image[:,:,0] < 50
-    mskb = mskb*(image[:,:,1] < 100)
-    mskb = mskb*(image[:,:,2] > 60)
+    mskb = mskb*(image[:,:,1] < 100-rest)
+    mskb = mskb*(image[:,:,2] > 60+rest)
 
     return mskr, mskb
 
 
-def mask_luv(im):
+def mask_luv(im, rest=0):
     """
     Performs Luv pixel candidate selection
     * Inputs:
@@ -42,10 +42,10 @@ def mask_luv(im):
     image = cv.cvtColor(image,cv.COLOR_RGB2Luv)
 
     mskb = image[:,:,2] > 68
-    mskb = mskb*(image[:,:,2] < 114)
+    mskb = mskb*(image[:,:,2] < 114-rest)
 
     mskr = image[:,:,2] > 127
-    mskr = mskr*(image[:,:,2] < 157)
+    mskr = mskr*(image[:,:,2] < 157-rest)
     return mskr, mskb
 
 def mask_luv_grayWorld(im):
@@ -200,8 +200,21 @@ def candidate_generation_pixel_hsvb_rgbr(im):
 
 
 def candidate_generation_pixel_luvb_rgbr(im): 
-    mskr, _ = masks_rgb(im)
-    _ , mskb = candidate_generation_pixel_luv(im)
+    mskr, _ = masks_rgb(im, -15)
+    _ , mskb = mask_luv(im, -15)
+    return mskb+mskr
+
+def candidate_generation_pixel_luvb_rgbr2(im): 
+    mskr, _ = masks_rgb(im, -10)
+    _ , mskb = mask_luv(im, -10)
+    return mskb+mskr
+def candidate_generation_pixel_luvb_rgbr3(im): 
+    mskr, _ = masks_rgb(im, -5)
+    _ , mskb = mask_luv(im, -5)
+    return mskb+mskr
+def candidate_generation_pixel_luvb_rgbr4(im): 
+    mskr, _ = masks_rgb(im, 0)
+    _ , mskb = mask_luv(im, 0)
     return mskb+mskr
 
 def candidate_generation_pixel_luvb_hsvr(im):
@@ -242,6 +255,9 @@ def switch_methods(im, pixel_selector):
         'hsv-rgb': candidate_generation_pixel_hsvb_rgbr,
         'lab'    : candidate_generation_pixel_lab,
         'luv-rgb' : candidate_generation_pixel_luvb_rgbr,
+        'luv-rgb2' : candidate_generation_pixel_luvb_rgbr2,
+        'luv-rgb3' : candidate_generation_pixel_luvb_rgbr3,
+        'luv-rgb4' : candidate_generation_pixel_luvb_rgbr4,
         'GW-luv-rgb': candidate_generation_GW_pixel_luv,
         'luv-hsv' : candidate_generation_pixel_luvb_hsvr,
         'normRGB-luv-rgb' : candidate_generation_pixel_normrgb_luvb_rgbr

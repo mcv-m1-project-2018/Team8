@@ -52,9 +52,10 @@ def template_matching_with_correlation(mask, bb_list):
     return bb_classified
 
 def template_matching(im, bb_list):
-    bb_class_list = template_matching_with_correlation(im,bb_list)
-    for x,y,w,h,name in bb_class_list:
-        cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
-        cv.putText(im,name,(x,y), cv.QT_FONT_NORMAL, 1,(150,150,150),2,cv.LINE_AA)
-        # cv.putText(pixel_candidates[y:y+h,x:x+w], name,cv.QT_FONT_NORMAL, 2, (0,255,0))
+    if(bb_list is not None):
+        bb_class_list = template_matching_with_correlation(im,bb_list)
+        for x,y,w,h,name in bb_class_list:
+            cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
+            cv.putText(im,name,(x,y), cv.QT_FONT_NORMAL, 1,(150,150,150),2,cv.LINE_AA)
+            # cv.putText(pixel_candidates[y:y+h,x:x+w], name,cv.QT_FONT_NORMAL, 2, (0,255,0))
     return im
