@@ -12,7 +12,6 @@ def template_matching_with_metrics(mask, bb_list):
         window = mask[y:y+h,x:x+w]
         n_white = np.count_nonzero(window)
         fratio = n_white/float(w*h)
-        print("fratio",fratio)
         if(fratio<0.60 and fratio>0.40):
             n_white_top = np.count_nonzero(window[:round(h/2),:])
             n_white_bottom = np.count_nonzero(window[round(h/2)+1:,:])
@@ -54,7 +53,6 @@ def template_matching_with_correlation(mask, bb_list):
 
 def template_matching(im, bb_list):
     bb_class_list = template_matching_with_correlation(im,bb_list)
-    print(bb_class_list)
     for x,y,w,h,name in bb_class_list:
         cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
         cv.putText(im,name,(x,y), cv.QT_FONT_NORMAL, 1,(150,150,150),2,cv.LINE_AA)

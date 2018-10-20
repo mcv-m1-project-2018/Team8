@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import cv2 as cv
 import numpy as np
+# from numba import jit
+import time
+from math import floor
 
 def is_intersect(x1,y1,w1,h1,x2,y2,w2,h2):
     is_intersecting = True
@@ -12,6 +15,7 @@ def is_intersect(x1,y1,w1,h1,x2,y2,w2,h2):
 
 def overlapped_windows(bb_list):
     # bb_overlaped = (bb,[related_bb_index])
+
     bb_overlapped = list()
     for x1,y1,w1,h1 in bb_list:
         related_bb_index = list()
@@ -44,7 +48,39 @@ def overlapped_windows(bb_list):
             y2 = max(bb[1]+bb[3], y2)
         final_bbs.append((x,y,x2-x,y2-y))
 
+    im = np.zeros((500,500))
+    for x,y,w,h in final_bbs:
+       cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
+
+    cv.imshow('finish', im)
+    cv.waitKey()
+
     return final_bbs
+
+def overlapped_windows2(bb_list):
+    bb_cell = list()
+
+    while(len(bb_list)>0):
+        x1,y1,w1,h1 = bb_list[0]
+        del bb_list[0]
+        hasModified = True
+        while(hasModified):
+            hasModified = False
+            i = 0
+            for x2,y2,w2,h2 in bb_list:
+                if(is_intersect(x1,y1,w1,h1,x2,y2,w2,h2)):
+                    w1 = max(x1+w1, x2+w2)
+                    h1 = max(y1+h1, y2+h2)
+                    x1 = min(x1,x2)
+                    y1 = min(y1,y2)
+                    w1 -= x1
+                    h1 -= y1
+                    del bb_list[i]
+                    hasModified = True
+                i +=1
+        bb_cell.append((x1,y1,w1,h1))
+    return bb_cell
+            
 
 def reduce_win_size(w, img):
     small_img = img[w[1]:(w[1]+w[3]),w[0]:(w[0]+w[2])]
@@ -92,23 +128,16 @@ def boundingBox_sw(im):
             fRatio = np.count_nonzero(window_img)/(sw_size*sw_size)
             if(fRatio > 0.5):
                 bb_list.append((x,y,sw_size,sw_size))
-    newbb = overlapped_windows(bb_list)
-#    for x,y,w,h in newbb:
-#        cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
-
-#    cv.imshow('sw', im)
-#    cv.waitKey()
+    newbb = overlapped_windows2(bb_list)
     return newbb
 
 def boundingBox_sw_integrate(im):
     # window with anchor on top left point
-    # import time
-    # t1 = time.time()
     bb_list = list()
     n, m = im.shape
     mask = im[:,:]/255
     sw_size = 45 #args Dani needed
-    step = 1
+    step = 8
     ii = np.zeros((n,m))
     s = np.zeros((n,m))
     for y in range(0, n):
@@ -118,9 +147,7 @@ def boundingBox_sw_integrate(im):
                 ii[y,x] = s[y,x]
             else:
                 ii[y,x] = s[y,x] + ii[y-1,x]
-#    print(time.time()-/t1)
-    
-    # t1 = time.time()
+
     box_size = 1/(sw_size*sw_size)
     for y in range(0,n-sw_size, step):
         for x in range(0, m-sw_size, step):
@@ -128,14 +155,28 @@ def boundingBox_sw_integrate(im):
             fRatio = window_img*box_size
             if(fRatio > 0.5):
                 bb_list.append((x,y,sw_size,sw_size))
-    newbb = overlapped_windows(bb_list)
-    # print(time.time()-t1)
-    # for x,y,w,h in newbb:
-    #    cv.rectangle(im,(x,y),(x+w,y+h),(200,0,0),2)
-
-    # cv.imshow('sw', im)
-    # cv.waitKey()
+    newbb = overlapped_windows2(bb_list)
     return newbb
+
+def boundingBox_sw_conv(im):
+    # window with anchor on top left point
+    bb_list = list()
+    n, m = im.shape
+    sw_size = 45 #args Dani needed
+    step = 1
+
+    a = cv.filter2D(im, cv.CV_32F, np.ones((1,sw_size)),borderType=cv.BORDER_CONSTANT)
+    a = cv.filter2D(a, cv.CV_32F, np.ones((sw_size,1)),borderType=cv.BORDER_CONSTANT)/(sw_size*sw_size*255)
+
+    for x in range(0, m-sw_size, step):
+        for y in range(0, n-sw_size, step):
+            fRatio = a[(y+floor(sw_size/2)),(x+floor(sw_size/2))]
+            if(fRatio > 0.5):
+                bb_list.append([x,y,sw_size,sw_size])
+    newbb = overlapped_windows2(bb_list)
+
+    return newbb
+
 
 # Create your own candidate_generation_window_xxx functions for other methods
 # Add them to the switcher dictionary in the switch_method() function
@@ -149,8 +190,10 @@ def switch_method(im, method, reduce_bbs=True):
     switcher_bb = {
         'ccl': boundingBox_ccl,
         'sw': boundingBox_sw,
-        'swi': boundingBox_sw_integrate
+        'swi': boundingBox_sw_integrate,
+        'swconv': boundingBox_sw_conv
     }
+    start = time.time()
     # Get the function from switcher dictionary
     if method is not None:
         if not isinstance(method, list):
@@ -159,6 +202,6 @@ def switch_method(im, method, reduce_bbs=True):
             func = switcher_bb.get(preproc, lambda: "Invalid bounding box")
             bb_list = func(im)
             if(reduce_bbs): bb_list = reduce_winds_sizes(bb_list, im)
-
+    print("\n time = ", time.time()-start)
     return bb_list
 
