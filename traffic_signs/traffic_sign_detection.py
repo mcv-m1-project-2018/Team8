@@ -13,11 +13,7 @@ Options:
 import numpy as np
 import fnmatch
 import os
-import sys
 import imageio
-import time
-from candidate_generation_pixel import candidate_generation_pixel
-from candidate_generation_window import candidate_generation_window
 from evaluation.load_annotations import load_annotations
 import evaluation.evaluation_funcs as evalf
 from metrics import get_dictionary
@@ -27,26 +23,84 @@ from argparse import ArgumentParser
 
 from tqdm import tqdm
 
-def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
+from preprocess import preprocess_image
+from candidate_generation_pixel import candidate_generation_pixel
+from morphology import apply_morphology
+from candidate_generation_window import generate_windows
+from window_filter import filter_windows
+from template_matching import template_matching
+
+import cv2 as cv
+
+def msk2rgb(msk):
+    msk = msk.astype('uint8')
+    # pixel_candidates = remove_small_noise(pixel_candidates)
+    msk = np.dstack([msk]*3)
+    # immask = msk*im
+    # cv.imshow("test.png",immask)
+    # cv.imshow("imageb",im)
+    # cv.waitKey(0)
+
+    return msk
+
+def get_pixel_candidates(filepath):
     from main import CONSOLE_ARGUMENTS
-    # pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
-    preprocess_method = CONSOLE_ARGUMENTS.prep_pixel_selector
+    
+    directory = CONSOLE_ARGUMENTS.im_directory
+    output_dir = CONSOLE_ARGUMENTS.out_directory
+    
+    pixel_selector = CONSOLE_ARGUMENTS.pixel_selector
+    preprocess = CONSOLE_ARGUMENTS.prep_pixel_selector
+    morphology = CONSOLE_ARGUMENTS.morphology
+    boundingBox = CONSOLE_ARGUMENTS.boundingBox
+    reduce_bbs = CONSOLE_ARGUMENTS.reduce_bbs
+    window_filter = CONSOLE_ARGUMENTS.window_filter
+    view_img = CONSOLE_ARGUMENTS.view_imgs
+    
+    _, name = filepath.rsplit('/', 1)
+    base, extension = os.path.splitext(name)
+    imageNameFile = directory + "/" + base+extension
+    im = imageio.imread(imageNameFile)	
+    
+    prep_im = preprocess_image(im, preprocess)
+    msk = candidate_generation_pixel(prep_im, pixel_selector)
+    msk = apply_morphology(msk, morphology)
+    bb_list = generate_windows(msk, boundingBox, reduce_bbs=reduce_bbs)
+    msk, bb_list = filter_windows(bb_list, msk, window_filter)
+    rgb_msk = msk2rgb(msk)
+    im_tmp = template_matching(msk, bb_list)
+    
+    output_dir_selector = output_dir+"/"+pixel_selector
+    args_tuple = (pixel_selector, preprocess, morphology, boundingBox, reduce_bbs, window_filter)
+    fd = '{}/'.format(output_dir_selector)
+    for arg in args_tuple:
+        fd+='{}_'.format(arg)
+    fd = fd[:-1]
+#    print("----------")
+#    print(fd)
+    if not os.path.exists(fd):
+        os.makedirs(fd)
+    im_out_path_name = fd + "/" + "mask."+base+".png"
+    imageio.imwrite(im_out_path_name, np.uint8(np.round(rgb_msk)))
+
+    if(view_img):
+        pc_copy = msk.copy()
+        for x,y,w,h in bb_list:
+            cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+        small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
+        cv.imshow('window1',small_pc)
+        
+        k = cv.waitKey()
+        if k==27: # Esc key to stop
+            exit()
+                
+    return msk, bb_list
+
+    
+def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
-    for filepath in file_names:
-        base, extension = os.path.splitext(filepath)
-        imageNameFile = directory + "/" + base+extension
-        im = imageio.imread(imageNameFile)	
-        pixel_candidates = candidate_generation_pixel(im)
-        output_dir_selector = output_dir+"/"+pixel_method
-        fd = '{}/{}_{}_{}'.format(output_dir_selector, pixel_method, preprocess_method, window_method)
-        print("----------")
-        print(fd)
-        if not os.path.exists(fd):
-            os.makedirs(fd)
-        im_out_path_name = fd + "/" + "mask."+base+".png"
-        imageio.imwrite(im_out_path_name, np.uint8(np.round(pixel_candidates)))
-
-
+    for filepath in tqdm(file_names, ascii=True, desc="Generating masks"):
+        rgb_mask, __ = get_pixel_candidates(filepath)
 
 def traffic_sign_detection_test(directory, output_dir, pixel_method, window_method, use_dataset="training"):
     """
@@ -90,35 +144,16 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
         dataset = validation
     # if(CONSOLE_ARGUMENTS.use_test):
     totalTime = 0
-    for signal in tqdm(dataset, ascii=True, desc="Calculating Statistics"):
-        signal_path = signal.img_orig_path
+    dataset_paths = [signal.img_orig_path for signal in dataset]
+    
+    for signal_path in tqdm(dataset_paths, ascii=True, desc="Calculating Statistics"):
+        rgb_mask, bb_list = get_pixel_candidates(signal_path)
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
-
-        # Read file
-        im = imageio.imread('{}/{}'.format(directory,name))
-        # print ('{}/{}'.format(directory,name))
-
-        # Candidate Generation (pixel) ######################################
-        start = time.time()
-        pixel_candidates = candidate_generation_pixel(im)
-        totalTime += time.time() - start
-        
-        fd = '{}/{}_{}'.format(output_dir, pixel_method, window_method)
-        if not os.path.exists(fd):
-            os.makedirs(fd)
-        
-        out_mask_name = '{}/{}.png'.format(fd, base)
-        imageio.imwrite(out_mask_name, np.uint8(np.round(pixel_candidates)))
-
-        
-        if window_method != 'None':
-            window_candidates = candidate_generation_window(im, pixel_candidates, window_method) 
-        
         # Accumulate pixel performance of the current image #################
         pixel_annotation = imageio.imread('{}/mask/mask.{}.png'.format(directory,base)) > 0
 
-        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] = evalf.performance_accumulation_pixel(pixel_candidates, pixel_annotation)
+        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] = evalf.performance_accumulation_pixel(rgb_mask, pixel_annotation)
         pixelTP = pixelTP + localPixelTP
         pixelFP = pixelFP + localPixelFP
         pixelFN = pixelFN + localPixelFN
@@ -129,7 +164,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
         if window_method != 'None':
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
-            [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(window_candidates, window_annotationss)
+            [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(bb_list, window_annotationss)
             windowTP = windowTP + localWindowTP
             windowFN = windowFN + localWindowFN
             windowFP = windowFP + localWindowFP

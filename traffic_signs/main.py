@@ -51,8 +51,8 @@ def parse_arguments():
                         help="Morphology method", type=str, default=None)
     tsd_args.add_argument("-bb", "--bounding_box", dest="boundingBox",nargs='+',
                         help="Bounding Box extractor type", type=str, default=None)
-    tsd_args.add_argument("-w", "--window", dest="window",nargs='+',
-                        help="Window CCL method", type=str, default=None)
+    tsd_args.add_argument("-w", "--window", dest="window_filter",nargs='+',
+                        help="Window Filtering method", type=str, default=None)
     tsd_args.add_argument("-rbbs", "--reduce_bb", dest="reduce_bbs",action="store_true",
                         help="Reduce Bounding Boxes size?", default=False)
     tsd_args.add_argument("-vi", "--view_images", dest="view_imgs",action="store_true",

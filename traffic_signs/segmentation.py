@@ -8,7 +8,7 @@ from evaluation.load_annotations import load_annotations
 import numpy as np
 from evaluation.evaluation_funcs import performance_accumulation_pixel,performance_evaluation_pixel
 from matplotlib import pyplot as plt
-from candidate_generation_pixel import preprocess_normrgb
+from preprocess import preprocess_normrgb
 signal_dicts = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5}
 
 def whitePatch(im):
