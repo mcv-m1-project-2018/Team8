@@ -30,7 +30,7 @@ from template_matching import template_matching
 
 import cv2 as cv
 import pickle as pckl
-
+import time
 
 def msk2rgb(msk):
     msk = msk.astype('uint8')
@@ -159,7 +159,9 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     dataset_paths = [signal.img_orig_path for signal in dataset]
     
     for signal_path in tqdm(dataset_paths, ascii=True, desc="Calculating Statistics"):
+        startTime = time.time()
         rgb_mask, bb_list = get_pixel_candidates(signal_path)
+        totalTime = time.time() - startTime
         bb_list = convertBBFormat(bb_list)
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
