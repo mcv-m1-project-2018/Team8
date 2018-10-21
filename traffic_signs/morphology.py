@@ -52,7 +52,7 @@ def morph_method2(im):
 def morph_method3(im):
     imggray = im.copy()
     morph = imggray.copy()
-    morph = cv.erode(morph,(2,2),iterations=1)
+    morph = cv.erode(morph,(3,3),iterations=1)
 
     morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, big_kernel)
     morph = fill_holes(morph)
