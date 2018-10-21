@@ -67,7 +67,7 @@ def get_pixel_candidates(filepath):
     bb_list = generate_windows(msk, boundingBox, reduce_bbs=reduce_bbs)
     msk, bb_list = filter_windows(bb_list, msk, window_filter)
     rgb_msk = msk2rgb(msk)
-    im_tmp = template_matching(msk, bb_list)
+    bb_class_list = template_matching(msk, bb_list)
     
     output_dir_selector = output_dir+"/"+pixel_selector
     args_tuple = (pixel_selector, preprocess, morphology, boundingBox, reduce_bbs, window_filter)
@@ -86,8 +86,9 @@ def get_pixel_candidates(filepath):
         pc_copy = msk.copy()
         if(pc_copy.max() == 1): pc_copy*=255
         if(bb_list is not None):
-            for x,y,w,h in bb_list:
+            for x,y,w,h,name in bb_class_list:
                 cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+                cv.putText(pc_copy,name,(x,y), cv.QT_FONT_NORMAL, 1,(150,150,150),2,cv.LINE_AA)
         small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
         cv.imshow('window1',small_pc)
         
@@ -165,7 +166,8 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
         if(bb_list != None):
             # Accumulate object performance of the current image ################
-            window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
+            window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))                
+
             [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(bb_list, window_annotationss)
             windowTP = windowTP + localWindowTP
             windowFN = windowFN + localWindowFN
@@ -183,7 +185,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 def convertBBFormat(bb_list):
     out_list = list()
     for x,y,w,h in bb_list:
-        out_list.append([x,y,x+w,y+h])
+        out_list.append([y,x,y+h,x+w])
     return out_list
 
 
