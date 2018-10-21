@@ -29,6 +29,7 @@ from window_filter import filter_windows
 from template_matching import template_matching
 
 import cv2 as cv
+import pickle as pckl
 
 
 def msk2rgb(msk):
@@ -80,7 +81,12 @@ def get_pixel_candidates(filepath):
     if not os.path.exists(fd):
         os.makedirs(fd)
     im_out_path_name = fd + "/" + "mask."+base+".png"
+    pkl_out_path_name = fd + "/" + "mask."+base+".pkl"
     imageio.imwrite(im_out_path_name, np.uint8(np.round(rgb_msk)))
+    pkl_bb_list = convertBBFormat(bb_list)
+    pckl_file = open(pkl_out_path_name,"wb")
+    pckl.dump(pkl_bb_list,pckl_file)
+    pckl_file.close()
 
     if(view_img):
         pc_copy = msk.copy()
@@ -173,12 +179,12 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
             windowFN = windowFN + localWindowFN
             windowFP = windowFP + localWindowFP
 
-
             # Plot performance evaluation
             [window_precision, window_sensitivity, window_accuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
     
     print("meanTime", totalTime/len(dataset))
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
+    print("windowTP", windowTP, "\t", windowFP, "\t", windowFN)
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy, window_sensitivity]
 
 
