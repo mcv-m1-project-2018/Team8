@@ -137,6 +137,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
     window_precision = 0
     window_accuracy  = 0
+    window_sensitivity  = 0
 
     # print("splitting in trainning test")
     # Load image names in the given directory

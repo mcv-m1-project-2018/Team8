@@ -110,8 +110,8 @@ def mask_hsv(im, rect_down=0, rect_up=0):
     hsv_im = color.rgb2hsv(im)
 
     mask_red = (((hsv_im[:,:,0] < 0.027+rect_down) | (hsv_im[:,:,0] > 0.93+rect_up)))
-    mask_red = mask_red & (hsv_im[:,:,1] > 0.27)
-    mask_red = mask_red & (hsv_im[:,:,2] > 0.19)
+    mask_red = mask_red & (hsv_im[:,:,1] > 0.27) & (hsv_im[:,:,1] < 0.95)
+    mask_red = mask_red & (hsv_im[:,:,2] > 0.19) & (hsv_im[:,:,2] < 0.90)
     
     mask_blue = ((hsv_im[:,:,0] > 0.55+rect_down) & (hsv_im[:,:,0] < 0.75+rect_up))
 
