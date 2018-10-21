@@ -60,7 +60,7 @@ def get_pixel_candidates(filepath):
     view_img = CONSOLE_ARGUMENTS.view_imgs
     nar = CONSOLE_ARGUMENTS.non_affinity_removal
     
-    print("FILEPATH:",filepath)
+#    print("FILEPATH:",filepath)
     _, name = filepath.rsplit('/', 1)
     base, extension = os.path.splitext(name)
     imageNameFile = directory + "/" + base+extension
@@ -117,7 +117,7 @@ def get_pixel_candidates(filepath):
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
     file_names = glob.glob(directory+"/*.jpg")
-    print("DIRECTORY:", directory)
+#    print("DIRECTORY:", directory)
     
     for filepath in tqdm(file_names, ascii=True, desc="Generating masks"):
         base, name = filepath.split("\\")
