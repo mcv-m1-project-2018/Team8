@@ -19,8 +19,6 @@ import evaluation.evaluation_funcs as evalf
 from metrics import get_dictionary
 from split import divide_training_validation_SL
 
-from argparse import ArgumentParser
-
 from tqdm import tqdm
 
 from preprocess import preprocess_image
@@ -31,6 +29,7 @@ from window_filter import filter_windows
 from template_matching import template_matching
 
 import cv2 as cv
+
 
 def msk2rgb(msk):
     msk = msk.astype('uint8')
@@ -85,6 +84,7 @@ def get_pixel_candidates(filepath):
 
     if(view_img):
         pc_copy = msk.copy()
+        if(pc_copy.max() == 1): pc_copy*=255
         if(bb_list is not None):
             for x,y,w,h in bb_list:
                 cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
