@@ -83,7 +83,8 @@ def get_pixel_candidates(filepath):
     im_out_path_name = fd + "/" + "mask."+base+".png"
     pkl_out_path_name = fd + "/" + "mask."+base+".pkl"
     imageio.imwrite(im_out_path_name, np.uint8(np.round(rgb_msk)))
-    pkl_bb_list = convertBBFormat(bb_list)
+    pkl_bb_list = None
+    if(bb_list is not None): pkl_bb_list = convertBBFormat(bb_list)
     pckl_file = open(pkl_out_path_name,"wb")
     pckl.dump(pkl_bb_list,pckl_file)
     pckl_file.close()
@@ -136,6 +137,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
     window_precision = 0
     window_accuracy  = 0
+    window_sensitivity  = 0
 
     # print("splitting in trainning test")
     # Load image names in the given directory
@@ -162,36 +164,42 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
         startTime = time.time()
         rgb_mask, bb_list = get_pixel_candidates(signal_path)
         totalTime = time.time() - startTime
-        bb_list = convertBBFormat(bb_list)
+        
+        if(bb_list is not None): bb_list = convertBBFormat(bb_list)
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
         # Accumulate pixel performance of the current image #################
         pixel_annotation = imageio.imread('{}/mask/mask.{}.png'.format(directory,base)) > 0
 
-        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] = evalf.performance_accumulation_pixel(rgb_mask, pixel_annotation)
+        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] =\
+        evalf.performance_accumulation_pixel(rgb_mask, pixel_annotation)
         pixelTP = pixelTP + localPixelTP
         pixelFP = pixelFP + localPixelFP
         pixelFN = pixelFN + localPixelFN
         pixelTN = pixelTN + localPixelTN
         
-        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
+        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] =\
+        evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
 
         if(bb_list != None):
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))                
 
-            [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(bb_list, window_annotationss)
+            [localWindowTP, localWindowFN, localWindowFP] = \
+            evalf.performance_accumulation_window(bb_list, window_annotationss)
             windowTP = windowTP + localWindowTP
             windowFN = windowFN + localWindowFN
             windowFP = windowFP + localWindowFP
 
             # Plot performance evaluation
-            [window_precision, window_sensitivity, window_accuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
+            [window_precision, window_sensitivity, window_accuracy] = \
+            evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
     
     print("meanTime", totalTime/len(dataset))
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
     print("windowTP", windowTP, "\t", windowFP, "\t", windowFN)
-    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy, window_sensitivity]
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity,\
+            window_precision, window_accuracy, window_sensitivity]
 
 
 def convertBBFormat(bb_list):
@@ -205,8 +213,8 @@ if __name__ == '__main__':
     # read arguments
     from main import CONSOLE_ARGUMENTS
     use_dataset = CONSOLE_ARGUMENTS.use_dataset
-    images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
-    output_dir = CONSOLE_ARGUMENTS.out_directory        # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+    images_dir = CONSOLE_ARGUMENTS.im_directory        
+    output_dir = CONSOLE_ARGUMENTS.out_directory        
     pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
     print(images_dir,output_dir,pixel_method)
     window_method = 'None'

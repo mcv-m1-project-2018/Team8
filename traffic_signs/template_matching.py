@@ -53,6 +53,7 @@ def template_matching_with_correlation(mask, bb_list):
 
 def template_matching(im, bb_list):
     modImage = im[:,:]
+    bb_class_list = None
     if(bb_list is not None):
         bb_class_list = template_matching_with_correlation(modImage,bb_list)
     return bb_class_list
