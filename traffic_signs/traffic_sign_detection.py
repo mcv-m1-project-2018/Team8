@@ -154,36 +154,41 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     
     for signal_path in tqdm(dataset_paths, ascii=True, desc="Calculating Statistics"):
         rgb_mask, bb_list = get_pixel_candidates(signal_path)
-        bb_list = convertBBFormat(bb_list)
+        if(bb_list is not None): bb_list = convertBBFormat(bb_list)
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
         # Accumulate pixel performance of the current image #################
         pixel_annotation = imageio.imread('{}/mask/mask.{}.png'.format(directory,base)) > 0
 
-        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] = evalf.performance_accumulation_pixel(rgb_mask, pixel_annotation)
+        [localPixelTP, localPixelFP, localPixelFN, localPixelTN] =\
+        evalf.performance_accumulation_pixel(rgb_mask, pixel_annotation)
         pixelTP = pixelTP + localPixelTP
         pixelFP = pixelFP + localPixelFP
         pixelFN = pixelFN + localPixelFN
         pixelTN = pixelTN + localPixelTN
         
-        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
+        [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] =\
+        evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
 
         if(bb_list != None):
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))                
 
-            [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(bb_list, window_annotationss)
+            [localWindowTP, localWindowFN, localWindowFP] = \
+            evalf.performance_accumulation_window(bb_list, window_annotationss)
             windowTP = windowTP + localWindowTP
             windowFN = windowFN + localWindowFN
             windowFP = windowFP + localWindowFP
 
 
             # Plot performance evaluation
-            [window_precision, window_sensitivity, window_accuracy] = evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
+            [window_precision, window_sensitivity, window_accuracy] = \
+            evalf.performance_evaluation_window(windowTP, windowFN, windowFP)
     
     print("meanTime", totalTime/len(dataset))
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
-    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy, window_sensitivity]
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, \
+             window_precision, window_accuracy, window_sensitivity]
 
 
 def convertBBFormat(bb_list):
@@ -197,8 +202,8 @@ if __name__ == '__main__':
     # read arguments
     from main import CONSOLE_ARGUMENTS
     use_dataset = CONSOLE_ARGUMENTS.use_dataset
-    images_dir = CONSOLE_ARGUMENTS.im_directory         # Directory with input images and annotations
-    output_dir = CONSOLE_ARGUMENTS.out_directory        # Directory where to store output masks, etc. For instance '~/m1-results/week1/test'
+    images_dir = CONSOLE_ARGUMENTS.im_directory        
+    output_dir = CONSOLE_ARGUMENTS.out_directory        
     pixel_method =  CONSOLE_ARGUMENTS.pixel_selector
     print(images_dir,output_dir,pixel_method)
     window_method = 'None'
