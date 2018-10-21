@@ -117,6 +117,8 @@ def boundingBox_ccl(im):
 
 def boundingBox_sw(im):
     # window with anchor on top left point
+    from main import CONSOLE_ARGUMENTS
+    sw_size = CONSOLE_ARGUMENTS.window_size
     bb_list = list()
     n, m = im.shape
     sw_size = 45 #args Dani needed
@@ -136,7 +138,8 @@ def boundingBox_sw_integrate(im):
     bb_list = list()
     n, m = im.shape
     mask = im[:,:]/255
-    sw_size = 45 #args Dani needed
+    from main import CONSOLE_ARGUMENTS
+    sw_size = CONSOLE_ARGUMENTS.window_size
     step = 8
     ii = np.zeros((n,m))
     s = np.zeros((n,m))
@@ -162,7 +165,8 @@ def boundingBox_sw_conv(im):
     # window with anchor on top left point
     bb_list = list()
     n, m = im.shape
-    sw_size = 45 #args Dani needed
+    from main import CONSOLE_ARGUMENTS
+    sw_size = CONSOLE_ARGUMENTS.window_size
     step = 1
 
     a = cv.filter2D(im, cv.CV_32F, np.ones((1,sw_size)),borderType=cv.BORDER_CONSTANT)

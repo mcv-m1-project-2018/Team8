@@ -53,8 +53,8 @@ def parse_arguments():
                         help="Bounding Box extractor type", type=str, default=None)
     tsd_args.add_argument("-wf", "--window", dest="window_filter",nargs='+',
                         help="Window Filtering method", type=str, default=None)
-    tsd_args.add_argument("-swsize", "--sliding_window_size", dest="window_size",action="store_true",
-                        help="Size of sliding window", default=False)
+    tsd_args.add_argument("-swsize", "--sliding_window_size", dest="window_size",type=int,
+                        help="Size of sliding window", default=45)
     tsd_args.add_argument("-rbbs", "--reduce_bb", dest="reduce_bbs",action="store_true",
                         help="Reduce Bounding Boxes size?", default=False)
     tsd_args.add_argument("-vi", "--view_images", dest="view_imgs",action="store_true",

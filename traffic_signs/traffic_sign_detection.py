@@ -83,7 +83,8 @@ def get_pixel_candidates(filepath):
     im_out_path_name = fd + "/" + "mask."+base+".png"
     pkl_out_path_name = fd + "/" + "mask."+base+".pkl"
     imageio.imwrite(im_out_path_name, np.uint8(np.round(rgb_msk)))
-    pkl_bb_list = convertBBFormat(bb_list)
+    pkl_bb_list = None
+    if(bb_list is not None): pkl_bb_list = convertBBFormat(bb_list)
     pckl_file = open(pkl_out_path_name,"wb")
     pckl.dump(pkl_bb_list,pckl_file)
     pckl_file.close()
