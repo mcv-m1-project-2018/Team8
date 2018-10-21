@@ -121,8 +121,7 @@ def boundingBox_sw(im):
     sw_size = CONSOLE_ARGUMENTS.window_size
     bb_list = list()
     n, m = im.shape
-    sw_size = 45 #args Dani needed
-    step = 8
+    step = 1
     for x in range(0, m-sw_size, step):
         for y in range(0, n-sw_size, step):
             #print(x,x+sw_size,y,y+sw_size) #The output coordinates are given as x1,x2,y1,y2
@@ -140,7 +139,7 @@ def boundingBox_sw_integrate(im):
     mask = im[:,:]/255
     from main import CONSOLE_ARGUMENTS
     sw_size = CONSOLE_ARGUMENTS.window_size
-    step = 8
+    step = 1
     ii = np.zeros((n,m))
     s = np.zeros((n,m))
     for y in range(0, n):

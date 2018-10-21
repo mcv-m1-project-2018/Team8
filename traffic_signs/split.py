@@ -3,7 +3,7 @@ from numpy import mean
 from metrics import get_dictionary
 
 def divide_training_validation_SL(signal_list):
-	random.seed(1)
+	# random.seed(1)
 	signal_sorted = sorted(signal_list, key=lambda x: x.pixels, reverse=True)
 	first = 0
 	last = 10
