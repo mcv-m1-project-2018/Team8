@@ -3,7 +3,7 @@
 ## Introduction
 This project aims to select pixel candidates taking into account only the color of certain pixels without going further (no neighbourhood color analysis). You can select many different colorspaces and correct the color in different ways in order to improve statistical results (precission, accuracy, specificity, sensitivity, F1-measure).
 
-To run the projectuse:
+To run the project use:
 ```bash
 python main.py [options]
 ```
@@ -16,15 +16,16 @@ Default values of Training and Dataset paths are `./Dataset/train` and `./Datase
 Using `-ttsd` you can activate the module that directly extracts the pixel candidates. It will automatically show the results of candidates in the Training dataset.
 
 #### Used dataset
-You can change the dataset with `-ud` or `--use_dataset` flag, adding `training`, `validation` or `test` to select different datasets. If you select the TEST dataset this will automatically save the results in `./Dataset/test`. You can change the output directory with `-outdir OUTPUT_PATH` flag.
+The dataset can be changed with using `-ud` or `--use_dataset` flag, adding `training`, `validation` or `test` to select different datasets. If you select the TEST dataset this will automatically save the results in `./Dataset/test`. You can change the output directory with `-outdir OUTPUT_PATH` flag.
 
 #### Select Candidates ####
 You can control diferent predefined thresholds and how the pixel candidates are selected.
+
 ##### Color Mask #####
-With `-ps [rgb|luv|hsv|hsv-rgb|lab|luv-rgb|GW-luv-rgb|luv-hsv|normRGB-luv-rgb]` you can change the pixel selector (mask creation) that is specially handpicked for each colorspace. Note that some pixel selector has preprocess of the image in it. 
+With `-ps [rgb|luv|hsv|hsv-rgb|lab|luv-rgb|GW-luv-rgb|luv-hsv|normRGB-luv-rgb]` the pixel selector (mask creation) can be changed, which is specially handpicked for each colorspace. Note that some pixel selector has preprocess of the image in it. 
 
 ##### Image Preprocess #####
-You can add more preprocess steps using the flag `-pps [PREPROCESS [PREPROCESS [...]]`. Where `PREPROCESS` can be `[neutralize|grayWorld|whitePatch|normrgb|blur]`. 
+More preprocess steps can be added using the flag `-pps [PREPROCESS [PREPROCESS [...]]`. Where `PREPROCESS` can be `[neutralize|grayWorld|whitePatch|normrgb|blur]`. 
 
 ##### Morphology #####
 Different sets of morphology operations can be controled with `-m [MORPHOLOGY [MORPHOLOGY [...]]`, where `MORPHOLOGY` can be `[m1]`.
@@ -43,16 +44,16 @@ Once the image is binarized, small and odd objects can be deleted using Sliding 
 
 ## Test Modules 
 #### Metrics
-You can see an analysis of annotation features (task 1) activating the `-tm` flag.
+An analysis of annotation features (task 1) can be seen by activating the `-tm` flag.
 
 #### Split
-You can se an analysis of the split in Training and Validation datasets using `-ts`.
+An analysis of the split in Training and Validation datasets can be seen by using `-ts`.
 
 #### Traffic Sign Detection
-You can se an analysis of the split in Training and Validation datasets using `-ttsd`.
+An analysis of the split in Training and Validation datasets can be seen by using `-ttsd`.
 
 #### Histograms
-You can analyze the histogram of every type of signal (A,B,C,D,E,F) in different colorspaces (using the `-ps` flag) and different color preprocess (using `-pps` flag) in the Histogram Module. To activate this module you have to use `-hist` flag. 
+The histogram of every type of signal (A,B,C,D,E,F) can be analyzed in different colorspaces (using the `-ps` flag) and different color preprocess (using `-pps` flag) in the Histogram Module. To activate this module you have to use `-hist` flag. 
 
 # Examples
 Examples of code can be:
