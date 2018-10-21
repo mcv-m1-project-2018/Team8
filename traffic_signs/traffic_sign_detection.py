@@ -149,6 +149,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     
     for signal_path in tqdm(dataset_paths, ascii=True, desc="Calculating Statistics"):
         rgb_mask, bb_list = get_pixel_candidates(signal_path)
+        bb_list = convertBBFormat(bb_list)
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
         # Accumulate pixel performance of the current image #################
@@ -162,7 +163,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
         
         [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
 
-        if window_method != 'None':
+        if(bb_list != None):
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
             [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(bb_list, window_annotationss)
@@ -177,6 +178,14 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     print("meanTime", totalTime/len(dataset))
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
     return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
+
+
+def convertBBFormat(bb_list):
+    out_list = list()
+    for x,y,w,h in bb_list:
+        out_list.append([x,y,x+w,y+h])
+    return out_list
+
 
 if __name__ == '__main__':
     # read arguments
