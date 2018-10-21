@@ -177,7 +177,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     
     print("meanTime", totalTime/len(dataset))
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
-    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy, window_sensitivity]
 
 
 def convertBBFormat(bb_list):

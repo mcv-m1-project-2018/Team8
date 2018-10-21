@@ -193,7 +193,6 @@ def switch_method(im, method, reduce_bbs=True):
         'swi': boundingBox_sw_integrate,
         'swconv': boundingBox_sw_conv
     }
-    start = time.time()
     # Get the function from switcher dictionary
     if method is not None:
         if not isinstance(method, list):
@@ -202,6 +201,5 @@ def switch_method(im, method, reduce_bbs=True):
             func = switcher_bb.get(preproc, lambda: "Invalid bounding box")
             bb_list = func(im)
             if(reduce_bbs): bb_list = reduce_winds_sizes(bb_list, im)
-    print("\n time = ", time.time()-start)
     return bb_list
 
