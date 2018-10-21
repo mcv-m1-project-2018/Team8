@@ -20,12 +20,12 @@ def masks_rgb(im, rest=0):
     # filter for red signals:
     mskr = image[:,:,0] > 70
     mskr = mskr*(image[:,:,1] < 50-rest)
-    mskr = mskr*(image[:,:,2] < 50+rest)
+    mskr = mskr*(image[:,:,2] < 50-rest)
 
     #blue colored signals
     mskb = image[:,:,0] < 50
     mskb = mskb*(image[:,:,1] < 100-rest)
-    mskb = mskb*(image[:,:,2] > 60+rest)
+    mskb = mskb*(image[:,:,2] > 60-rest)
 
     return mskr, mskb
 
