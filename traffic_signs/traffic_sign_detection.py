@@ -84,12 +84,16 @@ def get_pixel_candidates(filepath):
 
     if(view_img):
         pc_copy = msk.copy()
+        immask = np.dstack([pc_copy]*3)*im
         if(pc_copy.max() == 1): pc_copy*=255
         if(bb_list is not None):
             for x,y,w,h in bb_list:
                 cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+                cv.rectangle(immask,(x,y),(x+w,y+h),(200,0,0),2)
         small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
+        small_im = cv.resize(immask, (0,0), fx=0.5, fy=0.5)
         cv.imshow('window1',small_pc)
+        cv.imshow('imres',small_im)
         
         k = cv.waitKey()
         if k==27: # Esc key to stop
