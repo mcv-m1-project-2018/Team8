@@ -12,6 +12,7 @@ To install the project just clone the repository and use python (3.6 or 3.7) to 
 python main.py [options]
 ```
 With the options you can activate or deactivate different modules and/or change variables. Main features are explained in Options section.
+**The code execution has been resumed in the examples section (see the final section of the README.md).**
 ## Options
 ### Datasets
 Default values of Training and Dataset paths are `./Dataset/train` and `./Dataset/test`. You can change dirs with `-imdir TRAINING_PATH` or `-testdir TEST_PATH` flags respectively.
