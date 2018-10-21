@@ -86,7 +86,7 @@ def mask_lab(im):
 
     return mskr, mskb
 
-def mask_hsv(im, rect=0):
+def mask_hsv(im, rect_down=0, rect_up=0):
     """
     Performs HSV pixel candidate selection
     * Inputs:
@@ -109,8 +109,11 @@ def mask_hsv(im, rect=0):
 
     hsv_im = color.rgb2hsv(im)
 
-    mask_red = (((hsv_im[:,:,0] < 0.027+rect) | (hsv_im[:,:,0] > 0.93-rect)))
-    mask_blue = ((hsv_im[:,:,0] > 0.55-rect) & (hsv_im[:,:,0] < 0.75+rect))
+    mask_red = (((hsv_im[:,:,0] < 0.027+rect_down) | (hsv_im[:,:,0] > 0.93+rect_up)))
+    mask_red = mask_red & (hsv_im[:,:,1] > 0.27)
+    mask_red = mask_red & (hsv_im[:,:,2] > 0.19)
+    
+    mask_blue = ((hsv_im[:,:,0] > 0.55+rect_down) & (hsv_im[:,:,0] < 0.75+rect_up))
 
 
     return mask_red, mask_blue
@@ -223,7 +226,7 @@ def candidate_generation_pixel_luvb_hsvr(im):
     return mskb+mskr
 
 def candidate_generation_pixel_luvb_hsvr2(im): 
-    mskr, _ = mask_hsv(im, -0.01)
+    mskr, _ = mask_hsv(im, -0.00, +0.06)
     _ , mskb = mask_luv(im, -15)
     return mskb+mskr
 def candidate_generation_pixel_normrgb_luvb_rgbr(im):

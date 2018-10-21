@@ -90,13 +90,17 @@ def get_pixel_candidates(filepath):
 
     if(view_img):
         pc_copy = msk.copy()
+        immask = np.dstack([pc_copy]*3)*im
         if(pc_copy.max() == 1): pc_copy*=255
         if(bb_list is not None):
             for x,y,w,h,name in bb_class_list:
                 cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
+                cv.rectangle(immask,(x,y),(x+w,y+h),(200,0,0),2)
                 cv.putText(pc_copy,name,(x,y), cv.QT_FONT_NORMAL, 1,(150,150,150),2,cv.LINE_AA)
         small_pc = cv.resize(pc_copy, (0,0), fx=0.5, fy=0.5)
+        small_im = cv.resize(immask, (0,0), fx=0.5, fy=0.5)
         cv.imshow('window1',small_pc)
+        cv.imshow('imres',small_im)
         
         k = cv.waitKey()
         if k==27: # Esc key to stop
