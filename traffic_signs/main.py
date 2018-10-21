@@ -51,8 +51,10 @@ def parse_arguments():
                         help="Morphology method", type=str, default=None)
     tsd_args.add_argument("-bb", "--bounding_box", dest="boundingBox",nargs='+',
                         help="Bounding Box extractor type", type=str, default=None)
-    tsd_args.add_argument("-w", "--window", dest="window_filter",nargs='+',
+    tsd_args.add_argument("-wf", "--window", dest="window_filter",nargs='+',
                         help="Window Filtering method", type=str, default=None)
+    tsd_args.add_argument("-swsize", "--sliding_window_size", dest="window_size",action="store_true",
+                        help="Size of sliding window", default=False)
     tsd_args.add_argument("-rbbs", "--reduce_bb", dest="reduce_bbs",action="store_true",
                         help="Reduce Bounding Boxes size?", default=False)
     tsd_args.add_argument("-vi", "--view_images", dest="view_imgs",action="store_true",
@@ -99,18 +101,22 @@ def main():
         if(use_dataset in ["training","validation"]):
             #Carregar variables
             #Executar funció
-            pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy =\
+            pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy, window_sensitivity =\
             traffic_sign_detection_test(images_dir, output_dir, pixel_method, window_method, use_dataset=use_dataset)
             
             #Printar resultats
             pixel_fmeasure = 2*((pixel_precision*pixel_sensitivity)/(pixel_precision+pixel_sensitivity))
+            window_fmeasure = 2*((window_precision*window_sensitivity)/(window_precision+window_sensitivity))
             print("Pixel Precision:\t", "{0:.1f}".format(pixel_precision*100),end='%\n')
             print("Pixel Accuracy: \t", "{0:.1f}".format(pixel_accuracy*100),end='%\n')
             print("Pixel specificity:\t","{0:.1f}".format(pixel_specificity*100),end='%\n')
             print("Pixel sensitivity:\t","{0:.1f}".format(pixel_sensitivity*100),end='%\n')
             print("Pixel F1-Measure:\t","{0:.1f}".format(pixel_fmeasure*100),end='%\n')
+            print("\n")
             print("Window Precision:\t","{0:.1f}".format(window_precision*100),end='%\n')
             print("Window accuracy:\t","{0:.1f}".format(window_accuracy*100),end='%\n' )
+            print("Window sensitivity:\t","{0:.1f}".format(window_sensitivity*100),end='%\n' )
+            print("Window F1-Measure:\t","{0:.1f}".format(window_fmeasure*100),end='%\n' )
         else:
             print("Performing TSD with",use_dataset,"dataset")
             traffic_sign_detection(images_dir, output_dir, pixel_method, window_method)

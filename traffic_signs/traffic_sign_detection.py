@@ -19,8 +19,6 @@ import evaluation.evaluation_funcs as evalf
 from metrics import get_dictionary
 from split import divide_training_validation_SL
 
-from argparse import ArgumentParser
-
 from tqdm import tqdm
 
 from preprocess import preprocess_image
@@ -31,6 +29,7 @@ from window_filter import filter_windows
 from template_matching import template_matching
 
 import cv2 as cv
+
 
 def msk2rgb(msk):
     msk = msk.astype('uint8')
@@ -85,6 +84,7 @@ def get_pixel_candidates(filepath):
 
     if(view_img):
         pc_copy = msk.copy()
+        if(pc_copy.max() == 1): pc_copy*=255
         if(bb_list is not None):
             for x,y,w,h in bb_list:
                 cv.rectangle(pc_copy,(x,y),(x+w,y+h),(200,0,0),2)
@@ -149,6 +149,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     
     for signal_path in tqdm(dataset_paths, ascii=True, desc="Calculating Statistics"):
         rgb_mask, bb_list = get_pixel_candidates(signal_path)
+        bb_list = convertBBFormat(bb_list)
         _, name = signal_path.rsplit('/', 1)
         base, extension = os.path.splitext(name)
         # Accumulate pixel performance of the current image #################
@@ -162,7 +163,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
         
         [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity] = evalf.performance_evaluation_pixel(pixelTP, pixelFP, pixelFN, pixelTN)
 
-        if window_method != 'None':
+        if(bb_list != None):
             # Accumulate object performance of the current image ################
             window_annotationss = load_annotations('{}/gt/gt.{}.txt'.format(directory, base))
             [localWindowTP, localWindowFN, localWindowFP] = evalf.performance_accumulation_window(bb_list, window_annotationss)
@@ -176,7 +177,15 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
     
     print("meanTime", totalTime/len(dataset))
     print("pixelTP", pixelTP, "\t", pixelFP, "\t", pixelFN)
-    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy]
+    return [pixel_precision, pixel_accuracy, pixel_specificity, pixel_sensitivity, window_precision, window_accuracy, window_sensitivity]
+
+
+def convertBBFormat(bb_list):
+    out_list = list()
+    for x,y,w,h in bb_list:
+        out_list.append([x,y,x+w,y+h])
+    return out_list
+
 
 if __name__ == '__main__':
     # read arguments
