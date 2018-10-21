@@ -66,20 +66,47 @@ You can se an analysis of the split in Training and Validation datasets using `-
 You can analyze the histogram of every type of signal (A,B,C,D,E,F) in different colorspaces (using the `-ps` flag) and different color preprocess (using `-pps` flag) in the Histogram Module. To activate this module you have to use `-hist` flag. 
 
 ## Examples
-Examples of code can be:
+In the following subsections, some examples of the code execution ar given. These examples are based in the best methods of the week 2 delivery.
 
-### Example 1
-Saving results of `luv-rgb` with `blur` and `grayWorld` preprocesses using the `test` dataset. 
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.1/0.86_TRUE
+
 
 ```bash
-python main.py -ttsd -ud test -ps luv-rgb -pps blur grayWorld
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.1 -nar_2 0.86
 ```
 
-## Example 2
-Example 1 with only 100 files and using morphology method 1, and window generator method 1.
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.86/0.83_TRUE
+
 ```bash
-python main.py -ttsd -nf 100 -ps luv-rgb -pps blur -m m1 -w m1
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.86 -nar_2 0.83
 ```
 
-## Example 3
-Example 2 with ... add more examples for our beloved readers!
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.83/0.86_TRUE
+Example of test execution of week 2 deliver from the command line.
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.1 -nar_2 0.86
+```
+
+### luv-hsv_['blur', 'blur']_['m1']_['ccl']_False_['m3']
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-hsv -pps blur blur -m m1 -bb ccl -w m3
+```
+
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3
+```
+
+### luv-rgb3_['blur', 'blur']_['m3']_['ccl']_False_['m3']
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb3 -pps blur blur -m m3 -bb ccl -w m3
+```
+
+### luv-hsv_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.86/0.83_TRUE
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-hsv -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.86 -nar_2 0.83
+```
