@@ -27,10 +27,13 @@ def template_matching_with_metrics(mask, bb_list):
         bb_classified.append((x,y,w,h,nameType))
     return bb_classified
 
-def template_matching_with_correlation(mask, bb_list):
+def template_matching_with_correlation(mask, bb_list, non_affinity_removal=False):
     """
     bb_classified = list of (x,y,w,h,type)
     """
+    from main import CONSOLE_ARGUMENTS
+    thr1 = CONSOLE_ARGUMENTS.non_affinity_removal1
+    thr2 = CONSOLE_ARGUMENTS.non_affinity_removal2
     index2Class = {0:"A",1:"B",2:"CDE",3:"F"}
     bb_classified = list()
     for x,y,w,h in bb_list:
@@ -46,14 +49,23 @@ def template_matching_with_correlation(mask, bb_list):
         out_CDE = cv.matchTemplate(window,CDE_template,cv.TM_CCORR_NORMED)
         out_A = cv.matchTemplate(window,A_template,cv.TM_CCORR_NORMED)
         out_B = cv.matchTemplate(window,B_template,cv.TM_CCORR_NORMED)
-        nameType = index2Class[np.argmax([out_A,out_B,out_CDE,out_F])]
-        bb_classified.append((x,y,w,h,nameType))
+#        print("Result:", out_F, out_CDE,out_A,out_B)
+        maximum = np.max([out_A,out_B,out_CDE,out_F])
+        if(non_affinity_removal and (h < 60 or w < 60) and maximum < thr1):
+            mask[y:y+h,x:x+w] = np.zeros((h,w))
+        elif(non_affinity_removal and maximum < thr2 and len(bb_list) > 1):
+            mask[y:y+h,x:x+w] = np.zeros((h,w))
+#            print("deleted:", (x,y,w,h))
+        else:
+            nameType = index2Class[np.argmax([out_A,out_B,out_CDE,out_F])]
+            bb_classified.append((x,y,w,h,nameType))
 
     return bb_classified
 
-def template_matching(im, bb_list):
+def template_matching(im, bb_list, non_affinity_removal=False):
     modImage = im[:,:]
     bb_class_list = None
     if(bb_list is not None):
-        bb_class_list = template_matching_with_correlation(modImage,bb_list)
+        bb_class_list = template_matching_with_correlation(modImage,bb_list, \
+                                                           non_affinity_removal=non_affinity_removal)
     return bb_class_list

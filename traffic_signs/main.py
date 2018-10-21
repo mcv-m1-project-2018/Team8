@@ -59,6 +59,12 @@ def parse_arguments():
                         help="Reduce Bounding Boxes size?", default=False)
     tsd_args.add_argument("-vi", "--view_images", dest="view_imgs",action="store_true",
                         help="View images?", default=False)
+    tsd_args.add_argument("-nar", "--non_affinity_removal", dest="non_affinity_removal",action="store_true",
+                        help="Delete objects that doesn't look like any signal?", default=False)
+    tsd_args.add_argument("-nar_1", "--non_affinity_removal_arg1", dest="non_affinity_removal1",type=int,
+                        help="Threshold to delete low affinity in small signals", default=0.86)
+    tsd_args.add_argument("-nar_2", "--non_affinity_removal_arg2", dest="non_affinity_removal2",type=int,
+                        help="Threshold to delete low affinity in small signals", default=0.83)
 
 
     general_args.add_argument("-nf", "--numberFiles", dest="numFiles", type=int,

@@ -32,6 +32,8 @@ import cv2 as cv
 import pickle as pckl
 import time
 
+import glob 
+
 def msk2rgb(msk):
     msk = msk.astype('uint8')
     # pixel_candidates = remove_small_noise(pixel_candidates)
@@ -56,7 +58,9 @@ def get_pixel_candidates(filepath):
     reduce_bbs = CONSOLE_ARGUMENTS.reduce_bbs
     window_filter = CONSOLE_ARGUMENTS.window_filter
     view_img = CONSOLE_ARGUMENTS.view_imgs
+    nar = CONSOLE_ARGUMENTS.non_affinity_removal
     
+    print("FILEPATH:",filepath)
     _, name = filepath.rsplit('/', 1)
     base, extension = os.path.splitext(name)
     imageNameFile = directory + "/" + base+extension
@@ -68,7 +72,7 @@ def get_pixel_candidates(filepath):
     bb_list = generate_windows(msk, boundingBox, reduce_bbs=reduce_bbs)
     msk, bb_list = filter_windows(bb_list, msk, window_filter)
     rgb_msk = msk2rgb(msk)
-    bb_class_list = template_matching(msk, bb_list)
+    bb_class_list = template_matching(msk, bb_list, nar)
     
     output_dir_selector = output_dir+"/"+pixel_selector
     args_tuple = (pixel_selector, preprocess, morphology, boundingBox, reduce_bbs, window_filter)
@@ -84,7 +88,7 @@ def get_pixel_candidates(filepath):
     pkl_out_path_name = fd + "/" + "mask."+base+".pkl"
     imageio.imwrite(im_out_path_name, np.uint8(np.round(rgb_msk)))
     pkl_bb_list = None
-    if(bb_list is not None): pkl_bb_list = convertBBFormat(bb_list)
+    if(bb_class_list is not None): pkl_bb_list = convertBBFormat(bb_class_list)
     pckl_file = open(pkl_out_path_name,"wb")
     pckl.dump(pkl_bb_list,pckl_file)
     pckl_file.close()
@@ -107,12 +111,17 @@ def get_pixel_candidates(filepath):
         if k==27: # Esc key to stop
             exit()
                 
-    return msk, bb_list
+    return msk, bb_class_list
 
     
 def traffic_sign_detection(directory, output_dir, pixel_method, window_method):
     file_names = sorted(fnmatch.filter(os.listdir(directory), '*.jpg'))
+    file_names = glob.glob(directory+"/*.jpg")
+    print("DIRECTORY:", directory)
+    
     for filepath in tqdm(file_names, ascii=True, desc="Generating masks"):
+        base, name = filepath.split("\\")
+        filepath=base+"/"+name
         rgb_mask, __ = get_pixel_candidates(filepath)
 
 def traffic_sign_detection_test(directory, output_dir, pixel_method, window_method, use_dataset="training"):
@@ -204,7 +213,7 @@ def traffic_sign_detection_test(directory, output_dir, pixel_method, window_meth
 
 def convertBBFormat(bb_list):
     out_list = list()
-    for x,y,w,h in bb_list:
+    for x,y,w,h,__ in bb_list:
         out_list.append([y,x,y+h,x+w])
     return out_list
 
