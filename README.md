@@ -1,4 +1,4 @@
-# Team 8 Module 1 repository
+# Team 8 Module 1 repository [OUTDATED]
 
 ## Introduction
 This project aims to select pixel candidates taking into account only the color of certain pixels without going further (no neighbourhood color analysis). You can select many different colorspaces and correct the color in different ways in order to improve statistical results (precission, accuracy, specificity, sensitivity, F1-measure).
