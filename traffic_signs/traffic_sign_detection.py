@@ -59,6 +59,8 @@ def get_pixel_candidates(filepath):
     window_filter = CONSOLE_ARGUMENTS.window_filter
     view_img = CONSOLE_ARGUMENTS.view_imgs
     nar = CONSOLE_ARGUMENTS.non_affinity_removal
+    nar1 = CONSOLE_ARGUMENTS.non_affinity_removal1
+    nar2 = CONSOLE_ARGUMENTS.non_affinity_removal2
     
 #    print("FILEPATH:",filepath)
     _, name = filepath.rsplit('/', 1)
@@ -79,7 +81,12 @@ def get_pixel_candidates(filepath):
     fd = '{}/'.format(output_dir_selector)
     for arg in args_tuple:
         fd+='{}_'.format(arg)
-    fd = fd[:-1]
+    if(nar):
+#        print("WTFFFF:",'{}'.format(nar1)+"/"+"{}".format(nar2)+"_TRUE")
+        fd+='{}'.format(nar1)+"-"+"{}".format(nar2)+"_TRUE"
+#        print("WTFx2:", fd)
+    else:
+        fd = fd[:-1]
 #    print("----------")
 #    print(fd)
     if not os.path.exists(fd):

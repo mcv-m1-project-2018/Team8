@@ -61,9 +61,9 @@ def parse_arguments():
                         help="View images?", default=False)
     tsd_args.add_argument("-nar", "--non_affinity_removal", dest="non_affinity_removal",action="store_true",
                         help="Delete objects that doesn't look like any signal?", default=False)
-    tsd_args.add_argument("-nar_1", "--non_affinity_removal_arg1", dest="non_affinity_removal1",type=int,
+    tsd_args.add_argument("-nar_1", "--non_affinity_removal_arg1", dest="non_affinity_removal1",type=float,
                         help="Threshold to delete low affinity in small signals", default=0.86)
-    tsd_args.add_argument("-nar_2", "--non_affinity_removal_arg2", dest="non_affinity_removal2",type=int,
+    tsd_args.add_argument("-nar_2", "--non_affinity_removal_arg2", dest="non_affinity_removal2",type=float,
                         help="Threshold to delete low affinity in small signals", default=0.83)
 
 
