@@ -5,13 +5,14 @@
 Project 1 aims to create a program capable of detect traffic signs in the road at real-time using classical computer vision tecniques.
 
 ## Install
-This project requires opencv, qt, matplotlib, numpy.
+This project requires opencv, matplotlib, numpy, **tqdm** and skimage.
 
-To install the project just clone the repo and use python (2.7) to run:
+To install the project just clone the repository and use python (3.6 or 3.7) to run:
 ```bash
 python main.py [options]
 ```
 With the options you can activate or deactivate different modules and/or change variables. Main features are explained in Options section.
+**The code execution has been resumed in the examples section (see the final section of the README.md).**
 ## Options
 ### Datasets
 Default values of Training and Dataset paths are `./Dataset/train` and `./Dataset/test`. You can change dirs with `-imdir TRAINING_PATH` or `-testdir TEST_PATH` flags respectively.
@@ -44,6 +45,13 @@ Once the image is binarized, small and odd objects can be deleted using Sliding 
 `-mkdir MASK_DIR_PATH` GT masks.
 `-gtdir ANNOTATIONS_PATH` path where you extract the annotation text files.
 `-outdir OUTPUT_PATH` output results path.
+`-wf WINDOW` Window filtering method.
+`-swsize SLIDING_WINDOW_SIZE` Size of the sliding window.
+`-rbbs REDUCE_BB` Reduce Bounding Boxes size.
+`-vi VIEW_IMAGES` View images?
+`-nar NON_AFFINITY_REMOVAL` Delete objects that doesn't look like any signal?
+`-nar_1 NON_AFFINITY_REMOVAL_ARG1` Threshold to delete low affinity in small signals.
+`-nar_2 NON_AFFINITY_REMOVAL_ARG2` Threshold to delete low affinity in big signals. 
 
 ## Test Modules 
 #### Metrics
@@ -59,20 +67,47 @@ You can se an analysis of the split in Training and Validation datasets using `-
 You can analyze the histogram of every type of signal (A,B,C,D,E,F) in different colorspaces (using the `-ps` flag) and different color preprocess (using `-pps` flag) in the Histogram Module. To activate this module you have to use `-hist` flag. 
 
 ## Examples
-Examples of code can be:
+In the following subsections, some examples of the code execution ar given. These examples are based in the best methods of the week 2 delivery.
 
-### Example 1
-Saving results of `luv-rgb` with `blur` and `grayWorld` preprocesses using the `test` dataset. 
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.1/0.86_TRUE
+
 
 ```bash
-python main.py -ttsd -ud test -ps luv-rgb -pps blur grayWorld
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.1 -nar_2 0.86
 ```
 
-## Example 2
-Example 1 with only 100 files and using morphology method 1, and window generator method 1.
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.86/0.83_TRUE
+
 ```bash
-python main.py -ttsd -nf 100 -ps luv-rgb -pps blur -m m1 -w m1
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.86 -nar_2 0.83
 ```
 
-## Example 3
-Example 2 with ... add more examples for our beloved readers!
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.83/0.86_TRUE
+Example of test execution of week 2 deliver from the command line.
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.1 -nar_2 0.86
+```
+
+### luv-hsv_['blur', 'blur']_['m1']_['ccl']_False_['m3']
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-hsv -pps blur blur -m m1 -bb ccl -w m3
+```
+
+### luv-rgb4_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb4 -pps blur blur blur -m m1 -bb ccl -w m3
+```
+
+### luv-rgb3_['blur', 'blur']_['m3']_['ccl']_False_['m3']
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-rgb3 -pps blur blur -m m3 -bb ccl -w m3
+```
+
+### luv-hsv_['blur', 'blur', 'blur']_['m1']_['ccl']_False_['m3']_0.86/0.83_TRUE
+
+```bash
+python main.py -ttsd -imdir ./Dataset/test -ud test -ps luv-hsv -pps blur blur blur -m m1 -bb ccl -w m3 -nar -nar_1 0.86 -nar_2 0.83
+```
