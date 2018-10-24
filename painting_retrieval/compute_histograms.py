@@ -19,7 +19,11 @@ def subImageHistograms(image, subdivision, colorSpace="RGB"):
     imageHist = list()
     for i in range(subdivision):
         for j in range(subdivision):
-            subImage = image[floor(i*(w/subdivision)):floor((i+1)*(w/subdivision)),floor(j*(h/subdivision)):floor((j+1)*(h/subdivision)),:]
+            x1 = floor(i*(w/subdivision))
+            y1 = floor(j*(h/subdivision))
+            x2 = floor((i+1)*(w/subdivision))
+            y2 = floor((j+1)*(h/subdivision))
+            subImage = image[x1:x2,y1:y2,:]
             imageHist.append(generateHistograms(subImage, colorSpace))
     return imageHist
     
