@@ -16,6 +16,7 @@ def evaluate(t_bins, q_bins, eval_type):
                 "hist_intersect": hist_int,
                 "kernhell": kernhell
                 }
+                
     #ERROR CHECK
     if(eval_type not in switcher.keys()):
         raise(ValueError("Evaluation type does not correspond with any known \
