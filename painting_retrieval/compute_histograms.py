@@ -6,14 +6,16 @@ from configobj import ConfigObj
 import os
 from math import floor
 
-def pyramidHistograms(image, levels, colorSpace="RGB"):
+HIST_NAMES = ["simple", "subimage", "pyramid"]
+
+def pyramidHistograms(image, binNum, levels, colorSpace="RGB"):
     imageHist = list()
     for i in range(1,levels):
-        imageHist.append(subImageHistograms(image,2**i, colorSpace))
+        imageHist.append(subImageHistograms(image, binNum, 2**i, colorSpace))
     return imageHist
 
 
-def subImageHistograms(image, subdivision, colorSpace="RGB"):
+def subImageHistograms(image, binNum, subdivision, colorSpace="RGB"):
     w, h, _ = image.shape
     print(w,h)
     imageHist = list()
@@ -25,13 +27,13 @@ def subImageHistograms(image, subdivision, colorSpace="RGB"):
             y2 = floor((j+1)*(h/subdivision))
             
             subImage = image[x1:x2,y1:y2,:]
-            hist = generateHistogram(subImage, colorSpace)
+            hist = generateHistogram(subImage, binNum, colorSpace)
             
             imageHist.append(hist)
     return imageHist
     
 
-def generateHistogram(image, colorSpace="RGB"):
+def generateHistogram(image, binNum, colorSpace="RGB"):
     """
     Plots histograms in the color space selected of all the signals pixels values.
     Main use for profiling mask margins
@@ -59,7 +61,7 @@ def generateHistogram(image, colorSpace="RGB"):
 
     imageHist = []
     for i in range(3):
-        histr = cv.calcHist(image, [i], None, [60], [0, 256])
+        histr = cv.calcHist(image, [i], None, [binNum], [0, 256])
         imageHist.append(histr)
     return imageHist
 
@@ -94,20 +96,24 @@ def processHistogram(file_names, imPath, config):
     hist_mode = config['Histograms']['histogram_mode']
     subdivision = config.get('Histograms').as_int('subdivision')
     levels = config.get('Histograms').as_int('levels')
+    bin_num = config.get('Histograms').as_int('bin_num')
 
     print(color_space)    
     histAll = list()
+    if(hist_mode not in HIST_NAMES):
+        raise(ValueError("Hist mode ot recognized", hist_mode, \
+                         " VS. ", HIST_NAMES))
     for name in file_names[:-1]:
 
         imageNameFile = imPath + "/" + name
         image = cv.imread(imageNameFile)
 
         if(hist_mode == "simple"):
-            imageHist = generateHistograms(image, color_space)
+            imageHist = generateHistogram(image, bin_num, color_space)
         elif(hist_mode == "subimage"):
-            imageHist = subImageHistograms(image, subdivision, color_space)
+            imageHist = subImageHistograms(image, bin_num, subdivision, color_space)
         elif(hist_mode == "pyramid"):
-            imageHist = pyramidHistograms(image, levels, color_space)
+            imageHist = pyramidHistograms(image, bin_num, levels, color_space)
         histAll.append(imageHist)
     
     if(config.get('Histograms').as_bool('visualize')):
