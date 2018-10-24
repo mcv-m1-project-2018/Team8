@@ -9,7 +9,7 @@ from math import floor
 def pyramidHistograms(image, levels, colorSpace="RGB"):
     imageHist = list()
     for i in range(1,levels):
-        imageHist.append(subImageHistograms(image,2*i, colorSpace))
+        imageHist.append(subImageHistograms(image,2**i, colorSpace))
     return imageHist
 
 
@@ -23,12 +23,15 @@ def subImageHistograms(image, subdivision, colorSpace="RGB"):
             y1 = floor(j*(h/subdivision))
             x2 = floor((i+1)*(w/subdivision))
             y2 = floor((j+1)*(h/subdivision))
+            
             subImage = image[x1:x2,y1:y2,:]
-            imageHist.append(generateHistograms(subImage, colorSpace))
+            hist = generateHistogram(subImage, colorSpace)
+            
+            imageHist.append(hist)
     return imageHist
     
 
-def generateHistograms(image, colorSpace="RGB"):
+def generateHistogram(image, colorSpace="RGB"):
     """
     Plots histograms in the color space selected of all the signals pixels values.
     Main use for profiling mask margins
