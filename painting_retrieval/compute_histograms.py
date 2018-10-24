@@ -2,11 +2,9 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 import pickle
-import fnmatch
-import os
 from configobj import ConfigObj
 
-def generateHistograms(imPath, colorSpace="RGB"):
+def generateHistograms(file_names, colorSpace="RGB"):
     """
     Plots histograms in the color space selected of all the signals pixels values.
     Main use for profiling mask margins
@@ -17,7 +15,6 @@ def generateHistograms(imPath, colorSpace="RGB"):
     *Outputs:
     - None
     """
-    file_names = (fnmatch.filter(os.listdir(imPath), '*.jpg'))
 
     histAll = list()
     for name in file_names[:-1]:
@@ -72,15 +69,14 @@ def visualizeHistogram(histogram):
         # plt.savefig(directory + "/norm_" + titles[j] + ".png")
 
 
-def processHistogram(config):
+def processHistogram(file_names, config):
     """
     Performs every colorspace histogram
     """
-    museum_set_random = config['Directories']['imdir_in']
     color_space = config['Histograms']['color_space']
 
     print(color_space)
-    histograms = generateHistograms(museum_set_random, color_space)
+    histograms = generateHistograms(file_names, color_space)
     if(config['Histograms']['visualize']):
         visualizeHistogram([histograms[0]])
     return histograms
