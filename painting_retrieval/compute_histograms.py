@@ -4,6 +4,25 @@ from matplotlib import pyplot as plt
 import pickle
 from configobj import ConfigObj
 import os
+from math import floor
+
+def pyramidHistograms(image, levels, colorSpace="RGB"):
+    imageHist = list()
+    for i in range(1,levels):
+        imageHist.append(subImageHistograms(image,2*i, colorSpace))
+    return imageHist
+
+
+def subImageHistograms(image, subdivision, colorSpace="RGB"):
+    w, h, _ = image.shape
+    print(w,h)
+    imageHist = list()
+    for i in range(subdivision):
+        for j in range(subdivision):
+            subImage = image[floor(i*(w/subdivision)):floor((i+1)*(w/subdivision)),floor(j*(h/subdivision)):floor((j+1)*(h/subdivision)),:]
+            imageHist.append(generateHistograms(subImage, colorSpace))
+    return imageHist
+    
 
 def generateHistograms(image, colorSpace="RGB"):
     """
@@ -66,21 +85,22 @@ def processHistogram(file_names, imPath, config):
     """
     color_space = config['Histograms']['color_space']
     hist_mode = config['Histograms']['histogram_mode']
+    subdivision = config.get('Histograms').as_int('subdivision')
+    levels = config.get('Histograms').as_int('levels')
 
     print(color_space)    
     histAll = list()
     for name in file_names[:-1]:
-        base, extension = os.path.splitext(name)
 
         imageNameFile = imPath + "/" + name
         image = cv.imread(imageNameFile)
 
         if(hist_mode == "simple"):
             imageHist = generateHistograms(image, color_space)
-        elif(hist_mode == "subimag4e"):
-            pass
+        elif(hist_mode == "subimage"):
+            imageHist = subImageHistograms(image, subdivision, color_space)
         elif(hist_mode == "pyramid"):
-            pass
+            imageHist = pyramidHistograms(image, levels, color_space)
         histAll.append(imageHist)
     
     if(config.get('Histograms').as_bool('visualize')):
