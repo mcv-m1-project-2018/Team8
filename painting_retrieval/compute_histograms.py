@@ -6,7 +6,7 @@ import fnmatch
 import os
 from configobj import ConfigObj
 
-def visualizeHistograms(imPath, colorSpace="RGB"):
+def generateHistograms(imPath, colorSpace="RGB"):
     """
     Plots histograms in the color space selected of all the signals pixels values.
     Main use for profiling mask margins
@@ -47,37 +47,40 @@ def visualizeHistograms(imPath, colorSpace="RGB"):
             histr = cv.calcHist(image, [i], None, [60], [0, 256])
             imageHist.append(histr)
         histAll.append(imageHist)
-    print(histAll)
-    # for j, imageHist in enumerate(histAll):
-        # color = ('b', 'g', 'r')
-        # plt.figure()
-        # plt.title(file_names[j])
-        # plt.ioff()
-        # for i, col in enumerate(color):
-            # plt.plot(imageHist[i], color=col)
-            # plt.xlim([0, 60])
-            # plt.show()
+    return histAll
+
+
+def visualizeHistogram(histogram):
+    for j, imageHist in enumerate(histogram):
+        color = ('b', 'g', 'r')
+        plt.figure()
+        plt.title("histogram")
+        plt.ioff()
+        for i, col in enumerate(color):
+            plt.subplot(2,2,i+1)
+            plt.plot(imageHist[i], color=col)
+            plt.xlim([0, 60])
+        plt.subplot(2,2,4)
+        for i, col in enumerate(color):
+            plt.plot(imageHist[i], color=col)
+            plt.xlim([0, 60])
+        plt.show()
+
         # directory = dir + "/" + colorSpace
         # if not os.path.exists(directory):
-        #    os.makedirs(directory)
+        # os.makedirs(directory)
         # plt.savefig(directory + "/norm_" + titles[j] + ".png")
 
 
-def do_hists():
+def processHistogram(config):
     """
     Performs every colorspace histogram
     """
-    config = ConfigObj('./Test.config')
     museum_set_random = config['Directories']['imdir_in']
-    color_space = config['color_space']
-    # if color_space == None:
-        # color_space = ["RGB", "LAB", "Luv", "HSL", "HSV", "Yuv", "XYZ", "YCrCb"]
+    color_space = config['Histograms']['color_space']
 
-    # for color in color_space:
     print(color_space)
-    visualizeHistograms(museum_set_random, color_space)
-
-
-# if __name__ == '__main__':
-    # do_hists()
-
+    histograms = generateHistograms(museum_set_random, color_space)
+    if(config['Histograms']['visualize']):
+        visualizeHistogram([histograms[0]])
+    return histograms
