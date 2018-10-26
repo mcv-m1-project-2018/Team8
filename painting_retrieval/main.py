@@ -1,6 +1,7 @@
 from configobj import ConfigObj
 from compute_histograms import processHistogram
 from compare_images import evaluateQueryTest
+from evaluate_query import evaluate_prediction
 import fnmatch
 import os
 import matplotlib.pyplot as plt
@@ -10,8 +11,14 @@ import numpy as np
 def main():
     config = ConfigObj('./Test.config')
 
-    numTrain = config.as_int('numTrain') if(config.as_int('numTrain') != -1) else None
-    numQueries = config.as_int('numQueries') if(config.as_int('numTrain') != -1) else None
+    if(config.as_int('numTrain') != -1):
+        numTrain = config.as_int('numTrain')
+    else:
+        numTrain = None
+    if(config.as_int('numQueries') != -1):
+        numQueries = config.as_int('numQueries')
+    else:
+        numQueries = None
     
     train_path = config['Directories']['imdir_train']
     file_train_names = (fnmatch.filter(os.listdir(train_path), '*.jpg'))[:numTrain]
@@ -21,6 +28,10 @@ def main():
     
     histogram_mode = config['Histograms']['histogram_mode'] 
 
+    color_list = ["rgb", "LAB", "Luv", "HSL", "HSV", "Yuv", "XYZ", "YCrCb"]
+
+    # for color_space in color_list:
+    #     config['Histograms']['color_space'] = color_space
     histograms_train = processHistogram(file_train_names,train_path, config)
     histograms_query = processHistogram(file_query_names,query_path, config)
 
@@ -44,6 +55,8 @@ def main():
                 key = cv.waitKey()
                 if(key == 27): #ESC for exit
                     break
+
+    evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k)
     
     print()
 

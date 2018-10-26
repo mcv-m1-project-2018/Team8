@@ -1,6 +1,7 @@
 
 from evaluation_histograms import evaluateHistograms, evaluatesubImageHistograms, evaluatePyramidHistograms
 import numpy as np 
+from tqdm import tqdm
 
 def evaluateQuery(t_img_list, q_img, eval_method, hist_meth):
     distance_list = []
@@ -18,7 +19,7 @@ def evaluateQuery(t_img_list, q_img, eval_method, hist_meth):
 def evaluateQueryTest(t_img_list, q_img_list, k, eval_method, hist_method):
     similarity = []
     distAllList = list()
-    for query_img in q_img_list:
+    for query_img in tqdm(q_img_list):
         dist_list = evaluateQuery(t_img_list, query_img, eval_method, hist_method)
         
         #Get k-images' index with highest similarity

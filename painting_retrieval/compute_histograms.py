@@ -5,19 +5,20 @@ import pickle
 from configobj import ConfigObj
 import os
 from math import floor
+from tqdm import tqdm
 
 HIST_NAMES = ["simple", "subimage", "pyramid"]
 
 def pyramidHistograms(image, binNum, levels, colorSpace="RGB"):
     imageHist = list()
-    for i in range(1,levels):
+    for i in range(0,levels):
         imageHist.append(subImageHistograms(image, binNum, 2**i, colorSpace))
     return imageHist
 
 
 def subImageHistograms(image, binNum, subdivision, colorSpace="RGB"):
     w, h, _ = image.shape
-    print(w,h)
+    # print(w,h)
     imageHist = list()
     for i in range(subdivision):
         for j in range(subdivision):
@@ -103,7 +104,7 @@ def processHistogram(file_names, imPath, config):
     if(hist_mode not in HIST_NAMES):
         raise(ValueError("Hist mode ot recognized", hist_mode, \
                          " VS. ", HIST_NAMES))
-    for name in file_names[:-1]:
+    for name in tqdm(file_names):
 
         imageNameFile = imPath + "/" + name
         image = cv.imread(imageNameFile)
