@@ -88,7 +88,6 @@ def visualizeHistogram(histogram):
         # os.makedirs(directory)
         # plt.savefig(directory + "/norm_" + titles[j] + ".png")
 
-
 def processHistogram(file_names, imPath, config):
     """
     Performs every colorspace histogram
