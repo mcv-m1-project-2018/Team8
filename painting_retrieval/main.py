@@ -30,35 +30,33 @@ def main():
 
     color_list = ["rgb", "LAB", "Luv", "HSL", "HSV", "Yuv", "XYZ", "YCrCb"]
 
-    # for color_space in color_list:
-    #     config['Histograms']['color_space'] = color_space
-    histograms_train = processHistogram(file_train_names,train_path, config)
-    histograms_query = processHistogram(file_query_names,query_path, config)
+    for color_space in color_list:
+        config['Histograms']['color_space'] = color_space
+        histograms_train = processHistogram(file_train_names,train_path, config)
+        histograms_query = processHistogram(file_query_names,query_path, config)
 
 
-    k = config.get('Evaluate').as_int('k')
-    eval_method = config['Evaluate']['eval_method']
+        k = config.get('Evaluate').as_int('k')
+        eval_method = config['Evaluate']['eval_method']
 
 
-    distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
+        distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
 
-    if(config.get('Visualization').as_bool("enabled")):
-        # fig, axs = plt.subplots(1,2)
-        for x in range(len(file_query_names)):
-            q_img = cv.imread(query_path+file_query_names[x])
-            # axs[0].imshow(q_img)
-            cv.imshow("query",q_img)
-            for y in range(k):
-                t_img = cv.imread(train_path+file_train_names[index_similarity[x][y]])
-                # axs[1].imshow(t_img)
-                cv.imshow("result",t_img)
-                key = cv.waitKey()
-                if(key == 27): #ESC for exit
-                    break
+        if(config.get('Visualization').as_bool("enabled")):
+            # fig, axs = plt.subplots(1,2)
+            for x in range(len(file_query_names)):
+                q_img = cv.imread(query_path+file_query_names[x])
+                # axs[0].imshow(q_img)
+                cv.imshow("query",q_img)
+                for y in range(k):
+                    t_img = cv.imread(train_path+file_train_names[index_similarity[x][y]])
+                    # axs[1].imshow(t_img)
+                    cv.imshow("result",t_img)
+                    key = cv.waitKey()
+                    if(key == 27): #ESC for exit
+                        break
 
-    evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k)
-    
-    print()
+        print(evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k))
 
 
 

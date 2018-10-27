@@ -18,4 +18,4 @@ def evaluate_prediction(query_path, file_query_names, train_path, file_train_nam
         predicted_list.append(subpredicted_list)
 
     
-    print(mapk(query_list, predicted_list, k))
+    return mapk(query_list, predicted_list, k)
