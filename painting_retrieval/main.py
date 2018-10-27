@@ -3,6 +3,7 @@ from compute_histograms import processHistogram
 from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
+from compute_granulometry import processGranulometry
 import fnmatch
 import os
 import matplotlib.pyplot as plt
@@ -58,21 +59,29 @@ def main():
     # config['Histograms']['color_space'] = color_space
 
     if(config['mode']== "histogram"):
-        histograms_train = processHistogram(file_train_names,train_path, config)
-        histograms_query = processHistogram(file_query_names,query_path, config)
+        histograms_train = processHistogram(file_train_names, train_path, config)
+        histograms_query = processHistogram(file_query_names, query_path, config)
 
-        k = config.get('Evaluate').as_int('k')
-        eval_method = config['Evaluate']['eval_method']
-
-        distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
 
     elif(config['mode']== "wavelet"):
         level = config.get('Wavelets').as_int('levels')
         method = config['Wavelets']['method']
-        wave_train = processWavelets(train_path,file_train_names,level,method)
-        wave_query = processWavelets(query_path,file_query_names,level,method)
 
-        print()
+        histograms_train = processWavelets(train_path, file_train_names, level, method)
+        histograms_query = processWavelets(query_path, file_query_names, level, method)
+
+    elif(config['mode']== "granulometry"):
+        bin_num = config.get('Granulometry').as_int('bin_num')
+        visualize = config.get('Granulometry').as_bool('visualize')
+
+        histograms_train = processGranulometry(file_train_names, train_path, bin_num, visualize)
+        histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
+
+    k = config.get('Evaluate').as_int('k')
+    eval_method = config['Evaluate']['eval_method']
+
+    distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
+
 
 
     if(config.get('Visualization').as_bool("enabled")):
