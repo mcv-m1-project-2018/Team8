@@ -63,6 +63,7 @@ def generateHistogram(image, binNum, colorSpace="RGB"):
     imageHist = []
     for i in range(3):
         histr = cv.calcHist(image, [i], None, [binNum], [0, 256])
+        histr = [x[0] for x in histr]
         imageHist.append(histr)
     return imageHist
 

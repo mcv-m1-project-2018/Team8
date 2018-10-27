@@ -13,7 +13,7 @@ def evaluateQuery(t_img_list, q_img, eval_method, hist_meth):
             dist = evaluatesubImageHistograms(t_image, q_img, eval_method)
         elif(hist_meth == "pyramid"):
             dist = evaluatePyramidHistograms(t_image, q_img, eval_method)
-        distance_list.append(dist[0])
+        distance_list.append(dist)
     return distance_list
 
 def evaluateQueryTest(t_img_list, q_img_list, k, eval_method, hist_method):
