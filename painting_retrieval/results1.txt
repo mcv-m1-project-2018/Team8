@@ -34,6 +34,17 @@ YCrCb 0.6722222222222222
 
 
 
+pyramid, 5 levels, 15 images, x_sq
+rgb 0.7
+LAB 0.7333333333333333
+Luv 0.8
+HSL 0.63
+HSV 0.6133333333333333
+Yuv 0.7666666666666667
+XYZ 0.6833333333333333
+YCrCb 0.7666666666666667
+
+
 pyramid, 4 levels, 15 images, hist_intersect
 rgb 0.0
 LAB 0.0
