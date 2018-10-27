@@ -8,6 +8,7 @@ import os
 import matplotlib.pyplot as plt
 import cv2 as cv
 import numpy as np
+import pickle as pckl
 
 def visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity):
     for x in range(len(file_query_names)):
@@ -19,6 +20,16 @@ def visualizeQueryResults(query_path,file_query_names, train_path, file_train_na
             key = cv.waitKey()
             if(key == 27): #ESC for exit
                 break
+
+def getNamesBySimilarity(file_train_names, index_similarity ):
+    similarityNames = []
+    for image_list in index_similarity:
+        similarityByQuery = []
+        for i in image_list:
+            similarityByQuery.append(file_train_names[i])
+        similarityNames.append(similarityByQuery)
+    return similarityNames
+
 
 
 def main():
@@ -68,7 +79,15 @@ def main():
         visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity)
 
 
-    print(evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k))
+    print("The Results for the query are",evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k))
+
+    if(config.get('Save_Pickle').as_bool('save')):
+        save_path = config['Save_Pickle']['pathOut'] + "_" + config['mode'] + config['Histograms']['histogram_mode'] + config['Histograms']['color_space'] + ".pkl"
+        nameList = getNamesBySimilarity(file_train_names,index_similarity)
+
+        pckl_file = open(save_path,"wb")
+        pckl.dump(nameList,pckl_file)
+        pckl_file.close()
 
 
 
