@@ -1,5 +1,6 @@
 from configobj import ConfigObj
 from compute_histograms import processHistogram
+from preprocess_histograms import preprocessAllHistograms
 from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
@@ -61,7 +62,10 @@ def main():
     if(config['mode']== "histogram"):
         histograms_train = processHistogram(file_train_names, train_path, config)
         histograms_query = processHistogram(file_query_names, query_path, config)
-
+        preproc_mode = config['Histograms']['preprocess']
+        if(preproc_mode  is not "None"):
+            histograms_train = preprocessAllHistograms(histograms_train,preproc_mode)
+            histograms_train = preprocessAllHistograms(histograms_train,preproc_mode)
 
     elif(config['mode']== "wavelet"):
         level = config.get('Wavelets').as_int('levels')

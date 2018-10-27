@@ -6,31 +6,42 @@ Created on Sat Oct 27 13:23:01 2018
 """
 
 import cv2 as cv
+from tqdm import tqdm 
+import numpy as np
 
 def equalization(hist):
 #    cv.NormalizeHist(hist, factor)
-    cdf = hist.cumsum()
-    cdf_normalized = cdf * hist.max()/ cdf.max()
-    return cdf_normalized
+    for i, ch in enumerate(hist):
+        minel = sum(ch) // len(ch)
+        minel = minel.astype(np.int)
+        numex = sum(ch) - minel * len(ch)
+        numex = numex.astype(np.int)
+        hist[i] = [minel+1] * numex + [minel] * (len(ch) - numex)
+#        cdf = ch.cumsum()
+#        cdf_normalized = cdf * ch.max()/ cdf.max()
+    return hist
 
-def correlation(hist1, hist2):
-    pass
-def preprocess(hist1, hist2, mode):
-    switcher = {"equalize": equalization,
-                "equalization": equalization,
-                "correlate":    correlation,
-                "correlation":  correlation
+def normalization(hist):
+    for i, ch in enumerate(hist):
+        hist[i] = [float(i)/sum(ch) for i in ch]
+    return hist
+
+def preprocess(hist, mode):
+    switcher = {equalization:["equalize","equalization","eq", "equal"],
+                normalization:["normalize","normalization","norm", "normal"]
                 }
     
-    
     if mode is not None:
-        if not isinstance(mode, list):
-            mode = list(mode)
+        if not (isinstance(mode, list)):
+            mode = [mode]
         for preproc in mode:
-            if(preproc in ["equalize","equalization"]):
-                hist1 = equalization(hist1)
-                hist2 = equalization(hist2)
-            elif(preproc in ["correlate","correlation"]):
-                hist1, hist2 = correlation(hist1, hist2)
+            for func, names in switcher.items():
+                if(preproc in names):
+                    hist = func(hist)
                 
-    return hist1, hist2
+    return hist
+
+def preprocessAllHistograms(histList, mode):
+    for i, hist in enumerate(histList):
+        histList[i] = preprocess(hist, mode)
+    return histList
