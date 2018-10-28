@@ -9,7 +9,7 @@ This project requires opencv, pywt, matplotlib, numpy, **tqdm**, cv2, pickle, fn
 
 To install the project just clone the repository and use python (3.6 or 3.7) to run:
 ```bash
-python main.py [options]
+python main.py
 ```
 ## Options
 ### Datasets
