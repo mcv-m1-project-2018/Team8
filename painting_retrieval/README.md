@@ -1,4 +1,4 @@
-# Project 1: Traffic Sign Detection
+# Project 2: Image retrieval system
 
 [![alt text](http://www.cvc.uab.es/wp-content/uploads/2016/07/copy-logo3.svg "Centre de Visió per Computador")](http://cvc.cat/)
 
