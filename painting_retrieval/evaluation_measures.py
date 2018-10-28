@@ -10,10 +10,10 @@ def        L1(t, q): return abs(t - q)
 def      x_sq(t, q): return pow(t - q, 2) / ((t + q) if t+q else 1)
 def  hist_int(t, q): return min(t, q)
 def  kernhell(t, q): return t*q
-def bhattacharyya(t,q): return cv2.compareHist(t, q, cv2.CV_COMP_BHATTACHARYYA)
+def bhattacharyya(t,q): return cv2.compareHist(t, q, cv2.HISTCMP_BHATTACHARYYA)
 def  x_sq_alt(t,q): return cv2.compareHist(t, q, cv2.HISTCMP_CHISQR_ALT)
-def    kl_div(t,q): 
-    return cv2.compareHist(t, q, cv2.HISTCMP_KL_DIV)
+def    kl_div(t,q): return cv2.compareHist(t, q, cv2.HISTCMP_KL_DIV)
+def correlate(t,q): return cv2.compareHist(t, q, cv2.HISTCMP_CORREL)
 
 def evaluate(t_bins, q_bins, eval_type):
     #INITIALIZATION
@@ -24,7 +24,8 @@ def evaluate(t_bins, q_bins, eval_type):
                 "kernhell": kernhell,
                 "bhattacharyya":bhattacharyya,
                 "x_sq_alt":x_sq_alt,
-                "kl_div":kl_div
+                "kl_div":kl_div,
+                "correlate": correlate
                 }
                 
     #ERROR CHECK
@@ -39,7 +40,7 @@ def evaluate(t_bins, q_bins, eval_type):
     
     #SUMATORY
     dist = 0
-    if(eval_type not in ["bhattacharyya","x_sq_alt","kl_div"]):
+    if(eval_type not in ["bhattacharyya","x_sq_alt","kl_div","correlate"]):
         for i in range(len(t_bins)):
             dist += switcher[eval_type](t_bins[i], q_bins[i])
     else:

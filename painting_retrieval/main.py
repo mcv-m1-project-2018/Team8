@@ -100,7 +100,7 @@ def main():
         hmode= config['Histograms']['histogram_mode']
         cs = config['Histograms']['color_space']
         bins = config['Histograms']['bin_num']
-        evalm = config['Histograms']['eval_method']
+        evalm = config['Evaluate']['eval_method']
         if(hmode in ["pyramid","pyramidFast"]):
             levels = config['Histograms']['levels']
             hmode = str(levels) + hmode
