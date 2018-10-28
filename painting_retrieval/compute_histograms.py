@@ -7,28 +7,78 @@ import os
 from math import floor
 from tqdm import tqdm
 
-HIST_NAMES = ["simple", "subimage", "pyramid"]
+HIST_NAMES = ["simple", "subimage", "pyramid", "pyramidFast"]
 
 def pyramidHistograms(image, binNum, levels, colorSpace="RGB"):
     imageHist = list()
     for i in range(0,levels):
-        imageHist.append(subImageHistograms(image, binNum, 2**i, colorSpace))
+        subHists = subImageHistograms(image, binNum, 2**i, colorSpace=colorSpace)
+        imageHist.append(subHists)
     return imageHist
 
-
+def accBackpropagationHistograms(image, binNum, levels, colorSpace="RGB"):
+    def accBack(histsIndexed, level):
+        hi = histsIndexed
+        subLvlHists = dict()
+        for x in range(0, level, 2):
+            for y in range(0, level, 2):
+                newHist = hi[(x,y)] + hi[(x,y+1)] + hi[(x+1,y)] + hi[(x+1,y+1)]
+                subLvlHists[(int(x/2), int(y/2))] = newHist
+        return subLvlHists
+    
+    def getOrderedHist(subHistsDict, lvl):
+        orderedHists = list()
+        for x in range(lvl):
+            for y in range(lvl):
+                orderedHists.append(subHistsDict[(x,y)])
+        return orderedHists
+        
+#    w, h, _ = image.shape
+    imageHist = list()
+    hasFinished = False
+    level = levels
+    subHists = subImageHistogramsIndexed(image, binNum, 2**level, colorSpace=colorSpace)
+    
+    while(not hasFinished):
+        orderedHistList = getOrderedHist(subHists, 2**level)
+        imageHist.append(orderedHistList)
+        subHists = accBack(subHists, 2**level)
+        level-=1
+        hasFinished = (len(subHists) == 1)
+    imageHist = [subHists[(0,0)]] + imageHist
+    return imageHist[::-1]
+        
+            
+def subImageHistogramsIndexed(image, binNum, subdivision, colorSpace="RGB"):
+    w, h, _ = image.shape
+    # print(w,h)
+    imageHist = dict()
+    for i in range(subdivision):
+        x1 = floor(i*(w/subdivision))
+        x2 = floor((i+1)*(w/subdivision))
+        for j in range(subdivision):
+            y1 = floor(j*(h/subdivision))
+            y2 = floor((j+1)*(h/subdivision))
+            
+            subImage = image[x1:x2,y1:y2,:]
+            hist = generateHistogram(subImage, binNum, colorSpace=colorSpace)
+            
+            imageHist[(i, j)] = hist
+    return imageHist
+   
 def subImageHistograms(image, binNum, subdivision, colorSpace="RGB"):
     w, h, _ = image.shape
     # print(w,h)
     imageHist = list()
     for i in range(subdivision):
+        x1 = floor(i*(w/subdivision))
+        x2 = floor((i+1)*(w/subdivision))
         for j in range(subdivision):
-            x1 = floor(i*(w/subdivision))
             y1 = floor(j*(h/subdivision))
-            x2 = floor((i+1)*(w/subdivision))
             y2 = floor((j+1)*(h/subdivision))
             
             subImage = image[x1:x2,y1:y2,:]
-            hist = generateHistogram(subImage, binNum, colorSpace)
+            hist = generateHistogram(subImage, binNum, colorSpace=colorSpace)
             
             imageHist.append(hist)
     return imageHist
@@ -94,10 +144,10 @@ def processHistogram(file_names, imPath, config):
     Performs every colorspace histogram
     """
     color_space = config['Histograms']['color_space']
-    hist_mode = config['Histograms']['histogram_mode']
+    hist_mode   = config['Histograms']['histogram_mode']
     subdivision = config.get('Histograms').as_int('subdivision')
-    levels = config.get('Histograms').as_int('levels')
-    bin_num = config.get('Histograms').as_int('bin_num')
+    levels      = config.get('Histograms').as_int('levels')
+    bin_num     = config.get('Histograms').as_int('bin_num')
 
     print(color_space)    
     histAll = list()
@@ -115,6 +165,8 @@ def processHistogram(file_names, imPath, config):
             imageHist = subImageHistograms(image, bin_num, subdivision, color_space)
         elif(hist_mode == "pyramid"):
             imageHist = pyramidHistograms(image, bin_num, levels, color_space)
+        elif(hist_mode == "pyramidFast"):
+            imageHist = accBackpropagationHistograms(image,bin_num, levels, color_space)
         histAll.append(imageHist)
     
     if(config.get('Histograms').as_bool('visualize')):
