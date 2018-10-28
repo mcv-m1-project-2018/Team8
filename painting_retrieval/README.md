@@ -30,8 +30,8 @@ After processing the histograms, an evaluation is needed. The file evaluation_hi
 ### Evaluation measures
 In the evaluation_measures.py file, different image measures have been computed: euclidean, L1, x_sq, hist_int, kernhell, bhattacharyya, x_sq_alt, kl_div and correlate.
 
-#### Compare images
+### Compare images
 The compare_images.py file compares the histograms of two images according to the histogram mode. The query_devel_random and museum_set_random images are compared. This allows us to choose the best evaluation method to apply for the query_test_random images folder.
 
-#### Evaluate Query
+### Evaluate Query
 The evaluate_query.py file includes a dictionary with the image correspondance between the query_devel_random and the museum_set_random images. With this, the precision of the images comparison and selection is computed.
