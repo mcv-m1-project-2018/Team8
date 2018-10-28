@@ -2,7 +2,7 @@
 
 [![alt text](http://www.cvc.uab.es/wp-content/uploads/2016/07/copy-logo3.svg "Centre de Visió per Computador")](http://cvc.cat/)
 
-Project 1 aims to create a program capable of detect traffic signs in the road at real-time using classical computer vision tecniques.
+The goal of this project is to learn the basic concepts and techniques to build a simple query by example retrieval system for finding paintings in a museum image collection.
 
 ## Install
 This project requires opencv, pywt, matplotlib, numpy, **tqdm**, cv2, pickle, fnmatch, configobj, os, math and ml_metrics.
