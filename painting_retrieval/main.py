@@ -95,7 +95,16 @@ def main():
     print("The Results for the query are",evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k))
 
     if(config.get('Save_Pickle').as_bool('save')):
-        save_path = config['Save_Pickle']['pathOut'] + "_" + config['mode'] + config['Histograms']['histogram_mode'] + config['Histograms']['color_space'] + ".pkl"
+        pout = config['Save_Pickle']['pathOut']
+        mode = config['mode']
+        hmode= config['Histograms']['histogram_mode']
+        cs = config['Histograms']['color_space']
+        bins = config['Histograms']['bin_num']
+        if(hmode in ["pyramid","pyramidFast"]):
+            levels = config['Histograms']['levels']
+            hmode = str(levels) + hmode
+        save_path = pout + "_" + mode + hmode + cs + str(bins) +"bins" + "_"+".pkl"
+        print("FILENAME:", save_path)
         nameList = getNamesBySimilarity(file_train_names,index_similarity)
 
         pckl_file = open(save_path,"wb")

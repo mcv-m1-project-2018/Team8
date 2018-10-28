@@ -10,9 +10,10 @@ def        L1(t, q): return abs(t - q)
 def      x_sq(t, q): return pow(t - q, 2) / ((t + q) if t+q else 1)
 def  hist_int(t, q): return min(t, q)
 def  kernhell(t, q): return t*q
-def bhattacharyya(t,q):return cv2.CompareHist(t, q, cv2.CV_COMP_BHATTACHARYYA)
-def  x_sq_alt(t,q):return cv2.CompareHist(t, q, cv2.HISTCMP_CHISQR_ALT)
-def    kl_div(t,q):return cv2.CompareHist(t, q, cv2.HISTCMP_KL_DIV)
+def bhattacharyya(t,q): return cv2.compareHist(t, q, cv2.CV_COMP_BHATTACHARYYA)
+def  x_sq_alt(t,q): return cv2.compareHist(t, q, cv2.HISTCMP_CHISQR_ALT)
+def    kl_div(t,q): 
+    return cv2.compareHist(t, q, cv2.HISTCMP_KL_DIV)
 
 def evaluate(t_bins, q_bins, eval_type):
     #INITIALIZATION
@@ -20,7 +21,10 @@ def evaluate(t_bins, q_bins, eval_type):
                 "L1": L1,
                 "x_sq": x_sq,
                 "hist_intersect": hist_int,
-                "kernhell": kernhell
+                "kernhell": kernhell,
+                "bhattacharyya":bhattacharyya,
+                "x_sq_alt":x_sq_alt,
+                "kl_div":kl_div
                 }
                 
     #ERROR CHECK
@@ -35,9 +39,12 @@ def evaluate(t_bins, q_bins, eval_type):
     
     #SUMATORY
     dist = 0
-    for i in range(len(t_bins)):
-        dist += switcher[eval_type](t_bins[i], q_bins[i])
-    
+    if(eval_type not in ["bhattacharyya","x_sq_alt","kl_div"]):
+        for i in range(len(t_bins)):
+            dist += switcher[eval_type](t_bins[i], q_bins[i])
+    else:
+        dist = switcher[eval_type](t_bins, q_bins)
+        
     #SQRT
     if(eval_type in ["euclidean", "kernhell"]):
         dist = np.sqrt(dist)
