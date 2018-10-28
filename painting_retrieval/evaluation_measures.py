@@ -43,7 +43,7 @@ def evaluate(t_bins, q_bins, eval_type):
         for i in range(len(t_bins)):
             dist += switcher[eval_type](t_bins[i], q_bins[i])
     else:
-        dist = switcher[eval_type](t_bins, q_bins)
+        dist = switcher[eval_type](np.array(t_bins), np.array(q_bins))
         
     #SQRT
     if(eval_type in ["euclidean", "kernhell"]):

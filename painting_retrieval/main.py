@@ -100,10 +100,11 @@ def main():
         hmode= config['Histograms']['histogram_mode']
         cs = config['Histograms']['color_space']
         bins = config['Histograms']['bin_num']
+        evalm = config['Histograms']['eval_method']
         if(hmode in ["pyramid","pyramidFast"]):
             levels = config['Histograms']['levels']
             hmode = str(levels) + hmode
-        save_path = pout + "_" + mode + "_"+ hmode + "_"+ cs + "_"+ str(bins) +"bins" +".pkl"
+        save_path = pout + evalm +"_" + mode + "_"+ hmode + "_"+ cs + "_"+ str(bins) +"bins" +".pkl"
         print("FILENAME:", save_path)
         nameList = getNamesBySimilarity(file_train_names,index_similarity)
 
