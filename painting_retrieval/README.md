@@ -16,7 +16,7 @@ python main.py [options]
 Default values of Training and Dataset paths are `./Dataset/museum_set_random`, `./Dataset/query_devel_random` and `./Dataset/query_test_random`. You can change dirs in the Test.config file.
 
 ### Test configuration
-The Test.config file stores all the arguments for running the program. If the names/values are changed in this file, the code will be run with them.
+The Test.config file stores all the arguments for running the program. If the names/values are changed in this file, the code will be run with that configuration.
 
 ### Compute histograms
 The file compute_histograms.py generates pyramidal histograms, per channel histograms and block-based histograms (subimage).
