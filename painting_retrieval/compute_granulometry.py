@@ -22,7 +22,7 @@ def visualizeHistogram(histogram,bin_num):
 
 def calculateGranulometry(image, bin_num):
     img = image[:,:,:]
-    if(img.shape[2] >1):
+    if(img.shape[2] >2):
         img = np.asarray(cv.cvtColor(img, cv.COLOR_BGR2GRAY),dtype='float')/255.0
 
 #    valueList = np.zeros(bin_num*2)

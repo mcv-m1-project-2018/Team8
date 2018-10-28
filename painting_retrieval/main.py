@@ -68,11 +68,12 @@ def main():
             histograms_train = preprocessAllHistograms(histograms_train,preproc_mode)
 
     elif(config['mode']== "wavelet"):
+        bin_num = config.get("Granulometry").as_int("bin_num")
         level = config.get('Wavelets').as_int('levels')
         method = config['Wavelets']['method']
 
         histograms_train = processWavelets(train_path, file_train_names, level, method)
-        histograms_query = processWavelets(query_path, file_query_names, level, method)
+        histograms_query = processWavelets(file_query_names, query_path, level, method)
 
     elif(config['mode']== "granulometry"):
         bin_num = config.get('Granulometry').as_int('bin_num')
