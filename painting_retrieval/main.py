@@ -103,7 +103,7 @@ def main():
         if(hmode in ["pyramid","pyramidFast"]):
             levels = config['Histograms']['levels']
             hmode = str(levels) + hmode
-        save_path = pout + "_" + mode + hmode + cs + str(bins) +"bins" + "_"+".pkl"
+        save_path = pout + "_" + mode + "_"+ hmode + "_"+ cs + "_"+ str(bins) +"bins" +".pkl"
         print("FILENAME:", save_path)
         nameList = getNamesBySimilarity(file_train_names,index_similarity)
 
