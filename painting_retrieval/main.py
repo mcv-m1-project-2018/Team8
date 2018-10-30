@@ -12,7 +12,7 @@ import cv2 as cv
 import numpy as np
 import pickle as pckl
 
-def visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity):
+def visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity, k):
     for x in range(len(file_query_names)):
         q_img = cv.imread(query_path+file_query_names[x])
         cv.imshow("query",q_img)
@@ -85,7 +85,7 @@ def main():
     k = config.get('Evaluate').as_int('k')
     eval_method = config['Evaluate']['eval_method']
 
-    distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
+    distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode, k)
 
 
 
