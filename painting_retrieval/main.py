@@ -1,10 +1,15 @@
 from configobj import ConfigObj
+
 from compute_histograms import processHistogram
 from preprocess_histograms import preprocessAllHistograms
 from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
 from compute_granulometry import processGranulometry
+
+from descriptors.extract import extract_all_features
+from descriptors.matching import matching_query
+
 import fnmatch
 import os
 import matplotlib.pyplot as plt
@@ -72,7 +77,7 @@ def main():
         level = config.get('Wavelets').as_int('levels')
         method = config['Wavelets']['method']
 
-        histograms_train = processWavelets(train_path, file_train_names, level, method)
+        histograms_train = processWavelets(file_train_names, train_path, level, method)
         histograms_query = processWavelets(file_query_names, query_path, level, method)
 
     elif(config['mode']== "granulometry"):
@@ -81,16 +86,23 @@ def main():
 
         histograms_train = processGranulometry(file_train_names, train_path, bin_num, visualize)
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
-
+    elif(config["mode"] == "features"):
+        descriptor = config["Features"]["descriptor"]
+        
+        kp_t, desc_t = extract_all_features(file_train_names, train_path, descriptor)
+        kp_q, desc_q = extract_all_features(file_query_names, query_path, descriptor)
+    
     k = config.get('Evaluate').as_int('k')
     eval_method = config['Evaluate']['eval_method']
 
-    distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode, k)
-
-
+    if(config['mode'] in ["granulometry", "histogram", "wavelet"]):
+        distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
+    else:
+        matching = config["Features"]["matching"]
+        matches = matching_query(desc_t, desc_q, matching)
 
     if(config.get('Visualization').as_bool("enabled")):
-        visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity)
+        visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity,k)
 
 
     print("The Results for the query are",evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k))
