@@ -105,10 +105,11 @@ def main():
         distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
     else:
         matching = config["Features"]["matching"]
-        all_matches = matching_query(desc_t, desc_q, matching)
-        for imageMatches in all_matches:
-            for match in imageMatches:
-                print(match.distance)
+        k_matching = config.get('Features').as_int('k')
+        distance_method = config["Features"]["distance"]
+
+        all_match, all_dist, index_similarity = matching_query(desc_t, desc_q, matching, distance_method, k=k_matching)
+
 
     if(config.get('Visualization').as_bool("enabled")):
         visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity,k)
