@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import cv2 as cv
+from tqdm import tqdm
 
 class azemar_create:
     def __init__(self):
@@ -21,11 +22,20 @@ def extract_features(img, descriptor, colorspace="gray"):
                 "LUCID":lib.LUCID_create,
                 "PCTSignaturesSQFD":lib.PCTSignaturesSQFD_create,
                 "PCTSignatures":lib.PCTSignatures_create,
-                "SIFT":lib.SIFT_create,
-                "SURF":lib.SURF_create,
                 "StarDetector":lib.StarDetector_create,
                 "VGG": lib.VGG_create,
-                "AZEMAR": azemar_create
+                "AZEMAR": azemar_create,
+                "Agast":cv.AgastFeatureDetector_create,
+                "FAST":cv.FastFeatureDetector_create,
+                "GFTT":cv.GFTTDetector_create,
+
+                "SIFT":lib.SIFT_create,
+                "SURF":lib.SURF_create,
+                "AKAZE":cv.AKAZE_create,
+                "BRISK":cv.BRISK_create,
+                "KAZE":cv.KAZE_create,
+                "MSER":cv.MSER_create,
+                "ORB":cv.ORB_create
             }
     descgen = switcher[descriptor]()
     kp,desc = descgen.detectAndCompute(img,None)
@@ -34,7 +44,7 @@ def extract_features(img, descriptor, colorspace="gray"):
 def extract_all_features(names,path, descriptor, colorspace="gray"):
     desc_all = []
     kp_all = []
-    for name in names:
+    for name in tqdm(names):
         img = cv.imread(path+name)
         kp, desc = extract_features(img, descriptor, colorspace=colorspace)
         desc_all.append(desc)

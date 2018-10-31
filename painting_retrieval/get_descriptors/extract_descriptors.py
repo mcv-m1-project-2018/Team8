@@ -14,10 +14,19 @@ def extract_features(img, descriptor, colorspace="gray"):
                 "LUCID":lib.LUCID_create,
                 "PCTSignaturesSQFD":lib.PCTSignaturesSQFD_create,
                 "PCTSignatures":lib.PCTSignatures_create,
+                "StarDetector":lib.StarDetector_create,
+                "VGG":lib.VGG_create,
+                
                 "SIFT":lib.SIFT_create,
                 "SURF":lib.SURF_create,
-                "StarDetector":lib.StarDetector_create,
-                "VGG":lib.VGG_create
+                "Agast":cv.AgastFeatureDetector_create,
+                "AKAZE":cv.AKAZE_create,
+                "BRISK":cv.BRISK_create,
+                "FAST":cv.FastFeatureDetector_create,
+                "GFTT":cv.GFTTDetector_create,
+                "KAZE":cv.KAZE_create,
+                "MSER":cv.MSER_create,
+                "ORB":cv.ORB_create
             }
     descgen = switcher[descriptor]
     kp,desc = descgen.detectAndCompute(img,None)
