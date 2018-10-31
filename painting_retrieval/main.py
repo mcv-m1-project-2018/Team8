@@ -6,8 +6,9 @@ from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
 from compute_granulometry import processGranulometry
-
-from descriptors.extract import extract_all_features
+    
+from descriptors.detect import detect_all_kp
+from descriptors.compute import compute_all_features
 from descriptors.matching import matching_query
 
 import fnmatch
@@ -87,10 +88,15 @@ def main():
         histograms_train = processGranulometry(file_train_names, train_path, bin_num, visualize)
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
-        descriptor = config["Features"]["descriptor"]
+        detector = config["Features"]["detect"]
+        kp_t = detect_all_kp(file_train_names, train_path, detector)
+        kp_q = detect_all_kp(file_query_names, query_path, detector)
         
-        kp_t, desc_t = extract_all_features(file_train_names, train_path, descriptor)
-        kp_q, desc_q = extract_all_features(file_query_names, query_path, descriptor)
+        computer = config["Features"]["compute"]
+        kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,  computer)
+        kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,  computer)
+
+        
     
     k = config.get('Evaluate').as_int('k')
     eval_method = config['Evaluate']['eval_method']
