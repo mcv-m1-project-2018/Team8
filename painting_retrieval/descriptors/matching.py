@@ -9,27 +9,31 @@ import statistics
 from tqdm import tqdm
 import numpy as np
 
-def imageSimilarityAdd(match_list):
-    return sum(x.distance for x in match_list)
+def imageSimilarityAdd(dist_list):
+    return sum(dist_list)
 
-def imageSimilarityAddK(match_list, k):
-    sortedList = sorted(match_list, key=lambda x: x.distance)
-    return imageSimilarityAdd(sortedList[:k])
+# def imageSimilarityAddK(match_list, k):
+#     sortedList = sorted(match_list, key=lambda x: x.distance)
+#     return imageSimilarityAdd(sortedList[:k])
 
-def imageSimilarityMean(match_list):
-    return statistics.mean(x.distance for x in match_list)
+def imageSimilarityMean(dist_list):
+    return statistics.mean(dist_list)
 
-def imageSimilarityMeanK(match_list, k):
-    sortedList = sorted(match_list, key=lambda x: x.distance)
-    statistics.mean(x.distance for x in sortedList[:k])
+# def imageSimilarityMeanK(match_list, k):
+#     sortedList = sorted(match_list, key=lambda x: x.distance)
+#     statistics.mean(x.distance for x in sortedList[:k])
+
+def imageSimilarityLen(dist_list):
+    return len(dist_list)
 
 
 matching_s = {
     "add": imageSimilarityAdd,
-    "mean": imageSimilarityMean
+    "mean": imageSimilarityMean,
+    "Len": imageSimilarityLen
 }
 
-def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1):
+def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th=-1):
     """
     Return a list of matches of one image for all query images
     
@@ -56,9 +60,14 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1):
             queryMatchList.append(matches)
             if(k != -1):
                 matches = sorted(matches, key=lambda x: x.distance)[:k]
-            matches = matching_s[distance_method](matches)
+            # mean([x.distance for x in match_list])
+            if(th > 0):
+                dist_list = [x.distance for x in matches if x.distance < th]
+            else:
+                dist_list = [x.distance for x in matches]
+            distance = matching_s[distance_method](dist_list)
 
-            queryDistanceList.append(matches)
+            queryDistanceList.append(distance)
 
         index_highest = np.argsort(queryDistanceList)[:k]
         all_sortIndex.append(index_highest)

@@ -106,9 +106,10 @@ def main():
     else:
         matching = config["Features"]["matching"]
         k_matching = config.get('Features').as_int('k')
+        th_matching = config.get('Features').as_int('th')
         distance_method = config["Features"]["distance"]
 
-        all_match, all_dist, index_similarity = matching_query(desc_t, desc_q, matching, distance_method, k=k_matching)
+        all_match, all_dist, index_similarity = matching_query(desc_t, desc_q, matching, distance_method, k=k_matching, th=th_matching)
 
 
     if(config.get('Visualization').as_bool("enabled")):
