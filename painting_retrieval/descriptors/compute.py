@@ -39,8 +39,8 @@ def compute_all_features(names, path, kp_list,  descriptor, colorspace="gray"):
             desc = load_desc_img(filename+".npy")
         else:
             img = cv.imread(path+name)
-            kp, desc = compute_features(img, kp_list[0], descriptor, colorspace=colorspace)
+            kp, desc = compute_features(img, kp_list[i], descriptor, colorspace=colorspace)
             save_desc_img(filename, desc)
         desc_all.append(desc)
-        kp_all.append(kp_list[0])
+        kp_all.append(kp_list[i])
     return kp_all, desc_all

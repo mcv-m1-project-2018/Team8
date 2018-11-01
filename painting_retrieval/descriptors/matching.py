@@ -30,7 +30,7 @@ def imageSimilarityLen(dist_list):
 matching_s = {
     "add": imageSimilarityAdd,
     "mean": imageSimilarityMean,
-    "Len": imageSimilarityLen
+    "len": imageSimilarityLen
 }
 
 def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th=-1):
@@ -56,7 +56,7 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th
         queryMatchList = list()
         queryDistanceList = list()
         for desc_t in all_desc_t:
-            matches = matcher.match(desc_t,desc_q)
+            matches = matcher.match(desc_q,desc_t)
             queryMatchList.append(matches)
             if(k != -1):
                 matches = sorted(matches, key=lambda x: x.distance)[:k]
@@ -69,7 +69,10 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th
 
             queryDistanceList.append(distance)
 
-        index_highest = np.argsort(queryDistanceList)[:k]
+        if(distance_method=="len"):
+            index_highest = np.argsort(queryDistanceList)[::-1][:k]
+        else:
+            index_highest = np.argsort(queryDistanceList)[:k]
         all_sortIndex.append(index_highest)
         all_match.append(queryMatchList)
         all_dist.append(queryDistanceList)
