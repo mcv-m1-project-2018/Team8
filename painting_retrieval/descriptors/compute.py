@@ -3,6 +3,22 @@ import cv2 as cv
 from tqdm import tqdm
 from descriptors.utils import compute_s
 
+import pickle as pckl
+
+import numpy as np
+import os
+
+desc_folder_name = "descriptors/"
+def save_desc_img(filename, desc_array):
+    # Dump the keypoints
+    np.save(filename, desc_array)
+#    pckl.dump(index,f)
+#    f.close()
+
+def load_desc_img(filename):
+    desc_array = np.load(filename)
+    return desc_array
+
 def compute_features(img, kp, descriptor, colorspace="gray"):
     if(colorspace=="gray"):
         img = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
@@ -11,11 +27,20 @@ def compute_features(img, kp, descriptor, colorspace="gray"):
     return kp, desc
 
 def compute_all_features(names, path, kp_list,  descriptor, colorspace="gray"):
+    descfolder = path+desc_folder_name
+    if not os.path.exists(descfolder):
+        os.makedirs(descfolder)
+        
     desc_all = []
     kp_all = []
     for i, name in tqdm(enumerate(names), desc="Computing descriptors"):
-        img = cv.imread(path+name)
-        kp, desc = compute_features(img, kp_list[0], descriptor, colorspace=colorspace)
+        filename = descfolder+descriptor+"_"+name
+        if(os.path.isfile(filename+".npy")):
+            desc = load_desc_img(filename+".npy")
+        else:
+            img = cv.imread(path+name)
+            kp, desc = compute_features(img, kp_list[0], descriptor, colorspace=colorspace)
+            save_desc_img(filename, desc)
         desc_all.append(desc)
-        kp_all.append(kp)
+        kp_all.append(kp_list[0])
     return kp_all, desc_all
