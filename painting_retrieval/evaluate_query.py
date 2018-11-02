@@ -11,12 +11,13 @@ def evaluate_prediction(query_path, file_query_names, train_path, file_train_nam
     query_list = []
     predicted_list = []
 
-    for x in range(len(correlation_images)):
+    for x in file_query_names:
+        x = int(x[4:-4])
         subpredicted_list = []
         if correlation_images[x] != [-1]:
             query_list.append(['ima_{:06d}.jpg'.format(correlation_images[x][i]) for i in range(len(correlation_images[x]))])
         else:
-            query_list.append([])
+            query_list.append([None])
 
         for y in range(min(k,len(index_similarity))): # the min is required to prevent errors if the index similarity is shorter than k
             subpredicted_list.append(file_train_names[index_similarity[x][y]])
