@@ -96,12 +96,11 @@ def main():
         kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,  computer)
         kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,  computer)
 
-        
     
     k = config.get('Evaluate').as_int('k')
-    eval_method = config['Evaluate']['eval_method']
 
     if(config['mode'] in ["granulometry", "histogram", "wavelet"]):
+        eval_method = config['Evaluate']['eval_method']
         distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
     else:
         matching = config["Features"]["matching"]

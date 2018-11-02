@@ -2,12 +2,13 @@
 """
 Created on Tue Oct 30 19:53:54 2018
 
-@author: hamdd
+@author: all
 """
 import cv2 as cv
 import statistics
-from tqdm import tqdm
+from tqdm import tqdm, trange
 import numpy as np
+
 
 def imageSimilarityAdd(dist_list):
     return sum(dist_list)
@@ -45,17 +46,16 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th
     FlannBased
 
     """
-
     matcher = cv.DescriptorMatcher()
     matcher = matcher.create(matching)
     all_match = list()
     all_dist = list()
     all_sortIndex = list()
 
-    for desc_q in tqdm(all_desc_q,desc="Matching"):
+    for desc_q in tqdm(all_desc_q,desc="Matching Total"):
         queryMatchList = list()
         queryDistanceList = list()
-        for desc_t in all_desc_t:
+        for desc_t in tqdm(all_desc_t,desc="Matching of one query"):
             matches = matcher.match(desc_q,desc_t)
             queryMatchList.append(matches)
             if(k != -1):

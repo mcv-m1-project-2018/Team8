@@ -2,7 +2,7 @@
 """
 Created on Wed Oct 31 18:48:18 2018
 
-@author: hamdd
+@author: all
 """
 import cv2 as cv
 from descriptors.utils import detector_s
