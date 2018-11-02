@@ -2,20 +2,22 @@ from ml_metrics.average_precision import mapk
 import cv2 as cv
 import numpy as np
 
-correlation_images = {0: 76, 1: 105, 2: 34, 3: 83, 4: 109, 5: 101, 6: 57,\
-                      7: 27, 8: 50, 9: 84, 10: 25, 11: 60, 12: 45, 13: 99, \
-                      14: 107, 15: 44, 16: 65, 17: 63, 18: 111, 19: 92, \
-                      20: 67, 21: 22, 22: 87, 23: 85, 24: 13, 25: 39, \
-                      26: 103, 27: 6, 28: 62, 29: 41}
+correlation_images =   {0: [-1], 1: [-1], 2: [115, 122], 3: [-1], 4: [-1], 5: [99], 6: [-1], 7: [89],\
+                        8: [19], 9: [85], 10: [90], 11: [121, 117], 12: [-1], 13: [-1], 14: [130], 15: [6, 84],\
+                        16: [35, 48, 52], 17: [118], 18: [-1], 19: [-1], 20: [-1], 21: [-1], 22: [60],\
+                        23: [119, 128], 24: [-1], 25: [47], 26: [-1], 27: [41], 28: [-1], 29: [126, 123]}
 
 def evaluate_prediction(query_path, file_query_names, train_path, file_train_names, index_similarity, k):
     query_list = []
     predicted_list = []
 
-    for x in range(len(file_query_names)):
+    for x in range(len(correlation_images)):
         subpredicted_list = []
-        query_list.append(['ima_{:06d}.jpg'.format(correlation_images[x])])
-        
+        if correlation_images[x] != [-1]:
+            query_list.append(['ima_{:06d}.jpg'.format(correlation_images[x][i]) for i in range(len(correlation_images[x]))])
+        else:
+            query_list.append([])
+
         for y in range(min(k,len(index_similarity))): # the min is required to prevent errors if the index similarity is shorter than k
             subpredicted_list.append(file_train_names[index_similarity[x][y]])
         predicted_list.append(subpredicted_list)
