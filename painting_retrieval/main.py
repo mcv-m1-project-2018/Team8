@@ -104,11 +104,12 @@ def main():
         distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
     else:
         matching = config["Features"]["matching"]
-        k_matching = config.get('Features').as_int('k')
+        k_match = config.get('Features').as_int('k')
         th_matching = config.get('Features').as_int('th')
         distance_method = config["Features"]["distance"]
+        th_disc = config.get('Features').as_int('th_discarted')
 
-        all_match, all_dist, index_similarity = matching_query(desc_t, desc_q, matching, distance_method, k=k_matching, th=th_matching)
+        all_match, all_dist, index_similarity = matching_query(desc_t, desc_q, matching, distance_method, k, k_distance=k_match, th_distance=th_matching,th_discarted=th_disc)
 
 
     if(config.get('Visualization').as_bool("enabled")):

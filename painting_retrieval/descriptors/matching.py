@@ -34,7 +34,7 @@ matching_s = {
     "len": imageSimilarityLen
 }
 
-def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th=-1):
+def matching_query(all_desc_t, all_desc_q, matching, distance_method,k=5, k_distance = -1, th_distance=-1, th_discarted=500):
     """
     Return a list of matches of one image for all query images
     
@@ -58,21 +58,28 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method, k = -1, th
         for desc_t in tqdm(all_desc_t,desc="Matching of one query"):
             matches = matcher.match(desc_q,desc_t)
             queryMatchList.append(matches)
-            if(k != -1):
-                matches = sorted(matches, key=lambda x: x.distance)[:k]
+            if(k_distance != -1):
+                matches = sorted(matches, key=lambda x: x.distance)[:k_distance]
             # mean([x.distance for x in match_list])
-            if(th > 0):
-                dist_list = [x.distance for x in matches if x.distance < th]
+            if(th_distance > 0):
+                dist_list = [x.distance for x in matches if x.distance < th_distance]
             else:
                 dist_list = [x.distance for x in matches]
+
             distance = matching_s[distance_method](dist_list)
 
             queryDistanceList.append(distance)
-
         if(distance_method=="len"):
             index_highest = np.argsort(queryDistanceList)[::-1][:k]
         else:
             index_highest = np.argsort(queryDistanceList)[:k]
+            
+        if(distance_method == "mean" and th_discarted > 0):
+            if( min(queryDistanceList) > th_discarted):
+                index_highest = [-1]
+        if(distance_method == "len" and th_discarted > 0):
+            if( max(queryDistanceList) < th_discarted):
+                index_highest = [-1]
         all_sortIndex.append(index_highest)
         all_match.append(queryMatchList)
         all_dist.append(queryDistanceList)
