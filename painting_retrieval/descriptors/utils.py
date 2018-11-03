@@ -22,7 +22,8 @@ detector_s = {
             "BRISK":cv.BRISK_create,
             "KAZE":cv.KAZE_create,
             "MSER":cv.MSER_create,
-            "ORB":cv.ORB_create
+            "ORB":cv.ORB_create,
+            "StarDetector":lib.StarDetector_create
             }
 
 compute_s = {

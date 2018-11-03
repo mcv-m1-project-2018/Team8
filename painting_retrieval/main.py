@@ -105,9 +105,10 @@ def main():
     else:
         matching = config["Features"]["matching"]
         k_match = config.get('Features').as_int('k')
-        th_matching = config.get('Features').as_int('th')
+        th_matching = config.get('Features').as_float('th')
         distance_method = config["Features"]["distance"]
-        th_disc = config.get('Features').as_int('th_discarted')
+        th_disc = config.get('Features').as_float('th_discarted')
+        print(detector,computer,matching,k_match,th_matching,distance_method,th_disc)
 
         all_match, all_dist, index_similarity = matching_query(desc_t, desc_q, matching, distance_method, k, k_distance=k_match, th_distance=th_matching,th_discarted=th_disc)
 
@@ -131,7 +132,7 @@ def main():
         save_path = pout + evalm +"_" + mode + "_"+ hmode + "_"+ cs + "_"+ str(bins) +"bins" +".pkl"
         print("FILENAME:", save_path)
         nameList = getNamesBySimilarity(file_train_names,index_similarity)
-
+        print(nameList)
         pckl_file = open(save_path,"wb")
         pckl.dump(nameList,pckl_file)
         pckl_file.close()

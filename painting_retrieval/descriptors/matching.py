@@ -18,7 +18,10 @@ def imageSimilarityAdd(dist_list):
 #     return imageSimilarityAdd(sortedList[:k])
 
 def imageSimilarityMean(dist_list):
-    return statistics.mean(dist_list)
+    if(len(dist_list)>0):
+        return statistics.mean(dist_list)
+    else:
+        return 0
 
 # def imageSimilarityMeanK(match_list, k):
 #     sortedList = sorted(match_list, key=lambda x: x.distance)
@@ -47,6 +50,7 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method,k=5, k_dist
 
     """
     matcher = cv.DescriptorMatcher()
+    # matcher = cv.cuda.DescriptorMatcher()
     matcher = matcher.create(matching)
     all_match = list()
     all_dist = list()
@@ -60,11 +64,12 @@ def matching_query(all_desc_t, all_desc_q, matching, distance_method,k=5, k_dist
             queryMatchList.append(matches)
             if(k_distance != -1):
                 matches = sorted(matches, key=lambda x: x.distance)[:k_distance]
-            # mean([x.distance for x in match_list])
+
             if(th_distance > 0):
                 dist_list = [x.distance for x in matches if x.distance < th_distance]
             else:
                 dist_list = [x.distance for x in matches]
+                # print(dist_list)
 
             distance = matching_s[distance_method](dist_list)
 
