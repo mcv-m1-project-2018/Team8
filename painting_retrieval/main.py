@@ -34,7 +34,10 @@ def getNamesBySimilarity(file_train_names, index_similarity ):
     for image_list in index_similarity:
         similarityByQuery = []
         for i in image_list:
-            similarityByQuery.append(file_train_names[i])
+            if(i > 0):
+                similarityByQuery.append(file_train_names[i])
+            else:
+                similarityByQuery.append(None)
         similarityNames.append(similarityByQuery)
     return similarityNames
 
