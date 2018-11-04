@@ -93,8 +93,8 @@ def main():
         kp_q = detect_all_kp(file_query_names, query_path, detector)
         
         computer = config["Features"]["compute"]
-        kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,  computer)
-        kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,  computer)
+        kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,  computer, detector)
+        kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,  computer, detector)
 
     
     k = config.get('Evaluate').as_int('k')
