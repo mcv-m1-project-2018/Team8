@@ -5,7 +5,7 @@
 The goal of this project is to learn the basic concepts and techniques to build a simple query by example retrieval system for finding paintings in a museum image collection.
 
 ## Install
-This project requires opencv, pywt, matplotlib, numpy, **tqdm**, cv2, pickle, fnmatch, configobj, os, math and ml_metrics.
+This project requires opencv, pywt, matplotlib, numpy, **tqdm**, cv2, pickle, fnmatch, configobj, math and ml_metrics.
 
 To install the project just clone the repository and use python (3.6 or 3.7) to run:
 ```bash
