@@ -18,6 +18,7 @@ Default values of Training and Dataset paths are `./Dataset/museum_set_random`, 
 ### Test configuration
 The Test.config file stores all the arguments for running the program. If the names/values are changed in this file, the code will be run with that configuration.
 
+## Files
 ### Compute histograms
 The file compute_histograms.py generates pyramidal histograms, per channel histograms and block-based histograms (subimage).
 
