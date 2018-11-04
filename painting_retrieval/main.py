@@ -21,9 +21,11 @@ import pickle as pckl
 def visualizeQueryResults(query_path,file_query_names, train_path, file_train_names, index_similarity, k):
     for x in range(len(file_query_names)):
         q_img = cv.imread(query_path+file_query_names[x])
+        q_img = cv.resize(q_img,(500,500))
         cv.imshow("query",q_img)
-        for y in range(k):
+        for y in range(len(index_similarity[x])):
             t_img = cv.imread(train_path+file_train_names[index_similarity[x][y]])
+            t_img = cv.resize(t_img,(500,500))
             cv.imshow("result",t_img)
             key = cv.waitKey()
             if(key == 27): #ESC for exit
@@ -103,7 +105,7 @@ def main():
     k = config.get('Evaluate').as_int('k')
 
     if(config['mode'] in ["granulometry", "histogram", "wavelet"]):
-        eval_method = config['Evaluate']['eval_method']
+        eval_method = config['Histograms']['eval_method']
         distAllList, index_similarity = evaluateQueryTest(histograms_train, histograms_query, k, eval_method, histogram_mode)
     else:
         matching = config["Features"]["matching"]
@@ -125,14 +127,24 @@ def main():
     if(config.get('Save_Pickle').as_bool('save')):
         pout = config['Save_Pickle']['pathOut']
         mode = config['mode']
-        hmode= config['Histograms']['histogram_mode']
-        cs = config['Histograms']['color_space']
-        bins = config['Histograms']['bin_num']
-        evalm = config['Evaluate']['eval_method']
-        if(hmode in ["pyramid","pyramidFast"]):
-            levels = config['Histograms']['levels']
-            hmode = str(levels) + hmode
-        save_path = pout + evalm +"_" + mode + "_"+ hmode + "_"+ cs + "_"+ str(bins) +"bins" +".pkl"
+        if(mode != "features"):
+            hmode= config['Histograms']['histogram_mode']
+            cs = config['Histograms']['color_space']
+            bins = config['Histograms']['bin_num']
+            evalm = config['Histograms']['eval_method']
+            if(hmode in ["pyramid","pyramidFast"]):
+                levels = config['Histograms']['levels']
+                hmode = str(levels) + hmode
+            save_path = pout + evalm +"_" + mode + "_"+ hmode + "_"+ cs + "_"+ str(bins) +"bins" +".pkl"
+        else:
+            detect = config["Features"]["detect"]
+            compute = config["Features"]["compute"]
+            matching = config["Features"]["matching"]
+            distance = config["Features"]["distance"]
+            k_distance = k_match = config['Features']['k']
+            th_distance = config['Features']['th']
+            th_discarted = config['Features']['th_discarted']
+            save_path = pout + detect + "_" + compute + "_" + matching + "_" + distance + "_" + k_distance + "_" + th_distance + "_" + th_discarted + ".pkl"
         print("FILENAME:", save_path)
         nameList = getNamesBySimilarity(file_train_names,index_similarity)
         print(nameList)
