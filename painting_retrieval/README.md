@@ -35,3 +35,21 @@ The compare_images.py file compares the histograms of two images according to th
 
 ### Evaluate Query
 The evaluate_query.py file includes a dictionary with the image correspondance between the query_devel_random and the museum_set_random images. With this, the precision of the images comparison and selection is computed.
+
+### Extract descriptors
+The extract_descriptors.py file consists of a keypoints detector and features extractor method contained in a switcher. It is not used since the utils.py method does the same function. 
+
+### Detect
+In the detect.py file, all the keypoints of an image are detected and stored in a list called kp_list.
+
+### Utils
+The utils.py file contains two switchers: the detector_s switcher, which contains a library for each detector, and the compute_s switcher, for the feature descriptors.
+
+### Matching
+The matching.py file contains three methods for evaluating the similarity between two images. All these methods are based in the distance between the keypoints (mean, sumatory and length).
+
+### Evaluate query
+The evaluate_query.py file returns a list of the k most similar images of every image in the database. It uses the mapk function from the ml_metrics library created by Ben Hamner and Wendy Kan.
+
+### Compute
+In the compute.py file, the features using the keypoints and descriptors are computed. and stored in a list.
