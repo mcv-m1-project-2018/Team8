@@ -14,17 +14,17 @@ def detectBoxes(file_names, image_path):
         res = (res[:,:,0]>thr_tophat)*(res[:,:,1]>thr_tophat)*(res[:,:,2]>thr_tophat)
         res = np.dstack((res,res,res))*image
 
-        thr_blackhat = 100
+        thr_blackhat = 150
         res2 = cv.morphologyEx(image, cv.MORPH_BLACKHAT, kernel)
-        res2 = (res2[:,:,0]<thr_blackhat)*(res2[:,:,1]<thr_blackhat)*(res2[:,:,2]<thr_blackhat)
-        res2 = np.dstack((res2,res2,res2))*image
+        black_thr = (res2[:,:,0]>thr_blackhat)*(res2[:,:,1]>thr_blackhat)*(res2[:,:,2]>thr_blackhat)
+        res2 = np.dstack((black_thr,black_thr,black_thr)) * res2
         
 
         thr_val = 180
         thr = (res[:,:,0]>thr_val)*(res[:,:,1]>thr_val)*(res[:,:,2]>thr_val)
         thr = np.dstack((thr,thr,thr)) * image
 
-        thr_val = 180
+        thr_val = 130
         thr2 = (res2[:,:,0]>thr_val)*(res2[:,:,1]>thr_val)*(res2[:,:,2]>thr_val)
         thr2 = np.dstack((thr2,thr2,thr2)) * image
 
@@ -32,8 +32,8 @@ def detectBoxes(file_names, image_path):
         res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
         thr = cv.resize(thr,None, fx=0.5, fy=0.5)
         thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
-        cv.imshow('res',res)
-        cv.imshow('res2',res2)
-        cv.imshow('thr',thr)
-        cv.imshow('thr2',thr2)
+        cv.imshow('top',res)
+        cv.imshow('black',res2)
+        cv.imshow('topthr',thr)
+        cv.imshow('blackthr',thr2)
         cv.waitKey()
