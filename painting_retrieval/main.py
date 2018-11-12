@@ -6,7 +6,7 @@ from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
 from compute_granulometry import processGranulometry
-from preprocess.detect_textbox import detectBoxes
+from preprocess.detect_textbox import detect_text_meanShift,detect_text_hats
     
 from descriptors.detect import detect_all_kp
 from descriptors.compute import compute_all_features
@@ -95,7 +95,7 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
         if(config.get('Features').as_bool("preprocess")):
-            bp_t = detectBoxes(file_train_names, train_path)
+            bp_t = detect_text_hats(file_train_names, train_path)
         detector = config["Features"]["detect"]
         kp_t = detect_all_kp(file_train_names, train_path, detector)
         kp_q = detect_all_kp(file_query_names, query_path, detector)
