@@ -6,6 +6,7 @@ from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
 from compute_granulometry import processGranulometry
+from detect_textbox import detectBoxes
     
 from descriptors.detect import detect_all_kp
 from descriptors.compute import compute_all_features
@@ -70,7 +71,7 @@ def main():
     # for color_space in color_list:
     # config['Histograms']['color_space'] = color_space
 
-    if(config['mode']== "histogram"):
+    if(config['mode'] == "histogram"):
         histograms_train = processHistogram(file_train_names, train_path, config)
         histograms_query = processHistogram(file_query_names, query_path, config)
         preproc_mode = config['Histograms']['preprocess']
@@ -78,7 +79,10 @@ def main():
             histograms_train = preprocessAllHistograms(histograms_train,preproc_mode)
             histograms_train = preprocessAllHistograms(histograms_train,preproc_mode)
 
-    elif(config['mode']== "wavelet"):
+    elif(True): #config.get('textbox').as_bool("enabled")):
+        bp_t = detectBoxes(file_train_names, train_path)
+
+    elif(config['mode'] == "wavelet"):
         bin_num = config.get("Granulometry").as_int("bin_num")
         level = config.get('Wavelets').as_int('levels')
         method = config['Wavelets']['method']
@@ -86,7 +90,7 @@ def main():
         histograms_train = processWavelets(file_train_names, train_path, level, method)
         histograms_query = processWavelets(file_query_names, query_path, level, method)
 
-    elif(config['mode']== "granulometry"):
+    elif(config['mode'] == "granulometry"):
         bin_num = config.get('Granulometry').as_int('bin_num')
         visualize = config.get('Granulometry').as_bool('visualize')
 
