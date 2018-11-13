@@ -96,7 +96,7 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
         if(config.get('Features').as_bool("preprocess")):
-            ip_q = rotate(file_query_names, query_path)
+            # ip_q = rotate(file_query_names, query_path)
             bp_t = detect_text_hats(file_train_names, train_path)
         detector = config["Features"]["detect"]
         kp_t = detect_all_kp(file_train_names, train_path, detector)
