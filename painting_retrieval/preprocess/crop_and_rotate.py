@@ -1,6 +1,8 @@
 import cv2 as cv
 from tqdm import tqdm
 import numpy as np
+import imutils 
+from math import degrees
 
 
 def rotate(file_names, image_path):
@@ -43,7 +45,7 @@ def rotate(file_names, image_path):
                     meanLines.append([rho, rho, theta, 1])
 
         print(meanLines)
-        
+        rotate_rho1(meanLines,image)
         
         image2 = cv.resize(image,None, fx=0.1, fy=0.1)
         cv.imshow('lines',image2)
@@ -55,3 +57,18 @@ def rotate(file_names, image_path):
             i-=1
         else:                   # Any key to go forward
             i+=1
+
+
+def rotate_rho1(meanLines, image):
+    for (rho1, rho2, theta , _) in meanLines:
+        rot_im_rho1 = imutils.rotate_bound(image, 360-degrees(rho1))
+        rot_im_rho2 = imutils.rotate_bound(image, 360-degrees(rho2))
+        rot_im_theta = imutils.rotate_bound(image, 360-degrees(theta))
+
+        rot_im_rho1 = cv.resize(rot_im_rho1,None, fx=0.1, fy=0.1)
+        rot_im_rho2 = cv.resize(rot_im_rho2,None, fx=0.1, fy=0.1)
+        rot_im_theta = cv.resize(rot_im_theta,None, fx=0.1, fy=0.1)
+        cv.imshow('Rotated without losing rho1', rot_im_rho1)
+        cv.imshow('Rotated without losing rho2', rot_im_rho2)
+        cv.imshow('Rotated without losing theta', rot_im_theta)
+        cv.waitKey(0)
