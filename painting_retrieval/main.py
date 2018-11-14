@@ -7,7 +7,7 @@ from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
 from compute_granulometry import processGranulometry
 from preprocess.detect_textbox import detect_text_meanShift,detect_text_hats
-from preprocess.crop_and_rotate import rotate
+from preprocess.crop_and_rotate import compute_angles
 from preprocess.evaluate_bbox import main_evaluate_bb
     
 from descriptors.detect import detect_all_kp
@@ -97,7 +97,7 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
         if(config['Features'].get('preprocess').as_bool("preprocess")):
-            ip_q = rotate(file_query_names, query_path)
+            ip_q = compute_angles(file_query_names, query_path)
             bp_t = detect_text_hats(file_train_names, train_path)
             if(config['Features'].get('preprocess').as_bool("evaluate_bb")):
                 namefile_pkl = config['Features']['preprocess']["pickle_textBox"]
