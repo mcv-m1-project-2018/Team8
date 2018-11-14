@@ -11,24 +11,34 @@ def filter_bb(bb_list, im):
     for x,y,w,h in bb_list:
         # region = im[y:y+h,x:x+w]
         # totalPixels = np.count_nonzero(region)
-        if( w/h >1.5 and h > 13 and w > 120):
+        if( w/h >2.5 and h > 13 and w > 120):
             new_bb.append((x,y,w,h))
 
     return new_bb
 
-def selectRealBoundingBox(bb_list):
+def selectRealBoundingBox(bb_list, im):
     # really sofisticated algorithm
     if(len(bb_list) > 0):
-        return bb_list[0]
+        maxpixels = 0
+        maxbb = ()
+        for x,y,w,h in bb_list:
+            region = im[y:y+h,x:x+w]
+            totalPixels = np.count_nonzero(region)
+            if(maxpixels < totalPixels):
+                maxpixels = totalPixels
+                maxbb = (x,y,w,h)
+
+        return maxbb
     else:
-        return None
+        return (0,0,0,0)
 
 def detect_text_hats(file_names, image_path):
     n_images = len(file_names)
-#     for name in tqdm(file_names):
-    i = 0
     bb_all_list = []
-    while i < n_images:
+    for i in tqdm(range(len(file_names))):
+    # i = 0
+
+    # while i < n_images:
         name = file_names[i]
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
@@ -73,27 +83,27 @@ def detect_text_hats(file_names, image_path):
         bb_list = overlapped_windows(bb_list)
         bb_list = filter_bb(bb_list,out1)
 
-        imshow_bb(out1,[selectRealBoundingBox(bb_list)])
-        bb_all_list.append(selectRealBoundingBox(bb_list))
+        # imshow_bb(out1,[selectRealBoundingBox(bb_list,out1)])
+        bb_all_list.append(selectRealBoundingBox(bb_list,out1))
 
-        res = cv.resize(res,None, fx=0.5, fy=0.5)
-        res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
-        thr = cv.resize(thr,None, fx=0.5, fy=0.5)
-        thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
-        out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
-        cv.imshow('top',res)
-        cv.imshow('black',res2)
-        cv.imshow('topthr',thr)
-        cv.imshow('blackthr',thr2)
-        cv.imshow('top+black',out1)
-        k = cv.waitKey()
+        # res = cv.resize(res,None, fx=0.5, fy=0.5)
+        # res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
+        # thr = cv.resize(thr,None, fx=0.5, fy=0.5)
+        # thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
+        # out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
+        # cv.imshow('top',res)
+        # cv.imshow('black',res2)
+        # cv.imshow('topthr',thr)
+        # cv.imshow('blackthr',thr2)
+        # cv.imshow('top+black',out1)
+        # k = cv.waitKey()
         
-        if k==27 or k==-1:    # Esc key or close to stop
-            break
-        elif k==97 and i>0:    # A to go back
-            i-=1
-        else:                   # Aby key to go forward
-            i+=1
+        # if k==27 or k==-1:    # Esc key or close to stop
+        #     break
+        # elif k==97 and i>0:    # A to go back
+        #     i-=1
+        # else:                   # Aby key to go forward
+        #     i+=1
     return bb_all_list
 
 
