@@ -2,17 +2,38 @@ import cv2 as cv
 from tqdm import tqdm
 import numpy as np
 
+from preprocess.bounding_box_utils import boundingBox_ccl,overlapped_windows,imshow_bb
 from sklearn.cluster import MeanShift
 
+
+def filter_bb(bb_list, im):
+    new_bb = []
+    for x,y,w,h in bb_list:
+        # region = im[y:y+h,x:x+w]
+        # totalPixels = np.count_nonzero(region)
+        if( w/h >1.5 and h > 13 and w > 120):
+            new_bb.append((x,y,w,h))
+
+    return new_bb
+
+def selectRealBoundingBox(bb_list):
+    # really sofisticated algorithm
+    if(len(bb_list) > 0):
+        return bb_list[0]
+    else:
+        return None
 
 def detect_text_hats(file_names, image_path):
     n_images = len(file_names)
 #     for name in tqdm(file_names):
     i = 0
+    bb_all_list = []
     while i < n_images:
         name = file_names[i]
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
+
+        image = cv.GaussianBlur(image, (3,3),5)
     
         kernel = np.ones((20,20))
 
@@ -29,20 +50,42 @@ def detect_text_hats(file_names, image_path):
 
         thr_val = 180
         thr = (res[:,:,0]>thr_val)*(res[:,:,1]>thr_val)*(res[:,:,2]>thr_val)
-        thr = np.dstack((thr,thr,thr)).astype('uint8') * 255
 
         thr_val = 130
         thr2 = (res2[:,:,0]>thr_val)*(res2[:,:,1]>thr_val)*(res2[:,:,2]>thr_val)
+
+        out1 = np.minimum(thr + thr2, 255)
+        out1 = np.dstack((out1,out1,out1)).astype('uint8') * 255
+
         thr2 = np.dstack((thr2,thr2,thr2)).astype('uint8') *255 
+        thr = np.dstack((thr,thr,thr)).astype('uint8') * 255
+
+        
+        out1 = cv.morphologyEx(out1, cv.MORPH_CLOSE, np.ones((5,5)))
+        out1 = cv.morphologyEx(out1, cv.MORPH_OPEN, np.ones((3,3)))
+
+        out1 = cv.erode(out1,np.ones((2,2)))
+        # out1 = cv.dilate(out1,np.ones((1,100)))
+        out1 = cv.morphologyEx(out1, cv.MORPH_CLOSE, np.ones((1,120)))
+
+        bb_list = boundingBox_ccl(cv.cvtColor(out1,cv.COLOR_BGR2GRAY))
+
+        bb_list = overlapped_windows(bb_list)
+        bb_list = filter_bb(bb_list,out1)
+
+        imshow_bb(out1,[selectRealBoundingBox(bb_list)])
+        bb_all_list.append(selectRealBoundingBox(bb_list))
 
         res = cv.resize(res,None, fx=0.5, fy=0.5)
         res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
         thr = cv.resize(thr,None, fx=0.5, fy=0.5)
         thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
+        out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
         cv.imshow('top',res)
         cv.imshow('black',res2)
         cv.imshow('topthr',thr)
         cv.imshow('blackthr',thr2)
+        cv.imshow('top+black',out1)
         k = cv.waitKey()
         
         if k==27 or k==-1:    # Esc key or close to stop
@@ -51,6 +94,7 @@ def detect_text_hats(file_names, image_path):
             i-=1
         else:                   # Aby key to go forward
             i+=1
+    return bb_all_list
 
 
 
