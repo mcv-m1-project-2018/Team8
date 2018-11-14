@@ -20,19 +20,29 @@ def rotate(file_names, image_path):
         cv.imshow('e',edges2)
 
 
-        w,_,_ = image.shape
+        meanLines = []
+
         lines = cv.HoughLines(edges,1,np.pi/180,100)
-        for l in lines:
-            for rho,theta in l:
-                a = np.cos(theta)
-                b = np.sin(theta)
-                x0 = a*rho
-                y0 = b*rho
-                x1 = int(x0 + 1000*(-b))
-                y1 = int(y0 + 1000*(a))
-                x2 = int(x0 - 1000*(-b))
-                y2 = int(y0 - 1000*(a))
-                cv.line(image,(x1,y1),(x2,y2),(0,255,0),2)
+        for line in lines:
+            for rho,theta in line:
+                if meanLines != []:
+                    foundMean = False
+                    for eachMean in meanLines:
+                        if theta+0.1 > eachMean[2] and theta-0.1 < eachMean[2]:
+                            if rho < eachMean[0] or rho > eachMean[1]:
+                                eachMean[rho > eachMean[1]] = rho
+                            eachMean[2] = (eachMean[2]*eachMean[3] + theta)/(eachMean[3]+1)
+                            eachMean[3] += 1
+                            foundMean = True
+                        if foundMean:
+                            break
+                    if not foundMean:
+                        meanLines.append([rho, rho, theta , 1])          
+                         
+                else:
+                    meanLines.append([rho, rho, theta, 1])
+
+        print(meanLines)
         
         
         image2 = cv.resize(image,None, fx=0.1, fy=0.1)
