@@ -97,8 +97,11 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
         if(config['Features'].get('preprocess').as_bool("preprocess")):
-            ip_q = compute_angles(file_query_names, query_path)
-            bp_t = detect_text_hats(file_train_names, train_path)
+            cmp_angles = config['Features'].get('preprocess').as_bool("compute_angles")
+            d_text_hats= config['Features'].get('preprocess').as_bool("detect_text_hats")
+            debug_text_hats = config['Features'].get('preprocess').as_bool("debug_text_hats")
+            if(cmp_angles): ip_q = compute_angles(file_query_names, query_path)
+            if(d_text_hats): bp_t = detect_text_hats(file_train_names, train_path, debug_text_hats)
             if(config['Features'].get('preprocess').as_bool("evaluate_bb")):
                 namefile_pkl = config['Features']['preprocess']["pickle_textBox"]
                 main_evaluate_bb(namefile_pkl,bp_t)

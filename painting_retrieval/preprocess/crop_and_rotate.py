@@ -5,7 +5,7 @@ import imutils
 from math import degrees
 
 
-def compute_angle(file_names, image_path):
+def compute_angles(file_names, image_path):
     n_images = len(file_names)
     
     i = 0

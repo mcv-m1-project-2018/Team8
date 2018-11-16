@@ -32,13 +32,13 @@ def selectRealBoundingBox(bb_list, im):
     else:
         return (0,0,0,0)
 
-def detect_text_hats(file_names, image_path):
+def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
     n_images = len(file_names)
     bb_all_list = []
-    for i in tqdm(range(len(file_names))):
-    # i = 0
+#    for i in tqdm(range(len(file_names))):
+    i = 0
 
-    # while i < n_images:
+    while i < n_images:
         name = file_names[i]
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
@@ -86,24 +86,25 @@ def detect_text_hats(file_names, image_path):
         # imshow_bb(out1,[selectRealBoundingBox(bb_list,out1)])
         bb_all_list.append(selectRealBoundingBox(bb_list,out1))
 
-        # res = cv.resize(res,None, fx=0.5, fy=0.5)
-        # res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
-        # thr = cv.resize(thr,None, fx=0.5, fy=0.5)
-        # thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
-        # out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
-        # cv.imshow('top',res)
-        # cv.imshow('black',res2)
-        # cv.imshow('topthr',thr)
-        # cv.imshow('blackthr',thr2)
-        # cv.imshow('top+black',out1)
-        # k = cv.waitKey()
-        
-        # if k==27 or k==-1:    # Esc key or close to stop
-        #     break
-        # elif k==97 and i>0:    # A to go back
-        #     i-=1
-        # else:                   # Aby key to go forward
-        #     i+=1
+        if(debug_text_bb_thresholds):
+            res = cv.resize(res,None, fx=0.5, fy=0.5)
+            res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
+            thr = cv.resize(thr,None, fx=0.5, fy=0.5)
+            thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
+            out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
+            cv.imshow('top',res)
+            cv.imshow('black',res2)
+            cv.imshow('topthr',thr)
+            cv.imshow('blackthr',thr2)
+            cv.imshow('top+black',out1)
+            k = cv.waitKey()
+    
+            if k==27 or k==-1:    # Esc key or close to stop
+                break
+            elif k==97 and i>0:    # A to go back
+                i-=1
+            else:                   # Aby key to go forward
+                i+=1
     return bb_all_list
 
 
