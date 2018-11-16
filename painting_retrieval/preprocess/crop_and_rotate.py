@@ -2,7 +2,7 @@ import cv2 as cv
 from tqdm import tqdm
 import numpy as np
 import imutils
-from math import degrees, radians
+from math import degrees, radians,sin,cos
 from skimage import feature
 
 
@@ -12,6 +12,38 @@ def resize_keeping_ar(im, desired_width=300):
     desired_height = int(height/factor)
     imres = cv.resize(im, (desired_width, desired_height))
     return imres
+
+def intersection(line1, line2):
+    """Finds the intersection of two lines given in Hesse normal form.
+
+    Returns closest integer pixel locations.
+    See https://stackoverflow.com/a/383527/5087436
+    """
+    rho1, theta1 = line1
+    rho2, theta2 = line2
+    A = np.array([
+        [np.cos(theta1), np.sin(theta1)],
+        [np.cos(theta2), np.sin(theta2)]
+    ])
+    b = np.array([[rho1], [rho2]])
+    x0, y0 = np.linalg.solve(A, b)
+    x0, y0 = int(np.round(x0)), int(np.round(y0))
+    return [x0, y0]
+
+
+def segmented_intersections(lines):
+    """Finds the intersections between groups of lines."""
+
+    intersections = []
+    for i, (rho1, _, theta1, _) in enumerate(lines[:-1]):
+        for (rho2, _, theta2, _) in lines[i+1:]:
+            intersections.append(intersection([rho1,theta1], [rho2,theta2])) 
+            
+    for i, (_ , rho1, theta1, _) in enumerate(lines[:-1]):
+        for (_ , rho2, theta2, _) in lines[i+1:]:
+            intersections.append(intersection([rho1,theta1], [rho2,theta2])) 
+
+    return intersections
 
 def compute_angles(file_names, image_path):
     n_images = len(file_names)
@@ -89,7 +121,32 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
 
     # print(sortedLines)
 
+    showMeanLinesAndIntersections(thr_lines[:4],[],image)
+
     rot_theta = imutils.rotate_bound(image, 360-degrees(theta))
     res_rot_theta = resize_keeping_ar(rot_theta)
     cv.imshow('Rotated theta', res_rot_theta)
     # cv.waitKey(0)
+
+def showMeanLinesAndIntersections(meanLines, points, image):
+    for x,y in points:
+        cv.circle(image,(x,y),5,(255,0,0),thickness=-1)
+    if meanLines is not None:
+        for (rho1, rho2, theta, _) in meanLines:
+            rho = rho1
+            a = cos(theta)
+            b = sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
+            pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
+            cv.line(image, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+            rho = rho2
+            x0 = a * rho
+            y0 = b * rho
+            pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
+            pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
+            cv.line(image, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+        image = resize_keeping_ar(image,700)
+        cv.imshow('lines and points', image)
+        k = cv.waitKey()
