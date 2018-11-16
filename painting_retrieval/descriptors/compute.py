@@ -26,7 +26,8 @@ def compute_features(img, kp, descriptor, colorspace="gray"):
     kp,desc = descgen.compute(img, kp)
     return kp, desc
 
-def compute_all_features(names, path, kp_list,  descriptor, detector, colorspace="gray"):
+def compute_all_features(names, path, kp_list,  descriptor, detector, \
+                         colorspace="gray", image_width=-1):
     descfolder = path+desc_folder_name
     if not os.path.exists(descfolder):
         os.makedirs(descfolder)
@@ -34,7 +35,7 @@ def compute_all_features(names, path, kp_list,  descriptor, detector, colorspace
     desc_all = []
     kp_all = []
     for i, name in tqdm(enumerate(names), desc="Computing descriptors"):
-        filename = descfolder+detector+descriptor+"_"+name
+        filename = descfolder+detector+descriptor+"_"+str(image_width)+"_"+name
         if(os.path.isfile(filename+".npy")):
             desc = load_desc_img(filename+".npy")
         else:
