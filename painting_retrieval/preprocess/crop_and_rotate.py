@@ -13,7 +13,7 @@ def resize_keeping_ar(im, desired_width=300):
     imres = cv.resize(im, (desired_width, desired_height))
     return imres
 
-def intersection(line1, line2):
+def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
     """Finds the intersection of two lines given in Hesse normal form.
 
     Returns closest integer pixel locations.
@@ -21,14 +21,29 @@ def intersection(line1, line2):
     """
     rho1, theta1 = line1
     rho2, theta2 = line2
-    A = np.array([
-        [np.cos(theta1), np.sin(theta1)],
-        [np.cos(theta2), np.sin(theta2)]
-    ])
-    b = np.array([[rho1], [rho2]])
-    x0, y0 = np.linalg.solve(A, b)
-    x0, y0 = int(np.round(x0)), int(np.round(y0))
+    diff = abs(degrees(theta1)-degrees(theta2))
+    if(diff > intersectThrBottom and diff < intersectThrUp):
+        A = np.array([
+            [np.cos(theta1), np.sin(theta1)],
+            [np.cos(theta2), np.sin(theta2)]
+        ])
+        b = np.array([[rho1], [rho2]])
+        x0, y0 = np.linalg.solve(A, b)
+        x0, y0 = int(np.round(x0)), int(np.round(y0))
+    else:
+        x0, y0 = -1, -1
     return [x0, y0]
+
+def filterPoints(point_list, imgWidth, imgHeight):
+    bottomPoint = [0,0]
+    topPoint = [imgWidth,imgHeight]
+    for x,y in point_list:
+        if(x != -1 and y != -1):
+            bottomPoint[0] = max(bottomPoint[0], x)
+            bottomPoint[1] = max(bottomPoint[1], y)
+            topPoint[0] = min(topPoint[0], x)
+            topPoint[1] = min(topPoint[1], y)
+    return [topPoint,bottomPoint]
 
 
 def segmented_intersections(lines):
@@ -87,9 +102,15 @@ def compute_angles(file_names, image_path):
                 else:
                     meanLines.append([rho, rho, theta, 1])
 
-        rotate(meanLines, image)
+        rotate(meanLines, image.copy())
 
-        image2 = resize_keeping_ar(image)
+        points = segmented_intersections(meanLines)
+
+        points = filterPoints(points, image.shape[1], image.shape[0])
+
+        showMeanLinesAndIntersections(meanLines,points, image.copy())
+
+        image2 = resize_keeping_ar(image.copy())
         cv.imshow('lines', image2)
         k = cv.waitKey()
 
@@ -121,7 +142,7 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
 
     # print(sortedLines)
 
-    showMeanLinesAndIntersections(thr_lines[:4],[],image)
+    # showMeanLinesAndIntersections(thr_lines,[],image)
 
     rot_theta = imutils.rotate_bound(image, 360-degrees(theta))
     res_rot_theta = resize_keeping_ar(rot_theta)
@@ -129,8 +150,6 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
     # cv.waitKey(0)
 
 def showMeanLinesAndIntersections(meanLines, points, image):
-    for x,y in points:
-        cv.circle(image,(x,y),5,(255,0,0),thickness=-1)
     if meanLines is not None:
         for (rho1, rho2, theta, _) in meanLines:
             rho = rho1
@@ -147,6 +166,8 @@ def showMeanLinesAndIntersections(meanLines, points, image):
             pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
             pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
             cv.line(image, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
-        image = resize_keeping_ar(image,700)
-        cv.imshow('lines and points', image)
-        k = cv.waitKey()
+    for x,y in points:
+        cv.circle(image,(x,y),5,(255,0,0),thickness=-1)
+    image = resize_keeping_ar(image,700)
+    cv.imshow('lines and points', image)
+    k = cv.waitKey()
