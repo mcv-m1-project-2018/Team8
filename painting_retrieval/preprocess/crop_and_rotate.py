@@ -63,9 +63,41 @@ def segmented_intersections(lines):
 
     return intersections
 
+
+def fill_holes(im):
+    _, contours, _ = cv.findContours(im, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        cv.drawContours(im, [cnt], 0, 255, -1)
+    return im
+
+
+def morph_method1(im):
+    imggray = im.copy()
+
+    morph = imggray.copy()
+
+
+    vk = lambda x : np.ones((x, 1), np.uint8)
+    hk = lambda x : np.ones((1, x), np.uint8)
+    kk = lambda x : np.ones((x, x), np.uint8)
+
+    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, kk(15))
+    morph = fill_holes(morph)
+    morph = cv.morphologyEx(morph, cv.MORPH_OPEN, kk(5))
+    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, kk(10))
+    
+    imagen = morph
+    #imagen = fill_holes(morph)
+    
+    #rows, cols = imagen.shape
+    #M = np.float32([[1, 0, -5], [0, 1, -5]])
+    #imagen = cv.warpAffine(imagen, M, (cols, rows))
+    return imagen
+
+
 def compute_angles(file_names, image_path):
     n_images = len(file_names)
-    
+
     i = 0
     while i < n_images:
         name = file_names[i]
@@ -79,16 +111,19 @@ def compute_angles(file_names, image_path):
         # low_bound = np.array([0,0,0])
         # gray = cv.inRange(hsv_image, low_bound, up_bound)
         gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-        k = np.ones((9, 9))
-        gray = cv.GaussianBlur(gray,(11,11),0)
-        edges = cv.Canny(gray, 110, 130, apertureSize=3, L2gradient=True)
-        edges2 = resize_keeping_ar(edges)
-        cv.imshow('canny', edges2)
-
+        #k = np.ones((9, 9))
+        gray = cv.GaussianBlur(gray, (11, 11), 0)
+        resized = resize_keeping_ar(gray)
+        edges = cv.Canny(resized, 60, 80, apertureSize=3, L2gradient=True)
+        cv.imshow('Canny', edges)
+        morph_img = morph_method1(edges)
+        fh_img = fill_holes(morph_img)
+        edges2 = cv.Canny(fh_img, 60, 80, apertureSize=3, L2gradient=True)
+        cv.imshow('Canny_2', edges2)
 
         meanLines = []
 
-        lines = cv.HoughLines(edges, 1, np.pi/180, 50)
+        lines = cv.HoughLines(edges2, 1, np.pi/180, 50)
         for line in lines:
             for rho, theta in line:
                 if meanLines != []:
@@ -118,14 +153,14 @@ def compute_angles(file_names, image_path):
 
         image2 = resize_keeping_ar(image.copy())
         # cv.imshow('lines', image2)
-        # k = cv.waitKey()
+        k = cv.waitKey()
 
-        # if k == 27 or k == -1:    # Esc key or close to stop
-        #     break
-        # elif k == 97 and i > 0:    # A to go back
-        #     i -= 1
-        # else:                   # Any key to go forward
-        #     i += 1
+        if k == 27 or k == -1:    # Esc key or close to stop
+            break
+        elif k == 97 and i > 0:    # A to go back
+            i -= 1
+        else:                   # Any key to go forward
+            i += 1
 
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
