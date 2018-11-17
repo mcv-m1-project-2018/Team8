@@ -168,6 +168,9 @@ def get_contours1(im, view_images=False):
     
     return edges2, morph_img
 
+def get_contours3(im, asdf):
+    pass
+
 def get_hough_lines(edges):
     meanLines = []
     lines = cv.HoughLines(edges, 1, np.pi/180, 50)
@@ -191,6 +194,7 @@ def get_hough_lines(edges):
                 meanLines.append([rho, rho, theta, 1])
     return meanLines
 def compute_angles(file_names, image_path):
+    method_extract_bb = "morphologically"
     n_images = len(file_names)
 
     i = 0
@@ -202,21 +206,22 @@ def compute_angles(file_names, image_path):
 #        new_size = min(round(w*0.2), 300)
         image = resize_keeping_ar(image)
         edges, morph_img = get_contours1(image, True)
+#        edges, morph_img = get_contours3(image, True)
         meanLines = get_hough_lines(edges)
         
-        edges_rot = rotate(meanLines, morph_img)
-        edges_rot_fill = morph_method2(edges_rot)
-        cv.imshow('Painting', edges_rot_fill)
-        
-        
-        img_rot = rotate(meanLines, image.copy())
-        cv.imshow('Rotated theta', img_rot)
-        
-        points = segmented_intersections(meanLines)
-        points = filterPoints(points, image.shape[1], image.shape[0])
-        showMeanLinesAndIntersections(meanLines, points, image.copy())
-        
-        image2 = resize_keeping_ar(image.copy())
+        if(method_extract_bb=="morphologically"):
+            edges_rot = rotate(meanLines, morph_img)
+            edges_rot_fill = morph_method2(edges_rot)
+            cv.imshow('Painting', edges_rot_fill)
+            
+            img_rot = rotate(meanLines, image.copy())
+            cv.imshow('Rotated theta', img_rot)
+        else:
+            points = segmented_intersections(meanLines)
+            points = filterPoints(points, image.shape[1], image.shape[0])
+            showMeanLinesAndIntersections(meanLines, points, image.copy())
+            
+            image2 = resize_keeping_ar(image.copy())
         # cv.imshow('lines', image2)
         k = cv.waitKey()
 
