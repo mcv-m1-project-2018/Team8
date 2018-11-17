@@ -61,6 +61,8 @@ def filterPoints(point_list, imgWidth, imgHeight):
     else:
         trPoint = intersection([brPoint[2],brPoint[3]],[tlPoint[2],tlPoint[3]])
         blPoint = intersection([brPoint[4],brPoint[5]],[tlPoint[4],tlPoint[5]])
+        if(abs(trPoint[2]) < abs(blPoint[2])):
+            trPoint, blPoint = blPoint, trPoint
 
     return [tlPoint, trPoint, blPoint, brPoint]
 
