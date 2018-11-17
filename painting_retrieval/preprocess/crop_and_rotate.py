@@ -32,17 +32,34 @@ def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
         x0, y0 = int(np.round(x0)), int(np.round(y0))
     else:
         x0, y0 = -1, -1
-    return [x0, y0]
+    return [x0, y0, rho1, theta1, rho2, theta2]
 
 def filterPoints(point_list, imgWidth, imgHeight):
-    bottomPoint = [0, 0]
-    topPoint = [imgWidth, imgHeight]
-    for x,y in point_list:
-        bottomPoint[0] = max(bottomPoint[0], x)
-        bottomPoint[1] = max(bottomPoint[1], y)
-        topPoint[0] = min(topPoint[0], x)
-        topPoint[1] = min(topPoint[1], y)
-    return [topPoint, bottomPoint]
+    brPoint = [0,0, 0, 0, 0, 0]
+    tlPoint = [imgWidth,imgHeight, 0, 0, 0, 0]
+
+    trPoint = [0,0, 0, 0, 0, 0]
+    blPoint = [0,0, 0, 0, 0, 0]
+
+        #getting the tl and br points
+    for x, y, rho1, theta1, rho2, theta2  in point_list:
+
+        orgValue = brPoint[0] + brPoint[1]
+        currentValue = x + y
+        if(currentValue > orgValue):
+            brPoint = [x,y, rho1, theta1, rho2, theta2]
+
+        orgValue = tlPoint[0] + tlPoint[1]
+        currentValue = x + y
+        if(currentValue < orgValue):
+            tlPoint = [x,y, rho1, theta1, rho2, theta2]
+
+    #once we have the tl and br points we can get the other points with the line intersection
+    trPoint = intersection([brPoint[2],brPoint[3]],[tlPoint[2],tlPoint[3]])
+    blPoint = intersection([brPoint[4],brPoint[5]],[tlPoint[4],tlPoint[5]])
+
+    return [tlPoint, trPoint, blPoint, brPoint]
+
 
 
 def segmented_intersections(lines):
@@ -54,10 +71,18 @@ def segmented_intersections(lines):
             point = intersection([rho1, theta1], [rho2, theta2])
             if(point[0] != -1 and point[1] != -1):
                 intersections.append(point) 
+        for (_ , rho2, theta2, _) in lines:
+            point = intersection([rho1,theta1], [rho2,theta2])
+            if(point[0] != -1 and point[1] != -1):
+                intersections.append(point) 
             
     for i, (_ , rho1, theta1, _) in enumerate(lines[:-1]):
         for (_ , rho2, theta2, _) in lines[i+1:]:
             point = intersection([rho1, theta1], [rho2, theta2])
+            if(point[0] != -1 and point[1] != -1):
+                intersections.append(point) 
+        for (rho2 , _, theta2, _) in lines:
+            point = intersection([rho1,theta1], [rho2,theta2])
             if(point[0] != -1 and point[1] != -1):
                 intersections.append(point) 
 
