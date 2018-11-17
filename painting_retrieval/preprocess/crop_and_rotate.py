@@ -73,14 +73,17 @@ def compute_angles(file_names, image_path):
         image = cv.imread(imageNameFile)
         w,h = image.shape[:2]
         new_size = min(round(w*0.2), 300)
-        image = resize_keeping_ar(image, )
+        image = resize_keeping_ar(image)
+        # hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+        # up_bound = np.array([255,255,70])
+        # low_bound = np.array([0,0,0])
+        # gray = cv.inRange(hsv_image, low_bound, up_bound)
         gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
         k = np.ones((9, 9))
-        print(type(gray))
-        gray = cv.GaussianBlur(gray,(9,9),0)
-        edges = cv.Canny(gray, 100, 130, apertureSize=3, L2gradient=True)
+        gray = cv.GaussianBlur(gray,(11,11),0)
+        edges = cv.Canny(gray, 110, 130, apertureSize=3, L2gradient=True)
         edges2 = resize_keeping_ar(edges)
-        cv.imshow('e', edges2)
+        cv.imshow('canny', edges2)
 
 
         meanLines = []
@@ -114,15 +117,15 @@ def compute_angles(file_names, image_path):
         showMeanLinesAndIntersections(meanLines,points, image.copy())
 
         image2 = resize_keeping_ar(image.copy())
-        cv.imshow('lines', image2)
-        k = cv.waitKey()
+        # cv.imshow('lines', image2)
+        # k = cv.waitKey()
 
-        if k == 27 or k == -1:    # Esc key or close to stop
-            break
-        elif k == 97 and i > 0:    # A to go back
-            i -= 1
-        else:                   # Any key to go forward
-            i += 1
+        # if k == 27 or k == -1:    # Esc key or close to stop
+        #     break
+        # elif k == 97 and i > 0:    # A to go back
+        #     i -= 1
+        # else:                   # Any key to go forward
+        #     i += 1
 
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
@@ -171,6 +174,6 @@ def showMeanLinesAndIntersections(meanLines, points, image):
             cv.line(image, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
     for x,y in points:
         cv.circle(image,(x,y),5,(255,0,0),thickness=-1)
-    image = resize_keeping_ar(image,700)
-    cv.imshow('lines and points', image)
-    k = cv.waitKey()
+    image = resize_keeping_ar(image,300)
+    # cv.imshow('lines and points', image)
+    # k = cv.waitKey()
