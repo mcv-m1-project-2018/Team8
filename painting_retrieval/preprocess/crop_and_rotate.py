@@ -4,14 +4,16 @@ import numpy as np
 import imutils
 from math import degrees, radians, sin, cos
 from skimage import feature
-
+#import bounding_box_utils
+import preprocess.find_largest_rectangle as find_largest_rectangle
+from preprocess.utils import add_margin, get_center_diff
 
 def resize_keeping_ar(im, desired_width=300):
     height, width = im.shape[:2]
     factor = width/float(desired_width)
     desired_height = int(height/factor)
     imres = cv.resize(im, (desired_width, desired_height))
-    return imres
+    return imres, factor
 
 def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
     """Finds the intersection of two lines given in Hesse normal form.
@@ -64,7 +66,7 @@ def filterPoints(point_list, imgWidth, imgHeight):
         if(abs(trPoint[2]) < abs(blPoint[2])):
             trPoint, blPoint = blPoint, trPoint
 
-    return [tlPoint, trPoint, blPoint, brPoint]
+    return tlPoint, trPoint, brPoint, blPoint
 
 
 
@@ -134,19 +136,16 @@ def morph_method2(im):
     vk = lambda x : np.ones((x, 1), np.uint8)
     hk = lambda x : np.ones((1, x), np.uint8)
 #    kk = lambda x : np.ones((x, x), np.uint8)
-
-    cv.imshow("1", morph)
     morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, vk(23))
-    cv.imshow("2", morph)
     morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, hk(23))
-    cv.imshow("3", morph)
     morph = fill_holes(morph)
-    cv.imshow("4", morph)
     morph = cv.morphologyEx(morph, cv.MORPH_OPEN, hk(40))
-    cv.imshow("5", morph)
     morph = cv.morphologyEx(morph, cv.MORPH_OPEN, vk(40))
-    cv.imshow("6", morph)
     
+    #### DO CCL ###
+#    bb_list = bounding_box_utils(morph)
+#    for bb in bb_list:
+        
     imagen = morph
     #imagen = fill_holes(morph)
     
@@ -155,7 +154,7 @@ def morph_method2(im):
     #imagen = cv.warpAffine(imagen, M, (cols, rows))
     return imagen
 
-def get_contours1(im, view_images=False):
+def get_contours1(im, debug=False, add_str_debug=""):
     gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
     gray = cv.GaussianBlur(gray, (11, 11), 0)
     edges = cv.Canny(gray, 0, 40, apertureSize=3, L2gradient=True)
@@ -163,15 +162,30 @@ def get_contours1(im, view_images=False):
     fh_img = fill_holes(morph_img)
     edges2 = cv.Canny(fh_img, 60, 80, apertureSize=3, L2gradient=True)
     edges2 = cv.dilate(edges2,(3,3),iterations = 1)
-    if(view_images): 
-        cv.imshow('Canny', edges)
-        cv.imshow('fill_holes', fh_img)
-        cv.imshow('Canny_2', edges2)
+    if(debug): 
+        cv.imshow('Canny'+add_str_debug, edges)
+        cv.imshow('fill_holes'+add_str_debug, fh_img)
+        cv.imshow('Canny_2'+add_str_debug, edges2)
     
-    return edges2, morph_img
+    return edges2, fh_img
 
-def get_contours3(im, asdf):
-    pass
+def get_contours2(filled, debug=False, add_str_debug=""):
+#    gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
+#    gray = cv.GaussianBlur(edges, (11, 11), 0)
+#    edges = cv.Canny(gray, 0, 40, apertureSize=3, L2gradient=True)
+#    morph_img = morph_method2(edges)
+#    fh_img = fill_holes(morph_img)
+    madd = 1
+    edges = add_margin(filled, madd).astype(np.uint8)
+    edges2 = cv.Canny(edges, 60, 80, apertureSize=3, L2gradient=True)
+    edges2 = cv.dilate(edges2,(3,3),iterations = 1)
+    edges2 = edges2[madd:-(madd+1), madd:-(madd+1)]
+    if(debug): 
+#        cv.imshow('Canny'+add_str_debug, edges)
+#        cv.imshow('fill_holes'+add_str_debug, fh_img)
+        cv.imshow('Canny_2'+add_str_debug, edges2)
+    
+    return edges2
 
 def get_hough_lines(edges):
     meanLines = []
@@ -195,44 +209,181 @@ def get_hough_lines(edges):
             else:
                 meanLines.append([rho, rho, theta, 1])
     return meanLines
-def compute_angles(file_names, image_path):
-    method_extract_bb = "morphologically"
+
+#from math import sin, cos, radians
+
+def rotate_point(point, angle, center_point=(0, 0), convert_ints = True):
+    """Rotates a point around center_point(origin by default)
+    Angle is in degrees.
+    Rotation is counter-clockwise
+    """
+    angle_rad = radians(angle % 360)
+    # Shift the point so that center_point becomes the origin
+    new_point = (point[0] - center_point[0], point[1] - center_point[1])
+    new_point = (new_point[0] * cos(angle_rad) - new_point[1] * sin(angle_rad),
+                 new_point[0] * sin(angle_rad) + new_point[1] * cos(angle_rad))
+    # Reverse the shifting we have done
+    x = new_point[0] + center_point[0]
+    y = new_point[1] + center_point[1]
+    if(convert_ints):
+        x = int(x)
+        y = int(y)
+    new_point = (x, y)
+    return new_point
+
+def calc_points_morphologically(image, edges, meanLines, debug = False):
+    edges_rot, angle = rotate(meanLines, edges)
+    edges_rot_fill = morph_method2(edges_rot)
+    max_size, pos = find_largest_rectangle.max_size(edges_rot_fill, \
+                                                    np.max(edges_rot_fill))
+    
+    
+#    img, angle = rotate(meanLines, image.copy())
+    
+    
+    
+#            img = np.dstack([edges_rot_fill]*3)
+    minY, maxY = pos[0]-max_size[0], pos[0]
+    minX, maxX = pos[1]-max_size[1], pos[1]
+    c1 = (minX, minY)
+    c2 = (minX, maxY)
+    c3 = (maxX, minY)
+    c4 = (maxX, maxY)
+
+#            center_point = ( w/2-(w-nw), h/2-(h-nh))
+    c_diff = get_center_diff(edges_rot_fill, image)
+    rot_h, rot_w = edges_rot_fill.shape
+    rot_cp = (rot_w/2, rot_h/2)
+    nc1 = rotate_point(c1, -angle, rot_cp)
+    nc2 = rotate_point(c2, -angle, rot_cp)
+    nc3 = rotate_point(c3, -angle, rot_cp)
+    nc4 = rotate_point(c4, -angle, rot_cp)
+    rnc1 = (nc1[0]+c_diff[0], nc1[1]+c_diff[1])
+    rnc2 = (nc2[0]+c_diff[0], nc2[1]+c_diff[1])
+    rnc3 = (nc3[0]+c_diff[0], nc3[1]+c_diff[1])
+    rnc4 = (nc4[0]+c_diff[0], nc4[1]+c_diff[1])
+    TL, BL, TR, BR = rnc1, rnc2, rnc3, rnc4
+    
+    if(debug):
+        img = imutils.rotate_bound(image.copy(), angle)
+        
+        cv.imshow('Painting', edges_rot_fill)
+        
+        color = ( 0,0,255)
+        cv.line(img, (0, minY), (rot_w, minY), color)
+        cv.line(img, (minX, 0), (minX, rot_h), color)
+        cv.line(img, (0, maxY), (rot_w, maxY), color)
+        cv.line(img, (maxX, 0), (maxX, rot_h), color)
+        color = (0, 255, 0)
+        radius = 2
+        thick = 3
+        cv.circle(img, c1, radius, color, thickness=thick)
+        cv.circle(img, c2, radius, color, thickness=thick)
+        cv.circle(img, c3, radius, color, thickness=thick)
+        cv.circle(img, c4, radius, color, thickness=thick)
+        cv.imshow('Rectangle', img)
+        
+        img2 = image.copy()
+        cv.circle(img2, rnc1, radius, color, thickness=thick)
+        cv.circle(img2, rnc2, radius, color, thickness=thick)
+        cv.circle(img2, rnc3, radius, color, thickness=thick)
+        cv.circle(img2, rnc4, radius, color, thickness=thick)
+        cv.imshow('Unrotated rectangle', img2)
+                
+    return TL, TR, BR, BL
+            
+def compute_angles(file_names, image_path, debug = True):
+    method_extract_bb = "*"
     n_images = len(file_names)
 
     i = 0
     while i < n_images:
         name = file_names[i]
         imageNameFile = image_path + "/" + name
-        image = cv.imread(imageNameFile)
-        w,h = image.shape[:2]
+        image_original = cv.imread(imageNameFile)
+        w,h = image_original.shape[:2]
 #        new_size = min(round(w*0.2), 300)
-        image = resize_keeping_ar(image)
-        edges, morph_img = get_contours1(image, True)
+        image, factor = resize_keeping_ar(image_original.copy())
+        increase_point = lambda p: (int(p[0]*factor), int(p[1]*factor))
+        edges, fh_image = get_contours1(image, debug)
 #        edges, morph_img = get_contours3(image, True)
         meanLines = get_hough_lines(edges)
         
-        if(method_extract_bb=="morphologically"):
-            edges_rot = rotate(meanLines, morph_img)
-            edges_rot_fill = morph_method2(edges_rot)
-            cv.imshow('Painting', edges_rot_fill)
-            
-            img_rot = rotate(meanLines, image.copy())
-            cv.imshow('Rotated theta', img_rot)
-        else:
+        
+        if(method_extract_bb in ["morphologically","*"]):
+            tlp, trp, brp, blp = calc_points_morphologically(image, edges, \
+                                                             meanLines, debug)
+        if(method_extract_bb in ["hough","*"]):
             points = segmented_intersections(meanLines)
-            points = filterPoints(points, image.shape[1], image.shape[0])
-            showMeanLinesAndIntersections(meanLines, points, image.copy())
+            tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
+            points = [tlp, trp, brp, blp]
+            tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
+            if(debug): showMeanLinesAndIntersections(meanLines, points, image.copy(), " H")
+        if(method_extract_bb in ["hough_rotated","*"]):
+            __, angle = rotate(meanLines, edges)
+            fh_image_rot = imutils.rotate_bound(fh_image.copy(), angle)
+            image_rot = imutils.rotate_bound(image.copy(), angle)
+            rotated_filled = morph_method2(fh_image_rot)
+            edges_rotated_filled = get_contours2(rotated_filled, True, " HR")
+            meanLines = get_hough_lines(edges_rotated_filled)
             
-            image2 = resize_keeping_ar(image.copy())
-        # cv.imshow('lines', image2)
-        k = cv.waitKey()
+            points = segmented_intersections(meanLines)
+            tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
+            points = [tlp, trp, brp, blp]
+            
+            c_diff = get_center_diff(edges_rotated_filled, image)
+#            c1, c2, c3, c4 = tlp[:2], trp[:2], brp[:2], blp[:2]
+            
+            # ORDER POINTS
+#            points_list = [c1,c2,c3,c4]
+            sortX = lambda x: x[0]
+            sortY = lambda x: x[1]
+            orderedX = sorted(points, key=sortX)
+#            orderedY = sorted(points_list, key=sortY)
+            TL = sorted(orderedX[:2], key=sortY)[0]
+            DL = sorted(orderedX[:2], key=sortY)[1]
+            TR = sorted(orderedX[2:], key=sortY)[0]
+            DR = sorted(orderedX[2:], key=sortY)[1]
+            tlp, trp, brp, blp = TL, TR, DR, DL
+            points = [tlp, trp, brp, blp]
+            ##############
+            rot_h, rot_w = edges_rotated_filled.shape
+            rot_cp = (rot_w/2, rot_h/2)
+    
+            nc1 = rotate_point(tlp, -angle, rot_cp)
+            nc2 = rotate_point(trp, -angle, rot_cp)
+            nc3 = rotate_point(brp, -angle, rot_cp)
+            nc4 = rotate_point(blp, -angle, rot_cp)
+            rnc1 = (nc1[0]+c_diff[0], nc1[1]+c_diff[1])
+            rnc2 = (nc2[0]+c_diff[0], nc2[1]+c_diff[1])
+            rnc3 = (nc3[0]+c_diff[0], nc3[1]+c_diff[1])
+            rnc4 = (nc4[0]+c_diff[0], nc4[1]+c_diff[1])
+            
+#            points [[x[0],x[1] + y[2:]] for x,y in zip([rnc1, rnc2, rnc3, rnc4])]
+#            points = [rnc1, rnc2, rnc3, rnc4]
+#            tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
+            
+            
+            if(debug): showMeanLinesAndIntersections(meanLines, points, image_rot, " HR")
 
-        if k == 27 or k == -1:    # Esc key or close to stop
-            break
-        elif k == 97 and i > 0:    # A to go back
-            i -= 1
-        else:                   # Any key to go forward
-            i += 1
+        
+        tlp = increase_point(tlp)
+        trp = increase_point(trp)
+        brp = increase_point(brp)
+        blp = increase_point(blp)
+ 
+        # cv.imshow('lines', image2)
+        if(debug):
+            k = cv.waitKey()
+    
+            if k == 27 or k == -1:    # Esc key or close to stop
+                break
+            elif k == 97 and i > 0:    # A to go back
+                i -= 1
+            else:                   # Any key to go forward
+                i += 1
+        else:
+            i+=1
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
     # for values in meanLines:
@@ -255,13 +406,13 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
     # print(sortedLines)
 
     # showMeanLinesAndIntersections(thr_lines,[],image)
-
-    rot_theta = imutils.rotate_bound(image, 360-degrees(theta))
-    res_rot_theta = resize_keeping_ar(rot_theta)
-    return res_rot_theta
+    angle = 360-degrees(theta)
+    rot_theta = imutils.rotate_bound(image, angle )
+#    res_rot_theta = resize_keeping_ar(rot_theta)
+    return rot_theta, angle
     # cv.waitKey(0)
 
-def showMeanLinesAndIntersections(meanLines, points, image):
+def showMeanLinesAndIntersections(meanLines, points, image,added_title=""):
     if meanLines is not None:
         for (rho1, rho2, theta, _) in meanLines:
             rho = rho1
@@ -278,8 +429,10 @@ def showMeanLinesAndIntersections(meanLines, points, image):
             pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
             pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
             cv.line(image, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
+    colours = [(255, 0, 0), (0, 255, 0), (0, 255, 255), (255, 0, 255)]
+    i = 0
     for x,y, _, _, _, _ in points:
-        cv.circle(image, (x, y), 5, (255, 0, 0), thickness=-1)
-    image = resize_keeping_ar(image, 300)
-    cv.imshow('lines and points', image)
+        cv.circle(image, (x, y), 5, colours[i], thickness=-1)
+        i-=1
+    cv.imshow('lines and points'+added_title, image)
 
