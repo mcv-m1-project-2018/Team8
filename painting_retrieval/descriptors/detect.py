@@ -48,14 +48,14 @@ def load_kp_img(filename):
     return kp_list, factor
 
 
-def detect_kp(img, detector, colorspace="gray"):
+def detect_kp(img, detector, colorspace="gray", mask=None):
     if(colorspace=="gray"):
         img = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
     detgen = detector_s[detector]()
-    kp = detgen.detect(img,None)
+    kp = detgen.detect(img,mask)
     return kp
 
-def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1):
+def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1, mask=[]):
     
     kpfolder = path+kp_folder_name
     if not os.path.exists(kpfolder):
@@ -74,7 +74,14 @@ def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1):
             if(image_width > 0):
                 img, factor = resize_keeping_ar(img, image_width)
             
-            kp_list = detect_kp(img, descriptor, colorspace=colorspace)
+            if(len(mask) > 0):
+                m = mask[i]
+                if(image_width > 0):
+                    m = resize_keeping_ar(mask[i], image_width)
+
+                kp_list = detect_kp(img, descriptor, colorspace=colorspace, mask=m.astype('uint8'))
+            else:
+                kp_list = detect_kp(img, descriptor, colorspace=colorspace, mask=None)
             save_kp_img(filename, kp_list, factor)
 #        desc_all.append(desc)
         kp_all.append(kp_list)

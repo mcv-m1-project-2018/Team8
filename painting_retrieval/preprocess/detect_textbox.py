@@ -5,6 +5,14 @@ import numpy as np
 from preprocess.bounding_box_utils import boundingBox_ccl,overlapped_windows,imshow_bb
 from sklearn.cluster import MeanShift
 
+def generateMaskFrombb(bb, size):
+    mask = np.zeros(size)
+    x,y,w,h = bb
+    mask = cv.rectangle(mask, (x,y), (x+w,y+h), (255,255,255), -1)
+    mask = 255-mask
+    mask = mask[:,:,0]
+    return mask
+
 
 def filter_bb(bb_list, im):
     new_bb = []
@@ -35,10 +43,12 @@ def selectRealBoundingBox(bb_list, im):
 def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
     n_images = len(file_names)
     bb_all_list = []
+    bb_all_mask = []
 #    for i in tqdm(range(len(file_names))):
     i = 0
 
     while i < n_images:
+        print(i,file_names[i])
         name = file_names[i]
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
@@ -84,7 +94,9 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
         bb_list = filter_bb(bb_list,out1)
 
         # imshow_bb(out1,[selectRealBoundingBox(bb_list,out1)])
-        bb_all_list.append(selectRealBoundingBox(bb_list,out1))
+        endbb = selectRealBoundingBox(bb_list,out1)
+        bb_all_list.append(endbb)
+        bb_all_mask.append(generateMaskFrombb(endbb,image.shape))
 
         if(debug_text_bb_thresholds):
             res = cv.resize(res,None, fx=0.5, fy=0.5)
@@ -105,7 +117,9 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
                 i-=1
             else:                   # Aby key to go forward
                 i+=1
-    return bb_all_list
+        else:
+            i+=1
+    return bb_all_list, bb_all_mask
 
 
 
