@@ -77,8 +77,8 @@ def morph_method1(im):
     morph = imggray.copy()
 
 
-    vk = lambda x : np.ones((x, 1), np.uint8)
-    hk = lambda x : np.ones((1, x), np.uint8)
+#    vk = lambda x : np.ones((x, 1), np.uint8)
+#    hk = lambda x : np.ones((1, x), np.uint8)
     kk = lambda x : np.ones((x, x), np.uint8)
 
     morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, kk(15))
@@ -94,7 +94,73 @@ def morph_method1(im):
     #imagen = cv.warpAffine(imagen, M, (cols, rows))
     return imagen
 
+def morph_method2(im):
+    imggray = im.copy()
 
+    morph = imggray.copy()
+
+
+    vk = lambda x : np.ones((x, 1), np.uint8)
+    hk = lambda x : np.ones((1, x), np.uint8)
+#    kk = lambda x : np.ones((x, x), np.uint8)
+
+    cv.imshow("1", morph)
+    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, vk(23))
+    cv.imshow("2", morph)
+    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, hk(23))
+    cv.imshow("3", morph)
+    morph = fill_holes(morph)
+    cv.imshow("4", morph)
+    morph = cv.morphologyEx(morph, cv.MORPH_OPEN, hk(40))
+    cv.imshow("5", morph)
+    morph = cv.morphologyEx(morph, cv.MORPH_OPEN, vk(40))
+    cv.imshow("6", morph)
+    
+    imagen = morph
+    #imagen = fill_holes(morph)
+    
+    #rows, cols = imagen.shape
+    #M = np.float32([[1, 0, -5], [0, 1, -5]])
+    #imagen = cv.warpAffine(imagen, M, (cols, rows))
+    return imagen
+
+def get_contours1(im, view_images=False):
+    gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
+    gray = cv.GaussianBlur(gray, (11, 11), 0)
+    edges = cv.Canny(gray, 0, 40, apertureSize=3, L2gradient=True)
+    morph_img = morph_method1(edges)
+    fh_img = fill_holes(morph_img)
+    edges2 = cv.Canny(fh_img, 60, 80, apertureSize=3, L2gradient=True)
+    edges2 = cv.dilate(edges2,(3,3),iterations = 1)
+    if(view_images): 
+        cv.imshow('Canny', edges)
+        cv.imshow('fill_holes', fh_img)
+        cv.imshow('Canny_2', edges2)
+    
+    return edges2, morph_img
+
+def get_hough_lines(edges):
+    meanLines = []
+    lines = cv.HoughLines(edges, 1, np.pi/180, 50)
+    for line in lines:
+        for rho, theta in line:
+            if meanLines != []:
+                foundMean = False
+                for eachMean in meanLines:
+                    if theta+0.1 > eachMean[2] and theta-0.1 < eachMean[2]:
+                        if rho < eachMean[0] or rho > eachMean[1]:
+                            eachMean[rho > eachMean[1]] = rho
+                        eachMean[2] = (eachMean[2]*eachMean[3] + theta)/(eachMean[3]+1)
+                        eachMean[3] += 1
+                        foundMean = True
+                    if foundMean:
+                        break
+                if not foundMean:
+                    meanLines.append([rho, rho, theta, 1])
+                     
+            else:
+                meanLines.append([rho, rho, theta, 1])
+    return meanLines
 def compute_angles(file_names, image_path):
     n_images = len(file_names)
 
@@ -104,53 +170,22 @@ def compute_angles(file_names, image_path):
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
         w,h = image.shape[:2]
-        new_size = min(round(w*0.2), 300)
+#        new_size = min(round(w*0.2), 300)
         image = resize_keeping_ar(image)
-        # hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
-        # up_bound = np.array([255,255,70])
-        # low_bound = np.array([0,0,0])
-        # gray = cv.inRange(hsv_image, low_bound, up_bound)
-        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-        #k = np.ones((9, 9))
-        gray = cv.GaussianBlur(gray, (11, 11), 0)
-        resized = resize_keeping_ar(gray)
-        edges = cv.Canny(resized, 0, 40, apertureSize=3, L2gradient=True)
-        cv.imshow('Canny', edges)
-        morph_img = morph_method1(edges)
-        fh_img = fill_holes(morph_img)
-        edges2 = cv.Canny(fh_img, 60, 80, apertureSize=3, L2gradient=True)
-        cv.imshow('Canny_2', edges2)
-
-        meanLines = []
-
-        lines = cv.HoughLines(edges2, 1, np.pi/180, 50)
-        for line in lines:
-            for rho, theta in line:
-                if meanLines != []:
-                    foundMean = False
-                    for eachMean in meanLines:
-                        if theta+0.1 > eachMean[2] and theta-0.1 < eachMean[2]:
-                            if rho < eachMean[0] or rho > eachMean[1]:
-                                eachMean[rho > eachMean[1]] = rho
-                            eachMean[2] = (eachMean[2]*eachMean[3] + theta)/(eachMean[3]+1)
-                            eachMean[3] += 1
-                            foundMean = True
-                        if foundMean:
-                            break
-                    if not foundMean:
-                        meanLines.append([rho, rho, theta, 1])
-                         
-                else:
-                    meanLines.append([rho, rho, theta, 1])
-
-        rotate(meanLines, image.copy())
-
+        edges, morph_img = get_contours1(image, True)
+        meanLines = get_hough_lines(edges)
+        
+        edges_rot = rotate(meanLines, morph_img)
+        edges_rot_fill = morph_method2(edges_rot)
+        cv.imshow('Painting', edges_rot_fill)
+        
+        
+        img_rot = rotate(meanLines, image.copy())
+        cv.imshow('Rotated theta', img_rot)
+        
         points = segmented_intersections(meanLines)
-
         points = filterPoints(points, image.shape[1], image.shape[0])
-
         showMeanLinesAndIntersections(meanLines, points, image.copy())
-
         image2 = resize_keeping_ar(image.copy())
         # cv.imshow('lines', image2)
         k = cv.waitKey()
@@ -161,7 +196,6 @@ def compute_angles(file_names, image_path):
             i -= 1
         else:                   # Any key to go forward
             i += 1
-
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
     # for values in meanLines:
@@ -187,7 +221,7 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
 
     rot_theta = imutils.rotate_bound(image, 360-degrees(theta))
     res_rot_theta = resize_keeping_ar(rot_theta)
-    cv.imshow('Rotated theta', res_rot_theta)
+    return res_rot_theta
     # cv.waitKey(0)
 
 def showMeanLinesAndIntersections(meanLines, points, image):
@@ -211,4 +245,3 @@ def showMeanLinesAndIntersections(meanLines, points, image):
         cv.circle(image, (x, y), 5, (255, 0, 0), thickness=-1)
     image = resize_keeping_ar(image, 300)
     cv.imshow('lines and points', image)
-    k = cv.waitKey()
