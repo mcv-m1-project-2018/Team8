@@ -22,7 +22,7 @@ def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
     rho1, theta1 = line1
     rho2, theta2 = line2
     diff = abs(degrees(theta1)-degrees(theta2))
-    if(diff > intersectThrBottom and diff < intersectThrUp):
+    if(diff >= intersectThrBottom and diff <= intersectThrUp):
         A = np.array([
             [np.cos(theta1), np.sin(theta1)],
             [np.cos(theta2), np.sin(theta2)]
@@ -32,17 +32,34 @@ def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
         x0, y0 = int(np.round(x0)), int(np.round(y0))
     else:
         x0, y0 = -1, -1
-    return [x0, y0]
+    return [x0, y0, rho1, theta1, rho2, theta2]
 
 def filterPoints(point_list, imgWidth, imgHeight):
-    bottomPoint = [0, 0]
-    topPoint = [imgWidth, imgHeight]
-    for x,y in point_list:
-        bottomPoint[0] = max(bottomPoint[0], x)
-        bottomPoint[1] = max(bottomPoint[1], y)
-        topPoint[0] = min(topPoint[0], x)
-        topPoint[1] = min(topPoint[1], y)
-    return [topPoint, bottomPoint]
+    brPoint = [0,0, 0, 0, 0, 0]
+    tlPoint = [imgWidth,imgHeight, 0, 0, 0, 0]
+
+    trPoint = [0,0, 0, 0, 0, 0]
+    blPoint = [0,0, 0, 0, 0, 0]
+
+        #getting the tl and br points
+    for x, y, rho1, theta1, rho2, theta2  in point_list:
+
+        orgValue = brPoint[0] + brPoint[1]
+        currentValue = x + y
+        if(currentValue > orgValue):
+            brPoint = [x,y, rho1, theta1, rho2, theta2]
+
+        orgValue = tlPoint[0] + tlPoint[1]
+        currentValue = x + y
+        if(currentValue < orgValue):
+            tlPoint = [x,y, rho1, theta1, rho2, theta2]
+
+    #once we have the tl and br points we can get the other points with the line intersection
+    trPoint = intersection([brPoint[2],brPoint[3]],[tlPoint[4],tlPoint[5]])
+    blPoint = intersection([brPoint[4],brPoint[5]],[tlPoint[2],tlPoint[3]])
+
+    return [tlPoint, trPoint, blPoint, brPoint]
+
 
 
 def segmented_intersections(lines):
@@ -54,10 +71,18 @@ def segmented_intersections(lines):
             point = intersection([rho1, theta1], [rho2, theta2])
             if(point[0] != -1 and point[1] != -1):
                 intersections.append(point) 
+        for (_ , rho2, theta2, _) in lines:
+            point = intersection([rho1,theta1], [rho2,theta2])
+            if(point[0] != -1 and point[1] != -1):
+                intersections.append(point) 
             
     for i, (_ , rho1, theta1, _) in enumerate(lines[:-1]):
         for (_ , rho2, theta2, _) in lines[i+1:]:
             point = intersection([rho1, theta1], [rho2, theta2])
+            if(point[0] != -1 and point[1] != -1):
+                intersections.append(point) 
+        for (rho2 , _, theta2, _) in lines:
+            point = intersection([rho1,theta1], [rho2,theta2])
             if(point[0] != -1 and point[1] != -1):
                 intersections.append(point) 
 
@@ -186,6 +211,7 @@ def compute_angles(file_names, image_path):
         points = segmented_intersections(meanLines)
         points = filterPoints(points, image.shape[1], image.shape[0])
         showMeanLinesAndIntersections(meanLines, points, image.copy())
+        
         image2 = resize_keeping_ar(image.copy())
         # cv.imshow('lines', image2)
         k = cv.waitKey()
@@ -241,7 +267,8 @@ def showMeanLinesAndIntersections(meanLines, points, image):
             pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
             pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
             cv.line(image, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
-    for x,y in points:
+    for x,y, _, _, _, _ in points:
         cv.circle(image, (x, y), 5, (255, 0, 0), thickness=-1)
     image = resize_keeping_ar(image, 300)
     cv.imshow('lines and points', image)
+
