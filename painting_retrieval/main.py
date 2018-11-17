@@ -106,13 +106,16 @@ def main():
                 namefile_pkl = config['Features']['preprocess']["pickle_textBox"]
                 main_evaluate_bb(namefile_pkl,bp_t)
 
+        img_width = config["Features"].as_int("image_width")
         detector = config["Features"]["detect"]
-        kp_t = detect_all_kp(file_train_names, train_path, detector)
-        kp_q = detect_all_kp(file_query_names, query_path, detector)
+        kp_t, f_t = detect_all_kp(file_train_names, train_path, detector, image_width=img_width)
+        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width)
         
         computer = config["Features"]["compute"]
-        kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,  computer, detector)
-        kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,  computer, detector)
+        kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,\
+                                            computer, detector, image_width=img_width)
+        kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,\
+                                            computer, detector,image_width=img_width)
 
     
     k = config.get('Evaluate').as_int('k')
