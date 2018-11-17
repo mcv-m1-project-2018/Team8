@@ -38,11 +38,10 @@ def filterPoints(point_list, imgWidth, imgHeight):
     bottomPoint = [0,0]
     topPoint = [imgWidth,imgHeight]
     for x,y in point_list:
-        if(x != -1 and y != -1):
-            bottomPoint[0] = max(bottomPoint[0], x)
-            bottomPoint[1] = max(bottomPoint[1], y)
-            topPoint[0] = min(topPoint[0], x)
-            topPoint[1] = min(topPoint[1], y)
+        bottomPoint[0] = max(bottomPoint[0], x)
+        bottomPoint[1] = max(bottomPoint[1], y)
+        topPoint[0] = min(topPoint[0], x)
+        topPoint[1] = min(topPoint[1], y)
     return [topPoint,bottomPoint]
 
 
@@ -52,11 +51,15 @@ def segmented_intersections(lines):
     intersections = []
     for i, (rho1, _, theta1, _) in enumerate(lines[:-1]):
         for (rho2, _, theta2, _) in lines[i+1:]:
-            intersections.append(intersection([rho1,theta1], [rho2,theta2])) 
+            point = intersection([rho1,theta1], [rho2,theta2])
+            if(point[0] != -1 and point[1] != -1):
+                intersections.append(point) 
             
     for i, (_ , rho1, theta1, _) in enumerate(lines[:-1]):
         for (_ , rho2, theta2, _) in lines[i+1:]:
-            intersections.append(intersection([rho1,theta1], [rho2,theta2])) 
+            point = intersection([rho1,theta1], [rho2,theta2])
+            if(point[0] != -1 and point[1] != -1):
+                intersections.append(point) 
 
     return intersections
 
