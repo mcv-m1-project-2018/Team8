@@ -55,8 +55,12 @@ def filterPoints(point_list, imgWidth, imgHeight):
             tlPoint = [x,y, rho1, theta1, rho2, theta2]
 
     #once we have the tl and br points we can get the other points with the line intersection
-    trPoint = intersection([brPoint[2],brPoint[3]],[tlPoint[4],tlPoint[5]])
-    blPoint = intersection([brPoint[4],brPoint[5]],[tlPoint[2],tlPoint[3]])
+    if(brPoint[3] != tlPoint[5]):
+        trPoint = intersection([brPoint[2],brPoint[3]],[tlPoint[4],tlPoint[5]])
+        blPoint = intersection([brPoint[4],brPoint[5]],[tlPoint[2],tlPoint[3]])
+    else:
+        trPoint = intersection([brPoint[2],brPoint[3]],[tlPoint[2],tlPoint[3]])
+        blPoint = intersection([brPoint[4],brPoint[5]],[tlPoint[4],tlPoint[5]])
 
     return [tlPoint, trPoint, blPoint, brPoint]
 
