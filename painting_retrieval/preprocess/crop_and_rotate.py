@@ -2,7 +2,7 @@ import cv2 as cv
 from tqdm import tqdm
 import numpy as np
 import imutils
-from math import degrees, radians,sin,cos
+from math import degrees, radians, sin, cos
 from skimage import feature
 
 
@@ -35,14 +35,14 @@ def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
     return [x0, y0]
 
 def filterPoints(point_list, imgWidth, imgHeight):
-    bottomPoint = [0,0]
-    topPoint = [imgWidth,imgHeight]
+    bottomPoint = [0, 0]
+    topPoint = [imgWidth, imgHeight]
     for x,y in point_list:
         bottomPoint[0] = max(bottomPoint[0], x)
         bottomPoint[1] = max(bottomPoint[1], y)
         topPoint[0] = min(topPoint[0], x)
         topPoint[1] = min(topPoint[1], y)
-    return [topPoint,bottomPoint]
+    return [topPoint, bottomPoint]
 
 
 def segmented_intersections(lines):
@@ -51,13 +51,13 @@ def segmented_intersections(lines):
     intersections = []
     for i, (rho1, _, theta1, _) in enumerate(lines[:-1]):
         for (rho2, _, theta2, _) in lines[i+1:]:
-            point = intersection([rho1,theta1], [rho2,theta2])
+            point = intersection([rho1, theta1], [rho2, theta2])
             if(point[0] != -1 and point[1] != -1):
                 intersections.append(point) 
             
     for i, (_ , rho1, theta1, _) in enumerate(lines[:-1]):
         for (_ , rho2, theta2, _) in lines[i+1:]:
-            point = intersection([rho1,theta1], [rho2,theta2])
+            point = intersection([rho1, theta1], [rho2, theta2])
             if(point[0] != -1 and point[1] != -1):
                 intersections.append(point) 
 
@@ -114,7 +114,7 @@ def compute_angles(file_names, image_path):
         #k = np.ones((9, 9))
         gray = cv.GaussianBlur(gray, (11, 11), 0)
         resized = resize_keeping_ar(gray)
-        edges = cv.Canny(resized, 60, 80, apertureSize=3, L2gradient=True)
+        edges = cv.Canny(resized, 0, 40, apertureSize=3, L2gradient=True)
         cv.imshow('Canny', edges)
         morph_img = morph_method1(edges)
         fh_img = fill_holes(morph_img)
@@ -149,7 +149,7 @@ def compute_angles(file_names, image_path):
 
         points = filterPoints(points, image.shape[1], image.shape[0])
 
-        showMeanLinesAndIntersections(meanLines,points, image.copy())
+        showMeanLinesAndIntersections(meanLines, points, image.copy())
 
         image2 = resize_keeping_ar(image.copy())
         # cv.imshow('lines', image2)
@@ -169,15 +169,15 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
         return elem[2]
 
     countLines = sum([x[3] for x in meanLines])
-    rot_filter_lines = [x for x in meanLines if (degrees(x[2])<thr_angle or degrees(x[2])>(360-thr_angle))]
+    rot_filter_lines = [x for x in meanLines if (degrees(x[2])<thr_angle or degrees(x[2]) > (360-thr_angle))]
     while rot_filter_lines == []:
-        rot_filter_lines = [x for x in meanLines if (degrees(x[2])<(thr_angle+inc) or degrees(x[2])>(360-thr_angle+inc))]
+        rot_filter_lines = [x for x in meanLines if (degrees(x[2])<(thr_angle+inc) or degrees(x[2]) > (360-thr_angle+inc))]
         inc += 5
 
     if inc > 15:
-        rot_filter_lines = [(lambda x: [x[0],x[1],x[2]-radians(90),x[3]])(x) for x in rot_filter_lines]
+        rot_filter_lines = [(lambda x: [x[0], x[1], x[2]-radians(90), x[3]])(x) for x in rot_filter_lines]
     # thr_lines = [x for x in rot_filter_lines if x[3]>(countLines/4)]
-    thr_lines = sorted(rot_filter_lines, key = lambda x: x[2], reverse=True)
+    thr_lines = sorted(rot_filter_lines, key=lambda x: x[2], reverse=True)
     values = thr_lines[0]
     theta = values[2]
 
@@ -198,17 +198,17 @@ def showMeanLinesAndIntersections(meanLines, points, image):
             b = sin(theta)
             x0 = a * rho
             y0 = b * rho
-            pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
-            pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
-            cv.line(image, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+            pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*a))
+            pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*a))
+            cv.line(image, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
             rho = rho2
             x0 = a * rho
             y0 = b * rho
             pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
             pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
-            cv.line(image, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+            cv.line(image, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
     for x,y in points:
-        cv.circle(image,(x,y),5,(255,0,0),thickness=-1)
-    image = resize_keeping_ar(image,300)
-    # cv.imshow('lines and points', image)
-    # k = cv.waitKey()
+        cv.circle(image, (x, y), 5, (255, 0, 0), thickness=-1)
+    image = resize_keeping_ar(image, 300)
+    cv.imshow('lines and points', image)
+    k = cv.waitKey()
