@@ -11,6 +11,7 @@ import os
 from tqdm import tqdm
 
 import pickle as pckl
+import imutils
 import cv2
 
 kp_folder_name = "keypoints/"
@@ -55,7 +56,7 @@ def detect_kp(img, detector, colorspace="gray", mask=None):
     kp = detgen.detect(img,mask)
     return kp
 
-def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1, mask=[]):
+def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1, mask=[], rotAngle = []):
     
     kpfolder = path+kp_folder_name
     if not os.path.exists(kpfolder):
@@ -73,6 +74,8 @@ def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1, ma
             factor = 1
             if(image_width > 0):
                 img, factor = resize_keeping_ar(img, image_width)
+            if(len(rotAngle) > 0):
+                img = imutils.rotate_bound(img, rotAngle[i])
             
             if(len(mask) > 0):
                 m = mask[i]

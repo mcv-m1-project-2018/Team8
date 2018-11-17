@@ -8,6 +8,7 @@ import cv2 as cv
 import statistics
 from tqdm import tqdm, trange
 import numpy as np
+import imutils
 
 
 def imageSimilarityAdd(dist_list):

@@ -97,11 +97,13 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
         maskList = []
+        angle_query = []
         if(config['Features'].get('preprocess').as_bool("preprocess")):
             cmp_angles = config['Features'].get('preprocess').as_bool("compute_angles")
             d_text_hats= config['Features'].get('preprocess').as_bool("detect_text_hats")
             debug_text_hats = config['Features'].get('preprocess').as_bool("debug_text_hats")
-            if(cmp_angles): ip_q = compute_angles(file_query_names, query_path)
+            if(cmp_angles): 
+                angle_query = compute_angles(file_query_names, query_path)
             if(d_text_hats):
                 bp_t, bb_mask = detect_text_hats(file_train_names, train_path, debug_text_hats)
                 maskList = bb_mask
@@ -112,7 +114,7 @@ def main():
         img_width = config["Features"].as_int("image_width")
         detector = config["Features"]["detect"]
         kp_t, f_t = detect_all_kp(file_train_names, train_path, detector, image_width=img_width, mask=maskList)
-        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width)
+        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width, rotAngle=angle_query)
         
         computer = config["Features"]["compute"]
         kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,\
