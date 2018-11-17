@@ -4,9 +4,15 @@ import numpy as np
 import imutils
 from math import degrees, radians, sin, cos
 from skimage import feature
+import pickle as pckl
 #import bounding_box_utils
 import preprocess.find_largest_rectangle as find_largest_rectangle
 from preprocess.utils import add_margin, get_center_diff
+
+def saveCroppingArray(save_path, croppingArray):
+    pckl_file = open(save_path,"wb")
+    pckl.dump(croppingArray,pckl_file)
+    pckl_file.close()
 
 def resize_keeping_ar(im, desired_width=300):
     height, width = im.shape[:2]
@@ -292,10 +298,10 @@ def calc_points_morphologically(image, edges, meanLines, debug = False):
                 
     return TL, TR, BR, BL
             
-def compute_angles(file_names, image_path, debug = True):
-    method_extract_bb = "*"
+def compute_angles(file_names, image_path, cropping_method = "morphologically", debug = False):
     n_images = len(file_names)
-
+    allAngles_list = []
+    cropping_list = []
     i = 0
     while i < n_images:
         name = file_names[i]
@@ -308,18 +314,21 @@ def compute_angles(file_names, image_path, debug = True):
         edges, fh_image = get_contours1(image, debug)
 #        edges, morph_img = get_contours3(image, True)
         meanLines = get_hough_lines(edges)
+        _, angle = rotate(meanLines, edges)
         
         
-        if(method_extract_bb in ["morphologically","*"]):
+        if(cropping_method in ["morphologically","*"]):
             tlp, trp, brp, blp = calc_points_morphologically(image, edges, \
                                                              meanLines, debug)
-        if(method_extract_bb in ["hough","*"]):
+            # print(tlp, trp, brp, blp)
+        if(cropping_method in ["hough","*"]):
             points = segmented_intersections(meanLines)
             tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
             points = [tlp, trp, brp, blp]
             tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
+
             if(debug): showMeanLinesAndIntersections(meanLines, points, image.copy(), " H")
-        if(method_extract_bb in ["hough_rotated","*"]):
+        if(cropping_method in ["hough_rotated","*"]):
             __, angle = rotate(meanLines, edges)
             fh_image_rot = imutils.rotate_bound(fh_image.copy(), angle)
             image_rot = imutils.rotate_bound(image.copy(), angle)
@@ -358,6 +367,10 @@ def compute_angles(file_names, image_path, debug = True):
             rnc2 = (nc2[0]+c_diff[0], nc2[1]+c_diff[1])
             rnc3 = (nc3[0]+c_diff[0], nc3[1]+c_diff[1])
             rnc4 = (nc4[0]+c_diff[0], nc4[1]+c_diff[1])
+
+            # print(rnc1, rnc2, rnc3, rnc4)
+
+            tlp, trp, brp, blp = rnc1, rnc2, rnc3, rnc4
             
 #            points [[x[0],x[1] + y[2:]] for x,y in zip([rnc1, rnc2, rnc3, rnc4])]
 #            points = [rnc1, rnc2, rnc3, rnc4]
@@ -365,13 +378,14 @@ def compute_angles(file_names, image_path, debug = True):
             
             
             if(debug): showMeanLinesAndIntersections(meanLines, points, image_rot, " HR")
-
-        
         tlp = increase_point(tlp)
         trp = increase_point(trp)
         brp = increase_point(brp)
         blp = increase_point(blp)
  
+        allAngles_list.append(angle)
+        cropping_list.append([angle,[tlp,trp,brp,blp]])
+
         # cv.imshow('lines', image2)
         if(debug):
             k = cv.waitKey()
@@ -384,6 +398,7 @@ def compute_angles(file_names, image_path, debug = True):
                 i += 1
         else:
             i+=1
+    return allAngles_list, cropping_list
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
     # for values in meanLines:

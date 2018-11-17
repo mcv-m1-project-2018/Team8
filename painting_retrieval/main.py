@@ -6,8 +6,8 @@ from compare_images import evaluateQueryTest
 from evaluate_query import evaluate_prediction
 from compute_wavelets import processWavelets
 from compute_granulometry import processGranulometry
-from preprocess.detect_textbox import detect_text_meanShift,detect_text_hats
-from preprocess.crop_and_rotate import compute_angles
+from preprocess.detect_textbox import detect_text_meanShift,detect_text_hats,saveTextBoxArray
+from preprocess.crop_and_rotate import compute_angles, saveCroppingArray
 from preprocess.evaluate_bbox import main_evaluate_bb
     
 from descriptors.detect import detect_all_kp
@@ -103,13 +103,19 @@ def main():
             d_text_hats= config['Features'].get('preprocess').as_bool("detect_text_hats")
             debug_text_hats = config['Features'].get('preprocess').as_bool("debug_text_hats")
             if(cmp_angles): 
-                angle_query = compute_angles(file_query_names, query_path)
+                crop_mth = config['Features']['preprocess']["cropping_method"]
+                save_cropping = config['Features']['preprocess']["cropping_list_savepath"]
+                crop_debug = config['Features'].get('preprocess').as_bool("compute_angles_debug")
+                angle_query, cropping_list = compute_angles(file_query_names, query_path, crop_mth, crop_debug)
+                saveCroppingArray(save_cropping,cropping_list)
             if(d_text_hats):
-                bp_t, bb_mask = detect_text_hats(file_train_names, train_path, debug_text_hats)
+                save_bb = config['Features']['preprocess']["textBox_save"]
+                bb_list_t, bb_mask = detect_text_hats(file_train_names, train_path, debug_text_hats)
+                saveTextBoxArray(save_bb,bb_list_t)
                 maskList = bb_mask
             if(config['Features'].get('preprocess').as_bool("evaluate_bb")):
-                namefile_pkl = config['Features']['preprocess']["pickle_textBox"]
-                main_evaluate_bb(namefile_pkl,bp_t)
+                namefile_pkl = config['Features']['preprocess']["pickle_eval_textBox"]
+                main_evaluate_bb(namefile_pkl,bb_list_t)
 
         img_width = config["Features"].as_int("image_width")
         detector = config["Features"]["detect"]

@@ -1,9 +1,15 @@
 import cv2 as cv
 from tqdm import tqdm
 import numpy as np
+import pickle as pckl
 
 from preprocess.bounding_box_utils import boundingBox_ccl,overlapped_windows,imshow_bb
 from sklearn.cluster import MeanShift
+
+def saveTextBoxArray(save_path, bb_list):
+    pckl_file = open(save_path,"wb")
+    pckl.dump(bb_list,pckl_file)
+    pckl_file.close()
 
 def generateMaskFrombb(bb, size):
     mask = np.zeros(size)
