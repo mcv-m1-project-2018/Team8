@@ -48,63 +48,77 @@ def selectRealBoundingBox(bb_list, im):
 
         return maxbb
     else:
-        return (0,0,0,0)
+        return None
     
 def obtain_bb(image, debug=True):
     image = cv.GaussianBlur(image, (3,3),5)
-    
-    kernel = np.ones((20,20))
 
+    endBB=None
     thr_tophat = 100
-    res = cv.morphologyEx(image, cv.MORPH_TOPHAT, kernel)
-    res = (res[:,:,0]>thr_tophat)*(res[:,:,1]>thr_tophat)*(res[:,:,2]>thr_tophat)
-    res = np.dstack((res,res,res))*image
-
     thr_blackhat = 150
-    res2 = cv.morphologyEx(image, cv.MORPH_BLACKHAT, kernel)
-    black_thr = (res2[:,:,0]>thr_blackhat)*(res2[:,:,1]>thr_blackhat)*(res2[:,:,2]>thr_blackhat)
-    res2 = np.dstack((black_thr,black_thr,black_thr)) * res2
-    
+    thr1_val = 180
+    thr2_val = 130
+    gain = - 20
+    iterations = 4
+    i = 0
+    while endBB==None and i < iterations:
+        print("iterating")
+        i+=1
+        kernel = np.ones((20,20))
 
-    thr_val = 180
-    thr = (res[:,:,0]>thr_val)*(res[:,:,1]>thr_val)*(res[:,:,2]>thr_val)
+        res = cv.morphologyEx(image, cv.MORPH_TOPHAT, kernel)
+        res = (res[:,:,0]>thr_tophat)*(res[:,:,1]>thr_tophat)*(res[:,:,2]>thr_tophat)
+        res = np.dstack((res,res,res))*image
 
-    thr_val = 130
-    thr2 = (res2[:,:,0]>thr_val)*(res2[:,:,1]>thr_val)*(res2[:,:,2]>thr_val)
+        res2 = cv.morphologyEx(image, cv.MORPH_BLACKHAT, kernel)
+        black_thr = (res2[:,:,0]>thr_blackhat)*(res2[:,:,1]>thr_blackhat)*(res2[:,:,2]>thr_blackhat)
+        res2 = np.dstack((black_thr,black_thr,black_thr)) * res2
+        
 
-    out1 = np.minimum(thr + thr2, 255)
-    out1 = np.dstack((out1,out1,out1)).astype('uint8') * 255
+        
+        thr = (res[:,:,0]>thr1_val)*(res[:,:,1]>thr1_val)*(res[:,:,2]>thr1_val)
+        thr2 = (res2[:,:,0]>thr2_val)*(res2[:,:,1]>thr2_val)*(res2[:,:,2]>thr2_val)
 
-    thr2 = np.dstack((thr2,thr2,thr2)).astype('uint8') *255 
-    thr = np.dstack((thr,thr,thr)).astype('uint8') * 255
+        out1 = np.minimum(thr + thr2, 255)
+        out1 = np.dstack((out1,out1,out1)).astype('uint8') * 255
 
-    
-    out1 = cv.morphologyEx(out1, cv.MORPH_CLOSE, np.ones((5,5)))
-    out1 = cv.morphologyEx(out1, cv.MORPH_OPEN, np.ones((3,3)))
+        thr2 = np.dstack((thr2,thr2,thr2)).astype('uint8') *255 
+        thr = np.dstack((thr,thr,thr)).astype('uint8') * 255
 
-    out1 = cv.erode(out1,np.ones((2,2)))
-    # out1 = cv.dilate(out1,np.ones((1,100)))
-    out1 = cv.morphologyEx(out1, cv.MORPH_CLOSE, np.ones((1,120)))
+        
+        out1 = cv.morphologyEx(out1, cv.MORPH_CLOSE, np.ones((5,5)))
+        out1 = cv.morphologyEx(out1, cv.MORPH_OPEN, np.ones((3,3)))
 
-    bb_list = boundingBox_ccl(cv.cvtColor(out1,cv.COLOR_BGR2GRAY))
+        out1 = cv.erode(out1,np.ones((2,2)))
+        # out1 = cv.dilate(out1,np.ones((1,100)))
+        out1 = cv.morphologyEx(out1, cv.MORPH_CLOSE, np.ones((1,120)))
 
-    bb_list = overlapped_windows(bb_list)
-    bb_list = filter_bb(bb_list,out1)
+        bb_list = boundingBox_ccl(cv.cvtColor(out1,cv.COLOR_BGR2GRAY))
 
-        # imshow_bb(out1,[selectRealBoundingBox(bb_list,out1)])
-    endBB = selectRealBoundingBox(bb_list,out1)
-    
-    if(debug):
-        res = cv.resize(res,None, fx=0.5, fy=0.5)
-        res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
-        thr = cv.resize(thr,None, fx=0.5, fy=0.5)
-        thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
-        out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
-        cv.imshow('top',res)
-        cv.imshow('black',res2)
-        cv.imshow('topthr',thr)
-        cv.imshow('blackthr',thr2)
-        cv.imshow('top+black',out1)
+        bb_list = overlapped_windows(bb_list)
+        bb_list = filter_bb(bb_list,out1)
+
+            # imshow_bb(out1,[selectRealBoundingBox(bb_list,out1)])
+        endBB = selectRealBoundingBox(bb_list,out1)
+        
+        if(debug):
+            res = cv.resize(res,None, fx=0.5, fy=0.5)
+            res2 = cv.resize(res2,None, fx=0.5, fy=0.5)
+            thr = cv.resize(thr,None, fx=0.5, fy=0.5)
+            thr2 = cv.resize(thr2,None, fx=0.5, fy=0.5)
+            out1 = cv.resize(out1,None, fx=0.5, fy=0.5)
+            cv.imshow('top',res)
+            cv.imshow('black',res2)
+            cv.imshow('topthr',thr)
+            cv.imshow('blackthr',thr2)
+            cv.imshow('top+black',out1)
+
+        thr_tophat   += gain
+        thr_blackhat += gain
+        thr1_val     += gain
+        thr2_val     += gain
+    if endBB == None:
+        endBB = (0,0,0,0)
     return endBB
 
 def neutre(im, sz=10):  
@@ -137,9 +151,19 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
         name = file_names[i]
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
-        image, factor = resize_keeping_ar(image)
+        # image, factor = resize_keeping_ar(image)
 
         endbb = obtain_bb(image, debug_text_bb_thresholds)
+        x, y, w, h = endbb
+        # im_bb = image[y:y+h,x:x+w]
+        # cv.imshow("uncutted", im_bb)
+        mx = 0.05
+        my = 0.2
+        x -= int(w*mx)
+        y -= int(h*my)
+        w += int(2*w*mx)
+        h += int(2*h*my)
+        endbb = x,y,w,h
 #        x, y, w, h = endbb
 #        m = 20
 #        kk = lambda x: np.ones((x, x))
@@ -153,7 +177,8 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
 #        im_neutre = neutre(image_orig, 10)
 #        cv.imshow("morph", image)
 #        cv.imshow("neutre", im_neutre.astype(np.uint8))
-#        im_bb = image[y:y+w,x:x+w]
+        # im_bb = image[y:y+h,x:x+w]
+        # cv.imshow("cutted", im_bb)
 #        im_bb_big = image[y-m:y+h+m,x-m:x+w+m, :]
 #        maskbb = np.zeros_like(im_bb_big)
 #        maskbb[m:-m, m:-m] = np.ones((h, w, 3))
