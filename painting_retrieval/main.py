@@ -97,7 +97,6 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
 #        maskList = []
-        angle_query = []
         if(config['Features'].get('preprocess').as_bool("preprocess")):
             cmp_angles = config['Features'].get('preprocess').as_bool("compute_angles")
             d_text_hats= config['Features'].get('preprocess').as_bool("detect_text_hats")
@@ -106,7 +105,7 @@ def main():
                 crop_mth = config['Features']['preprocess']["cropping_method"]
                 save_cropping = config['Features']['preprocess']["cropping_list_savepath"]
                 crop_debug = config['Features'].get('preprocess').as_bool("compute_angles_debug")
-                angle_query, cropping_list = compute_angles(file_query_names, query_path, crop_mth, crop_debug)
+                cropping_list = compute_angles(file_query_names, query_path, crop_mth, crop_debug)
                 saveCroppingArray(save_cropping,cropping_list)
             if(d_text_hats):
                 save_bb = config['Features']['preprocess']["textBox_save"]
@@ -121,7 +120,7 @@ def main():
         img_width = config["Features"].as_int("image_width")
         detector = config["Features"]["detect"]
         kp_t, f_t = detect_all_kp(file_train_names, train_path, detector, image_width=img_width, mask=bb_list_t)
-        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width, rotAngle=angle_query)
+        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width, rot_rectangle=cropping_list)
         
         computer = config["Features"]["compute"]
         kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,\

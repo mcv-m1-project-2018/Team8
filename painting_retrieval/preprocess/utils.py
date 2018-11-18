@@ -42,9 +42,28 @@ def rotate_point(point, angle, center_point=(0, 0), convert_ints = True):
     new_point = (x, y)
     return new_point
 
-def resize_keeping_ar(im, desired_width=300):
+def rotate_points(point_list, angle, center_point):
+    rpoints = [rotate_point(p, angle, center_point) for p in point_list]
+    return rpoints
+
+def shrink(x, marg_low, marg_top):
+    return min(max(x,marg_low),marg_top)
+    
+def correct_point(point, w, h):
+    x = shrink(point[0], 0, w)
+    y = shrink(point[1], 0, h)
+    return (x,y)
+
+def resize_keeping_ar(im, max_lateral=300):
     height, width = im.shape[:2]
-    factor = width/float(desired_width)
-    desired_height = int(height/factor)
+    
+    if(width > height):
+        factor = width/float(max_lateral)
+        desired_width = max_lateral
+        desired_height = int(height/factor)
+    else:
+        factor = height/float(max_lateral)
+        desired_height = max_lateral
+        desired_width = int(width/factor)
     imres = cv.resize(im, (desired_width, desired_height))
     return imres, factor

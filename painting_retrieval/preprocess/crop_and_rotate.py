@@ -6,7 +6,8 @@ from math import degrees, radians, sin, cos
 from skimage import feature
 import pickle as pckl
 import preprocess.find_largest_rectangle as find_largest_rectangle
-from preprocess.utils import get_center_diff, rotate_point , resize_keeping_ar
+from preprocess.utils import get_center_diff, rotate_point , resize_keeping_ar, \
+                            correct_point
 from preprocess.morphology import morph_method2, get_contours1, get_contours2
 
 def saveCroppingArray(save_path, croppingArray):
@@ -118,8 +119,8 @@ def get_hough_lines(edges):
                 meanLines.append([rho, rho, theta, 1])
     return meanLines
 
-def calc_points_morphologically(image, edges, meanLines, debug = False):
-    edges_rot, angle = rotate(meanLines, edges)
+def calc_points_morphologically(image, fh_img, meanLines, debug = False):
+    edges_rot, angle = rotate(meanLines, fh_img)
     edges_rot_fill = morph_method2(edges_rot)
     max_size, pos = find_largest_rectangle.max_size(edges_rot_fill, \
                                                     np.max(edges_rot_fill))
@@ -154,21 +155,21 @@ def calc_points_morphologically(image, edges, meanLines, debug = False):
         cv.line(img, (minX, 0), (minX, rot_h), color)
         cv.line(img, (0, maxY), (rot_w, maxY), color)
         cv.line(img, (maxX, 0), (maxX, rot_h), color)
-        color = (0, 255, 0)
-        radius = 2
-        thick = 3
-        cv.circle(img, c1, radius, color, thickness=thick)
-        cv.circle(img, c2, radius, color, thickness=thick)
-        cv.circle(img, c3, radius, color, thickness=thick)
-        cv.circle(img, c4, radius, color, thickness=thick)
-        cv.imshow('Rectangle', img)
+#        color = (0, 255, 0)
+#        radius = 2
+#        thick = 3
+#        cv.circle(img, c1, radius, color, thickness=thick)
+#        cv.circle(img, c2, radius, color, thickness=thick)
+#        cv.circle(img, c3, radius, color, thickness=thick)
+#        cv.circle(img, c4, radius, color, thickness=thick)
+#        cv.imshow('Rectangle', img)
         
-        img2 = image.copy()
-        cv.circle(img2, rnc1, radius, color, thickness=thick)
-        cv.circle(img2, rnc2, radius, color, thickness=thick)
-        cv.circle(img2, rnc3, radius, color, thickness=thick)
-        cv.circle(img2, rnc4, radius, color, thickness=thick)
-        cv.imshow('Unrotated rectangle', img2)
+#        img2 = image.copy()
+#        cv.circle(img2, rnc1, radius, color, thickness=thick)
+#        cv.circle(img2, rnc2, radius, color, thickness=thick)
+#        cv.circle(img2, rnc3, radius, color, thickness=thick)
+#        cv.circle(img2, rnc4, radius, color, thickness=thick)
+#        cv.imshow('Unrotated rectangle', img2)
                 
     return TL, TR, BR, BL
 
@@ -193,20 +194,21 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
         os.makedirs(angles_folder)
         
     n_images = len(file_names)
-    allAngles_list = []
     cropping_list = []
     i = 0
     while i < n_images:
         name = file_names[i]
         print(i, name)
         filename = angles_folder+cropping_method+"_"+name+".txt"
-        if(os.path.isfile(filename)):
+        loaded = False
+        if(os.path.isfile(filename) and not debug):
             angle, tlp, trp, brp, blp = load_angle_points(filename)
+            loaded = True
         else:
             
             imageNameFile = image_path + "/" + name
             image_original = cv.imread(imageNameFile)
-            w,h = image_original.shape[:2]
+            orig_h,orig_w = image_original.shape[:2]
     #        new_size = min(round(w*0.2), 300)
             image, factor = resize_keeping_ar(image_original.copy())
             increase_point = lambda p: (int(p[0]*factor), int(p[1]*factor))
@@ -217,7 +219,7 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
             
             
             if(cropping_method in ["morphologically","*"]):
-                tlp, trp, brp, blp = calc_points_morphologically(image, edges, \
+                tlp, trp, brp, blp = calc_points_morphologically(image, fh_image, \
                                                                  meanLines, debug)
                 # print(tlp, trp, brp, blp)
             if(cropping_method in ["hough","*"]):
@@ -277,16 +279,20 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
                 
                 
                 if(debug): showMeanLinesAndIntersections(meanLines, points, image_rot, " HR")
-            tlp = increase_point(tlp)
-            trp = increase_point(trp)
-            brp = increase_point(brp)
-            blp = increase_point(blp)
+            
+            if(debug): show_points(image, [tlp, trp, brp, blp])
+            fix_point = lambda x: correct_point(increase_point(x), orig_w, orig_h )
+            tlp = fix_point(tlp)
+            trp = fix_point(trp)
+            brp = fix_point(brp)
+            blp = fix_point(blp)
             save_angle_points(filename, angle, tlp, trp, brp, blp)
+            if(debug): show_points(image_original, [tlp, trp, brp, blp], resize=True)
+            
         stored_angle = angle-180
-        allAngles_list.append(stored_angle)
         cropping_list.append([stored_angle,[tlp,trp,brp,blp]])
 
-        if(debug):
+        if(debug and not loaded):
             k = cv.waitKey()
     
             if k == 27 or k == -1:    # Esc key or close to stop
@@ -297,7 +303,7 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
                 i += 1
         else:
             i+=1
-    return allAngles_list, cropping_list
+    return cropping_list
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
     def thirdElement(elem):
@@ -318,6 +324,18 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
     rot_theta = imutils.rotate_bound(image, angle)
     return rot_theta, angle
 
+def show_points(img, points, added_title="", resize=False):
+    colours = [(255, 0, 0), (0, 255, 0), (0, 255, 255), (255, 0, 255)]
+    i = 0
+    h, w = img.shape[:2]
+    radius=int(max(w/100,5))
+    thick=int(max(w/100-1,5-1))
+    for x,y in points:
+        cv.circle(img, (x, y), radius, colours[i], thickness=thick)
+        i-=1
+    if(resize): img = resize_keeping_ar(img)[0]
+    cv.imshow('points'+added_title, img)   
+    
 def showMeanLinesAndIntersections(meanLines, points, image,added_title=""):
     if meanLines is not None:
         for (rho1, rho2, theta, _) in meanLines:
@@ -335,10 +353,5 @@ def showMeanLinesAndIntersections(meanLines, points, image,added_title=""):
             pt1 = (int(x0 + 10000*(-b)), int(y0 + 10000*(a)))
             pt2 = (int(x0 - 10000*(-b)), int(y0 - 10000*(a)))
             cv.line(image, pt1, pt2, (0, 0, 255), 3, cv.LINE_AA)
-    colours = [(255, 0, 0), (0, 255, 0), (0, 255, 255), (255, 0, 255)]
-    i = 0
-    for x,y, _, _, _, _ in points:
-        cv.circle(image, (x, y), 5, colours[i], thickness=-1)
-        i-=1
-    cv.imshow('lines and points'+added_title, image)
-
+    pts = [(p[0], p[1]) for p in points]
+    show_points(image, pts,added_title)
