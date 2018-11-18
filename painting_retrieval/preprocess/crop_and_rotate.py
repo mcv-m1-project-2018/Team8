@@ -181,93 +181,118 @@ def calc_points_morphologically(image, edges, meanLines, debug = False):
         cv.imshow('Unrotated rectangle', img2)
                 
     return TL, TR, BR, BL
-            
+
+def load_angle_points(filename):
+    with open(filename, 'rb') as pickle_file:
+        index = pckl.load(pickle_file)
+    angle, tlp, trp, brp, blp = index
+    return angle, tlp, trp, brp, blp
+
+def save_angle_points(filename, angle, tlp, trp, brp, blp):
+    index = [angle, tlp, trp, brp, blp]
+    # Dump the keypoints
+    f = open(filename, "wb")
+    pckl.dump(index,f)
+    f.close()
+    
+import os
+path = "."
+angles_folder_name = "/angles"
 def compute_angles(file_names, image_path, cropping_method = "morphologically", debug = False):
+    
+    angles_folder = path+angles_folder_name
+    if not os.path.exists(angles_folder):
+        os.makedirs(angles_folder)
+    
     n_images = len(file_names)
     allAngles_list = []
     cropping_list = []
     i = 0
     while i < n_images:
         name = file_names[i]
-        print(i, name)
-        imageNameFile = image_path + "/" + name
-        image_original = cv.imread(imageNameFile)
-        w,h = image_original.shape[:2]
-#        new_size = min(round(w*0.2), 300)
-        image, factor = resize_keeping_ar(image_original.copy())
-        increase_point = lambda p: (int(p[0]*factor), int(p[1]*factor))
-        edges, fh_image = get_contours1(image, debug)
-#        edges, morph_img = get_contours3(image, True)
-        meanLines = get_hough_lines(edges)
-        _, angle = rotate(meanLines, edges)
-        
-        
-        if(cropping_method in ["morphologically","*"]):
-            tlp, trp, brp, blp = calc_points_morphologically(image, edges, \
-                                                             meanLines, debug)
-            # print(tlp, trp, brp, blp)
-        if(cropping_method in ["hough","*"]):
-            points = segmented_intersections(meanLines)
-            tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
-            points = [tlp, trp, brp, blp]
-            tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
-
-            if(debug): showMeanLinesAndIntersections(meanLines, points, image.copy(), " H")
-        if(cropping_method in ["hough_rotated","*"]):
-            __, angle = rotate(meanLines, edges)
-            fh_image_rot = imutils.rotate_bound(fh_image.copy(), angle)
-            image_rot = imutils.rotate_bound(image.copy(), angle)
-            rotated_filled = morph_method2(fh_image_rot)
-            edges_rotated_filled = get_contours2(rotated_filled, True, " HR")
-            meanLines = get_hough_lines(edges_rotated_filled)
+        filename = angles_folder+cropping_method+"_"+name+".txt"
+        if(os.path.isfile(filename)):
+            angle, tlp,trp,brp,blp = load_angle_points(filename)
+        else:
+            print(i, name)
+            imageNameFile = image_path + "/" + name
+            image_original = cv.imread(imageNameFile)
+            w,h = image_original.shape[:2]
+    #        new_size = min(round(w*0.2), 300)
+            image, factor = resize_keeping_ar(image_original.copy())
+            increase_point = lambda p: (int(p[0]*factor), int(p[1]*factor))
+            edges, fh_image = get_contours1(image, debug)
+    #        edges, morph_img = get_contours3(image, True)
+            meanLines = get_hough_lines(edges)
+            _, angle = rotate(meanLines, edges)
             
-            points = segmented_intersections(meanLines)
-            tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
-            points = [tlp, trp, brp, blp]
             
-            c_diff = get_center_diff(edges_rotated_filled, image)
-#            c1, c2, c3, c4 = tlp[:2], trp[:2], brp[:2], blp[:2]
-            
-            # ORDER POINTS
-#            points_list = [c1,c2,c3,c4]
-            sortX = lambda x: x[0]
-            sortY = lambda x: x[1]
-            orderedX = sorted(points, key=sortX)
-#            orderedY = sorted(points_list, key=sortY)
-            TL = sorted(orderedX[:2], key=sortY)[0]
-            DL = sorted(orderedX[:2], key=sortY)[1]
-            TR = sorted(orderedX[2:], key=sortY)[0]
-            DR = sorted(orderedX[2:], key=sortY)[1]
-            tlp, trp, brp, blp = TL, TR, DR, DL
-            points = [tlp, trp, brp, blp]
-            ##############
-            rot_h, rot_w = edges_rotated_filled.shape
-            rot_cp = (rot_w/2, rot_h/2)
+            if(cropping_method in ["morphologically","*"]):
+                tlp, trp, brp, blp = calc_points_morphologically(image, edges, \
+                                                                 meanLines, debug)
+                # print(tlp, trp, brp, blp)
+            if(cropping_method in ["hough","*"]):
+                points = segmented_intersections(meanLines)
+                tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
+                points = [tlp, trp, brp, blp]
+                tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
     
-            nc1 = rotate_point(tlp, -angle, rot_cp)
-            nc2 = rotate_point(trp, -angle, rot_cp)
-            nc3 = rotate_point(brp, -angle, rot_cp)
-            nc4 = rotate_point(blp, -angle, rot_cp)
-            rnc1 = (nc1[0]+c_diff[0], nc1[1]+c_diff[1])
-            rnc2 = (nc2[0]+c_diff[0], nc2[1]+c_diff[1])
-            rnc3 = (nc3[0]+c_diff[0], nc3[1]+c_diff[1])
-            rnc4 = (nc4[0]+c_diff[0], nc4[1]+c_diff[1])
-
-            # print(rnc1, rnc2, rnc3, rnc4)
-
-            tlp, trp, brp, blp = rnc1, rnc2, rnc3, rnc4
-            
-#            points [[x[0],x[1] + y[2:]] for x,y in zip([rnc1, rnc2, rnc3, rnc4])]
-#            points = [rnc1, rnc2, rnc3, rnc4]
-#            tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
-            
-            
-            if(debug): showMeanLinesAndIntersections(meanLines, points, image_rot, " HR")
-        tlp = increase_point(tlp)
-        trp = increase_point(trp)
-        brp = increase_point(brp)
-        blp = increase_point(blp)
- 
+                if(debug): showMeanLinesAndIntersections(meanLines, points, image.copy(), " H")
+            if(cropping_method in ["hough_rotated","*"]):
+                __, angle = rotate(meanLines, edges)
+                fh_image_rot = imutils.rotate_bound(fh_image.copy(), angle)
+                image_rot = imutils.rotate_bound(image.copy(), angle)
+                rotated_filled = morph_method2(fh_image_rot)
+                edges_rotated_filled = get_contours2(rotated_filled, True, " HR")
+                meanLines = get_hough_lines(edges_rotated_filled)
+                
+                points = segmented_intersections(meanLines)
+                tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
+                points = [tlp, trp, brp, blp]
+                
+                c_diff = get_center_diff(edges_rotated_filled, image)
+    #            c1, c2, c3, c4 = tlp[:2], trp[:2], brp[:2], blp[:2]
+                
+                # ORDER POINTS
+    #            points_list = [c1,c2,c3,c4]
+                sortX = lambda x: x[0]
+                sortY = lambda x: x[1]
+                orderedX = sorted(points, key=sortX)
+    #            orderedY = sorted(points_list, key=sortY)
+                TL = sorted(orderedX[:2], key=sortY)[0]
+                DL = sorted(orderedX[:2], key=sortY)[1]
+                TR = sorted(orderedX[2:], key=sortY)[0]
+                DR = sorted(orderedX[2:], key=sortY)[1]
+                tlp, trp, brp, blp = TL, TR, DR, DL
+                points = [tlp, trp, brp, blp]
+                ##############
+                rot_h, rot_w = edges_rotated_filled.shape
+                rot_cp = (rot_w/2, rot_h/2)
+        
+                nc1 = rotate_point(tlp, -angle, rot_cp)
+                nc2 = rotate_point(trp, -angle, rot_cp)
+                nc3 = rotate_point(brp, -angle, rot_cp)
+                nc4 = rotate_point(blp, -angle, rot_cp)
+                rnc1 = (nc1[0]+c_diff[0], nc1[1]+c_diff[1])
+                rnc2 = (nc2[0]+c_diff[0], nc2[1]+c_diff[1])
+                rnc3 = (nc3[0]+c_diff[0], nc3[1]+c_diff[1])
+                rnc4 = (nc4[0]+c_diff[0], nc4[1]+c_diff[1])
+    
+                # print(rnc1, rnc2, rnc3, rnc4)
+    
+                tlp, trp, brp, blp = rnc1, rnc2, rnc3, rnc4
+                
+    #            points [[x[0],x[1] + y[2:]] for x,y in zip([rnc1, rnc2, rnc3, rnc4])]
+    #            points = [rnc1, rnc2, rnc3, rnc4]
+    #            tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
+                
+                
+                if(debug): showMeanLinesAndIntersections(meanLines, points, image_rot, " HR")
+            tlp = increase_point(tlp)
+            trp = increase_point(trp)
+            brp = increase_point(brp)
+            blp = increase_point(blp)
+            save_angle_points(filename, angle, tlp, trp, brp, blp)
         allAngles_list.append(angle)
         cropping_list.append([angle,[tlp,trp,brp,blp]])
 
