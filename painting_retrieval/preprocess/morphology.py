@@ -97,3 +97,22 @@ def get_contours2(filled, debug=False, add_str_debug=""):
         cv.imshow('Canny_2'+add_str_debug, edges2)
     
     return edges2
+
+
+def neutre(im, sz=10):  
+    """
+    Funcio que neutralitza el color de la imatge. Util quan es esta tacat o hi
+    ha variancies.
+    * Inputs:
+    - im = skimage.io image
+    - params = diccionari de parametres
+    *Outputs:
+    - im = imatge amb color neutralitzat
+    """
+    
+    x, y = im.shape[:2]
+    kernel = np.ones((sz,sz),np.uint8)
+    resd = cv.erode(cv.dilate(np.int16(im),kernel,1),kernel,1)
+    resd = np.array(resd, dtype=np.float)
+    im = np.divide(im,resd)
+    return im

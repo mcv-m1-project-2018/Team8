@@ -179,6 +179,7 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
     i = 0
     while i < n_images:
         name = file_names[i]
+        print(i, name)
         imageNameFile = image_path + "/" + name
         image_original = cv.imread(imageNameFile)
         image, factor = resize_keeping_ar(image_original.copy())
