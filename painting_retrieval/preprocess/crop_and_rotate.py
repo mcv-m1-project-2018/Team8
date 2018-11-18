@@ -5,7 +5,6 @@ import imutils
 from math import degrees, radians, sin, cos
 from skimage import feature
 import pickle as pckl
-#import bounding_box_utils
 import preprocess.find_largest_rectangle as find_largest_rectangle
 from preprocess.utils import get_center_diff, rotate_point , resize_keeping_ar
 from preprocess.morphology import morph_method2, get_contours1, get_contours2
@@ -43,7 +42,7 @@ def filterPoints(point_list, imgWidth, imgHeight):
     trPoint = [0,0, 0, 0, 0, 0]
     blPoint = [0,0, 0, 0, 0, 0]
 
-        #getting the tl and br points
+    #getting the tl and br points
     for x, y, rho1, theta1, rho2, theta2  in point_list:
 
         orgValue = brPoint[0] + brPoint[1]
@@ -119,20 +118,12 @@ def get_hough_lines(edges):
                 meanLines.append([rho, rho, theta, 1])
     return meanLines
 
-#from math import sin, cos, radians
-
 def calc_points_morphologically(image, edges, meanLines, debug = False):
     edges_rot, angle = rotate(meanLines, edges)
     edges_rot_fill = morph_method2(edges_rot)
     max_size, pos = find_largest_rectangle.max_size(edges_rot_fill, \
                                                     np.max(edges_rot_fill))
     
-    
-#    img, angle = rotate(meanLines, image.copy())
-    
-    
-    
-#            img = np.dstack([edges_rot_fill]*3)
     minY, maxY = pos[0]-max_size[0], pos[0]
     minX, maxX = pos[1]-max_size[1], pos[1]
     c1 = (minX, minY)
@@ -140,7 +131,6 @@ def calc_points_morphologically(image, edges, meanLines, debug = False):
     c3 = (maxX, minY)
     c4 = (maxX, maxY)
 
-#            center_point = ( w/2-(w-nw), h/2-(h-nh))
     c_diff = get_center_diff(edges_rot_fill, image)
     rot_h, rot_w = edges_rot_fill.shape
     rot_cp = (rot_w/2, rot_h/2)
@@ -159,7 +149,7 @@ def calc_points_morphologically(image, edges, meanLines, debug = False):
         
         cv.imshow('Painting', edges_rot_fill)
         
-        color = ( 0,0,255)
+        color = (0,0,255)
         cv.line(img, (0, minY), (rot_w, minY), color)
         cv.line(img, (minX, 0), (minX, rot_h), color)
         cv.line(img, (0, maxY), (rot_w, maxY), color)
@@ -191,12 +181,9 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
         name = file_names[i]
         imageNameFile = image_path + "/" + name
         image_original = cv.imread(imageNameFile)
-        w,h = image_original.shape[:2]
-#        new_size = min(round(w*0.2), 300)
         image, factor = resize_keeping_ar(image_original.copy())
         increase_point = lambda p: (int(p[0]*factor), int(p[1]*factor))
         edges, fh_image = get_contours1(image, debug)
-#        edges, morph_img = get_contours3(image, True)
         meanLines = get_hough_lines(edges)
         _, angle = rotate(meanLines, edges)
         
@@ -204,7 +191,7 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
         if(cropping_method in ["morphologically","*"]):
             tlp, trp, brp, blp = calc_points_morphologically(image, edges, \
                                                              meanLines, debug)
-            # print(tlp, trp, brp, blp)
+
         if(cropping_method in ["hough","*"]):
             points = segmented_intersections(meanLines)
             tlp, trp, brp, blp = filterPoints(points, image.shape[1], image.shape[0])
@@ -225,14 +212,11 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
             points = [tlp, trp, brp, blp]
             
             c_diff = get_center_diff(edges_rotated_filled, image)
-#            c1, c2, c3, c4 = tlp[:2], trp[:2], brp[:2], blp[:2]
             
             # ORDER POINTS
-#            points_list = [c1,c2,c3,c4]
             sortX = lambda x: x[0]
             sortY = lambda x: x[1]
             orderedX = sorted(points, key=sortX)
-#            orderedY = sorted(points_list, key=sortY)
             TL = sorted(orderedX[:2], key=sortY)[0]
             DL = sorted(orderedX[:2], key=sortY)[1]
             TR = sorted(orderedX[2:], key=sortY)[0]
@@ -252,25 +236,19 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
             rnc3 = (nc3[0]+c_diff[0], nc3[1]+c_diff[1])
             rnc4 = (nc4[0]+c_diff[0], nc4[1]+c_diff[1])
 
-            # print(rnc1, rnc2, rnc3, rnc4)
-
             tlp, trp, brp, blp = rnc1, rnc2, rnc3, rnc4
-            
-#            points [[x[0],x[1] + y[2:]] for x,y in zip([rnc1, rnc2, rnc3, rnc4])]
-#            points = [rnc1, rnc2, rnc3, rnc4]
-#            tlp, trp, brp, blp = tlp[:2], trp[:2], brp[:2], blp[:2]
-            
             
             if(debug): showMeanLinesAndIntersections(meanLines, points, image_rot, " HR")
         tlp = increase_point(tlp)
         trp = increase_point(trp)
         brp = increase_point(brp)
         blp = increase_point(blp)
- 
-        allAngles_list.append(angle)
-        cropping_list.append([angle,[tlp,trp,brp,blp]])
 
-        # cv.imshow('lines', image2)
+        stored_angle = angle-180
+        print(stored_angle)
+        allAngles_list.append(stored_angle)
+        cropping_list.append([stored_angle,[tlp,trp,brp,blp]])
+
         if(debug):
             k = cv.waitKey()
     
@@ -285,11 +263,9 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
     return allAngles_list, cropping_list
 
 def rotate(meanLines, image, thr_angle=60, inc=5):
-    # for values in meanLines:
     def thirdElement(elem):
         return elem[2]
-
-#    countLines = sum([x[3] for x in meanLines])
+    
     rot_filter_lines = [x for x in meanLines if (degrees(x[2])<thr_angle or degrees(x[2]) > (360-thr_angle))]
     while rot_filter_lines == []:
         rot_filter_lines = [x for x in meanLines if (degrees(x[2])<(thr_angle+inc) or degrees(x[2]) > (360-thr_angle+inc))]
@@ -297,19 +273,13 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
 
     if inc > 15:
         rot_filter_lines = [(lambda x: [x[0], x[1], x[2]-radians(90), x[3]])(x) for x in rot_filter_lines]
-    # thr_lines = [x for x in rot_filter_lines if x[3]>(countLines/4)]
     thr_lines = sorted(rot_filter_lines, key=lambda x: x[2], reverse=True)
     values = thr_lines[0]
     theta = values[2]
 
-    # print(sortedLines)
-
-    # showMeanLinesAndIntersections(thr_lines,[],image)
     angle = 360-degrees(theta)
-    rot_theta = imutils.rotate_bound(image, angle )
-#    res_rot_theta = resize_keeping_ar(rot_theta)
+    rot_theta = imutils.rotate_bound(image, angle)
     return rot_theta, angle
-    # cv.waitKey(0)
 
 def showMeanLinesAndIntersections(meanLines, points, image,added_title=""):
     if meanLines is not None:
