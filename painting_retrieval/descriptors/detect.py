@@ -52,7 +52,7 @@ def load_kp_img(filename):
 def detect_kp(img, detector, colorspace="gray", mask=None):
     if(colorspace=="gray"):
         img = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
-    detgen = detector_s[detector]()
+    detgen = detector_s[detector](1000)
     kp = detgen.detect(img,mask)
     return kp
 
