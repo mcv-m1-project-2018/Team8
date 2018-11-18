@@ -7,6 +7,9 @@ import pickle as pckl
 
 import numpy as np
 import os
+import imutils
+
+from preprocess.utils import rotate_and_crop
 
 desc_folder_name = "descriptors/"
 def save_desc_img(filename, desc_array):
@@ -26,8 +29,10 @@ def compute_features(img, kp, descriptor, colorspace="gray"):
     kp,desc = descgen.compute(img, kp)
     return kp, desc
 
+
 def compute_all_features(names, path, kp_list,  descriptor, detector, \
-                         colorspace="gray", image_width=-1):
+                         colorspace="gray", image_width=-1, \
+                         rot_rectangle = [], crop=True):
     descfolder = path+desc_folder_name
     if not os.path.exists(descfolder):
         os.makedirs(descfolder)
@@ -40,6 +45,12 @@ def compute_all_features(names, path, kp_list,  descriptor, detector, \
             desc = load_desc_img(filename+".npy")
         else:
             img = cv.imread(path+name)
+            if(len(rot_rectangle) > 0):
+                ang = rot_rectangle[i][0]
+                if(crop):
+                    img = rotate_and_crop(img, rot_rectangle[i][0], rot_rectangle[i][1])
+                else:
+                    img = imutils.rotate_bound(img, ang+180)
             kp, desc = compute_features(img, kp_list[i], descriptor, colorspace=colorspace)
             save_desc_img(filename, desc)
         desc_all.append(desc)

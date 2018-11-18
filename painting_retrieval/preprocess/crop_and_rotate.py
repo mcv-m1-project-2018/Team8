@@ -234,7 +234,7 @@ def compute_angles(file_names, image_path, cropping_method = "morphologically", 
                 fh_image_rot = imutils.rotate_bound(fh_image.copy(), angle)
                 image_rot = imutils.rotate_bound(image.copy(), angle)
                 rotated_filled = morph_method2(fh_image_rot)
-                edges_rotated_filled = get_contours2(rotated_filled, True, " HR")
+                edges_rotated_filled = get_contours2(rotated_filled, debug, " HR")
                 meanLines = get_hough_lines(edges_rotated_filled)
                 
                 points = segmented_intersections(meanLines)

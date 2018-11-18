@@ -96,7 +96,7 @@ def main():
         histograms_train = processGranulometry(file_train_names, train_path, bin_num, visualize)
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
-#        maskList = []
+        bb_list_t = []
         if(config['Features'].get('preprocess').as_bool("preprocess")):
             cmp_angles = config['Features'].get('preprocess').as_bool("compute_angles")
             d_text_hats= config['Features'].get('preprocess').as_bool("detect_text_hats")
@@ -118,15 +118,17 @@ def main():
                 main_evaluate_bb(namefile_pkl,bb_list_t)
 
         img_width = config["Features"].as_int("image_width")
+        crop = config['Features'].get('preprocess').as_bool("crop")
         detector = config["Features"]["detect"]
         kp_t, f_t = detect_all_kp(file_train_names, train_path, detector, image_width=img_width, mask=bb_list_t)
-        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width, rot_rectangle=cropping_list)
+        kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width, rot_rectangle=cropping_list, crop=crop)
         
         computer = config["Features"]["compute"]
         kp_t, desc_t = compute_all_features(file_train_names, train_path, kp_t,\
                                             computer, detector, image_width=img_width)
         kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,\
-                                            computer, detector,image_width=img_width)
+                                            computer, detector,image_width=img_width, \
+                                            rot_rectangle=bb_list_t, crop=crop)
 
     
     k = config.get('Evaluate').as_int('k')

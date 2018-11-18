@@ -15,7 +15,7 @@ import imutils
 import cv2
 
 from preprocess.detect_textbox import generateMaskFrombb
-from preprocess.utils import rotate_points, resize_keeping_ar
+from preprocess.utils import resize_keeping_ar, rotate_and_crop
 kp_folder_name = "keypoints/"
 
 
@@ -73,55 +73,16 @@ def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1,\
                 img, factor = resize_keeping_ar(img, image_width)
             if(len(rot_rectangle) > 0):
                 ang = rot_rectangle[i][0]
-                old_h,old_w = img.shape[:2]
+#                old_h,old_w = img.shape[:2]
 #                cv2.imshow("original img", img)
 #                img_orig = img.copy()
-                img = imutils.rotate_bound(img, ang+180)
-#                cv2.imshow("rotated img", img)
                 if(crop):
-                    rot_h,rot_w = img.shape[:2]
-                    old_c = (old_w/2, old_h/2)
-                    rot_c = (rot_w/2, rot_h/2)
-                    dif_c = (rot_c[0]-old_c[0],rot_c[1]-old_c[1])
-                    print(dif_c)
-                    pts = rot_rectangle[i][1]
-                    
-                    ####### PRINT OVER UNROTATED
-#                    img2 = img_orig.copy()
-#                    radius = int(max(old_w/100, 5))
-#                    thick = int(max(old_w/60-1, 5-1))
-#                    color = (0,0,255)
-#                    
-#                    cv.circle(img2, pts[0], radius, color, thickness=thick)
-#                    cv.circle(img2, pts[1], radius, color, thickness=thick)
-#                    cv.circle(img2, pts[2], radius, color, thickness=thick)
-#                    cv.circle(img2, pts[3], radius, color, thickness=thick)
-#                    cv.imshow('Unrotated rectangle',resize_keeping_ar(img2)[0])
-                    ############################
-                    inc_point = lambda p: (int(p[0]+dif_c[0]), int(p[1]+dif_c[1]))
-                    rpts = rotate_points(pts, ang+180, old_c)
-                    rpts = [inc_point(p) for p in rpts]
-                    maxX = max([p[0] for p in rpts])
-                    minX = min([p[0] for p in rpts])
-                    maxY = max([p[1] for p in rpts])
-                    minY = min([p[1] for p in rpts])
-#                    bX = int(minX+dif_c[0])
-#                    tX = int(maxX+dif_c[0])
-#                    bY = int(minY+dif_c[1])
-#                    tY = int(maxY+dif_c[1])
-                    
-                    ####### PRINT OVER ROTATED
-#                    img3 = img.copy()
-#                    cv.circle(img3, rpts[0], radius, color, thickness=thick)
-#                    cv.circle(img3, rpts[1], radius, color, thickness=thick)
-#                    cv.circle(img3, rpts[2], radius, color, thickness=thick)
-#                    cv.circle(img3, rpts[3], radius, color, thickness=thick)
-#                    cv.imshow('rotated rectangle',resize_keeping_ar(img3)[0])
-                    ##########################
-                    img = img[minY:maxY, minX:maxX]
+                    img = rotate_and_crop(img, rot_rectangle[i][0], rot_rectangle[i][1])
+                else:
+                    img = imutils.rotate_bound(img, ang+180)
+#                cv2.imshow("rotated img", img)
 #                    cv2.imwrite("crop"+str(i)+".png",img)
 #                    cv2.imshow("cropped img", resize_keeping_ar(img)[0])
-                    cv2.waitKey()
             if(len(mask) > 0):
 #                m = mask[i]
                 mbox = mask[i]
