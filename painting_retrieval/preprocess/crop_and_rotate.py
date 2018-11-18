@@ -7,19 +7,13 @@ from skimage import feature
 import pickle as pckl
 #import bounding_box_utils
 import preprocess.find_largest_rectangle as find_largest_rectangle
-from preprocess.utils import add_margin, get_center_diff
+from preprocess.utils import get_center_diff, rotate_point , resize_keeping_ar
+from preprocess.morphology import morph_method2, get_contours1, get_contours2
 
 def saveCroppingArray(save_path, croppingArray):
     pckl_file = open(save_path,"wb")
     pckl.dump(croppingArray,pckl_file)
     pckl_file.close()
-
-def resize_keeping_ar(im, desired_width=300):
-    height, width = im.shape[:2]
-    factor = width/float(desired_width)
-    desired_height = int(height/factor)
-    imres = cv.resize(im, (desired_width, desired_height))
-    return imres, factor
 
 def intersection(line1, line2, intersectThrUp = 95, intersectThrBottom = 85):
     """Finds the intersection of two lines given in Hesse normal form.
@@ -102,97 +96,6 @@ def segmented_intersections(lines):
 
     return intersections
 
-
-def fill_holes(im):
-    _, contours, _ = cv.findContours(im, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        cv.drawContours(im, [cnt], 0, 255, -1)
-    return im
-
-
-def morph_method1(im):
-    imggray = im.copy()
-
-    morph = imggray.copy()
-
-
-#    vk = lambda x : np.ones((x, 1), np.uint8)
-#    hk = lambda x : np.ones((1, x), np.uint8)
-    kk = lambda x : np.ones((x, x), np.uint8)
-
-    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, kk(15))
-    morph = fill_holes(morph)
-    morph = cv.morphologyEx(morph, cv.MORPH_OPEN, kk(5))
-    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, kk(10))
-    
-    imagen = morph
-    #imagen = fill_holes(morph)
-    
-    #rows, cols = imagen.shape
-    #M = np.float32([[1, 0, -5], [0, 1, -5]])
-    #imagen = cv.warpAffine(imagen, M, (cols, rows))
-    return imagen
-
-def morph_method2(im):
-    imggray = im.copy()
-
-    morph = imggray.copy()
-
-
-    vk = lambda x : np.ones((x, 1), np.uint8)
-    hk = lambda x : np.ones((1, x), np.uint8)
-#    kk = lambda x : np.ones((x, x), np.uint8)
-    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, vk(23))
-    morph = cv.morphologyEx(morph, cv.MORPH_CLOSE, hk(23))
-    morph = fill_holes(morph)
-    morph = cv.morphologyEx(morph, cv.MORPH_OPEN, hk(40))
-    morph = cv.morphologyEx(morph, cv.MORPH_OPEN, vk(40))
-    
-    #### DO CCL ###
-#    bb_list = bounding_box_utils(morph)
-#    for bb in bb_list:
-        
-    imagen = morph
-    #imagen = fill_holes(morph)
-    
-    #rows, cols = imagen.shape
-    #M = np.float32([[1, 0, -5], [0, 1, -5]])
-    #imagen = cv.warpAffine(imagen, M, (cols, rows))
-    return imagen
-
-def get_contours1(im, debug=False, add_str_debug=""):
-    gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-    gray = cv.GaussianBlur(gray, (11, 11), 0)
-    edges = cv.Canny(gray, 0, 40, apertureSize=3, L2gradient=True)
-    morph_img = morph_method1(edges)
-    fh_img = fill_holes(morph_img)
-    edges2 = cv.Canny(fh_img, 60, 80, apertureSize=3, L2gradient=True)
-    edges2 = cv.dilate(edges2,(3,3),iterations = 1)
-    if(debug): 
-        cv.imshow('Canny'+add_str_debug, edges)
-        cv.imshow('fill_holes'+add_str_debug, fh_img)
-        cv.imshow('Canny_2'+add_str_debug, edges2)
-    
-    return edges2, fh_img
-
-def get_contours2(filled, debug=False, add_str_debug=""):
-#    gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-#    gray = cv.GaussianBlur(edges, (11, 11), 0)
-#    edges = cv.Canny(gray, 0, 40, apertureSize=3, L2gradient=True)
-#    morph_img = morph_method2(edges)
-#    fh_img = fill_holes(morph_img)
-    madd = 1
-    edges = add_margin(filled, madd).astype(np.uint8)
-    edges2 = cv.Canny(edges, 60, 80, apertureSize=3, L2gradient=True)
-    edges2 = cv.dilate(edges2,(3,3),iterations = 1)
-    edges2 = edges2[madd:-(madd+1), madd:-(madd+1)]
-    if(debug): 
-#        cv.imshow('Canny'+add_str_debug, edges)
-#        cv.imshow('fill_holes'+add_str_debug, fh_img)
-        cv.imshow('Canny_2'+add_str_debug, edges2)
-    
-    return edges2
-
 def get_hough_lines(edges):
     meanLines = []
     lines = cv.HoughLines(edges, 1, np.pi/180, 50)
@@ -217,25 +120,6 @@ def get_hough_lines(edges):
     return meanLines
 
 #from math import sin, cos, radians
-
-def rotate_point(point, angle, center_point=(0, 0), convert_ints = True):
-    """Rotates a point around center_point(origin by default)
-    Angle is in degrees.
-    Rotation is counter-clockwise
-    """
-    angle_rad = radians(angle % 360)
-    # Shift the point so that center_point becomes the origin
-    new_point = (point[0] - center_point[0], point[1] - center_point[1])
-    new_point = (new_point[0] * cos(angle_rad) - new_point[1] * sin(angle_rad),
-                 new_point[0] * sin(angle_rad) + new_point[1] * cos(angle_rad))
-    # Reverse the shifting we have done
-    x = new_point[0] + center_point[0]
-    y = new_point[1] + center_point[1]
-    if(convert_ints):
-        x = int(x)
-        y = int(y)
-    new_point = (x, y)
-    return new_point
 
 def calc_points_morphologically(image, edges, meanLines, debug = False):
     edges_rot, angle = rotate(meanLines, edges)
@@ -405,7 +289,7 @@ def rotate(meanLines, image, thr_angle=60, inc=5):
     def thirdElement(elem):
         return elem[2]
 
-    countLines = sum([x[3] for x in meanLines])
+#    countLines = sum([x[3] for x in meanLines])
     rot_filter_lines = [x for x in meanLines if (degrees(x[2])<thr_angle or degrees(x[2]) > (360-thr_angle))]
     while rot_filter_lines == []:
         rot_filter_lines = [x for x in meanLines if (degrees(x[2])<(thr_angle+inc) or degrees(x[2]) > (360-thr_angle+inc))]
