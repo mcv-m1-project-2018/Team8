@@ -62,7 +62,6 @@ def obtain_bb(image, debug=True):
     iterations = 4
     i = 0
     while endBB==None and i < iterations:
-        print("iterating")
         i+=1
         kernel = np.ones((20,20))
 
