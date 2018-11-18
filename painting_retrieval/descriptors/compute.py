@@ -48,7 +48,7 @@ def compute_all_features(names, path, kp_list,  descriptor, detector, \
             if(len(rot_rectangle) > 0):
                 ang = rot_rectangle[i][0]
                 if(crop):
-                    img = rotate_and_crop(img, rot_rectangle[i][0], rot_rectangle[i][1])
+                    img = rotate_and_crop(img, ang, rot_rectangle[i][1])
                 else:
                     img = imutils.rotate_bound(img, ang+180)
             kp, desc = compute_features(img, kp_list[i], descriptor, colorspace=colorspace)

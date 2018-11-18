@@ -97,6 +97,7 @@ def main():
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
         bb_list_t = []
+        cropping_list = []
         if(config['Features'].get('preprocess').as_bool("preprocess")):
             cmp_angles = config['Features'].get('preprocess').as_bool("compute_angles")
             d_text_hats= config['Features'].get('preprocess').as_bool("detect_text_hats")
@@ -128,7 +129,7 @@ def main():
                                             computer, detector, image_width=img_width)
         kp_q, desc_q = compute_all_features(file_query_names, query_path, kp_q,\
                                             computer, detector,image_width=img_width, \
-                                            rot_rectangle=bb_list_t, crop=crop)
+                                            rot_rectangle=cropping_list, crop=crop)
 
     
     k = config.get('Evaluate').as_int('k')
