@@ -121,24 +121,6 @@ def obtain_bb(image, debug=True):
         endBB = (0,0,0,0)
     return endBB
 
-def neutre(im, sz=10):  
-    """
-    Funcio que neutralitza el color de la imatge. Util quan es esta tacat o hi
-    ha variancies.
-    * Inputs:
-    - im = skimage.io image
-    - params = diccionari de parametres
-    *Outputs:
-    - im = imatge amb color neutralitzat
-    """
-    
-    x, y = im.shape[:2]
-    kernel = np.ones((sz,sz),np.uint8)
-    resd = cv.erode(cv.dilate(np.int16(im),kernel,1),kernel,1)
-    resd = np.array(resd, dtype=np.float)
-    im = np.divide(im,resd)
-    return im
-
 def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
     n_images = len(file_names)
     bb_all_list = []
@@ -155,8 +137,7 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
 
         endbb = obtain_bb(image, debug_text_bb_thresholds)
         x, y, w, h = endbb
-        # im_bb = image[y:y+h,x:x+w]
-        # cv.imshow("uncutted", im_bb)
+
         mx = 0.05
         my = 0.2
         x -= int(w*mx)
@@ -164,38 +145,7 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
         w += int(2*w*mx)
         h += int(2*h*my)
         endbb = x,y,w,h
-#        x, y, w, h = endbb
-#        m = 20
-#        kk = lambda x: np.ones((x, x))
-#        im_eroded = cv.erode(image,kk(10),iterations = 1)
-#        column = im_eroded.sum(0).sum(1)
-#        row = im_eroded.sum(1).sum(1)
-#        plt.figure()
-#        plt.plot(range(len(row)),row)
-#        gradient = cv.morphologyEx(image, cv.MORPH_GRADIENT, kk(10))
-#        cv.imshow("gradient", gradient)
-#        im_neutre = neutre(image_orig, 10)
-#        cv.imshow("morph", image)
-#        cv.imshow("neutre", im_neutre.astype(np.uint8))
-        # im_bb = image[y:y+h,x:x+w]
-        # cv.imshow("cutted", im_bb)
-#        im_bb_big = image[y-m:y+h+m,x-m:x+w+m, :]
-#        maskbb = np.zeros_like(im_bb_big)
-#        maskbb[m:-m, m:-m] = np.ones((h, w, 3))
-#        masked_im = np.ma.array(im_bb_big, mask=maskbb.astype(np.bool))
-#        cv.imshow("maskara", masked_im)
-#
-#        mean = []
-#        mean.append(masked_im[:,:,0].mean())
-#        mean.append(masked_im[:,:,1].mean())
-#        mean.append(masked_im[:,:,2].mean())
-#        
-#        std = []
-#        std.append(masked_im[:,:,0].std()*0.5)
-#        std.append(masked_im[:,:,1].std()*0.5)
-#        std.append(masked_im[:,:,2].std()*0.5)
-#
-#        
+        
         bb_all_list.append(endbb)
         rare_mask = generateMaskFrombb(endbb,image.shape)
         bb_all_mask.append(rare_mask)
