@@ -96,7 +96,7 @@ def main():
         histograms_train = processGranulometry(file_train_names, train_path, bin_num, visualize)
         histograms_query = processGranulometry(file_query_names, query_path, bin_num, visualize)
     elif(config["mode"] == "features"):
-        maskList = []
+#        maskList = []
         angle_query = []
         if(config['Features'].get('preprocess').as_bool("preprocess")):
             cmp_angles = config['Features'].get('preprocess').as_bool("compute_angles")
@@ -110,16 +110,17 @@ def main():
                 saveCroppingArray(save_cropping,cropping_list)
             if(d_text_hats):
                 save_bb = config['Features']['preprocess']["textBox_save"]
-                bb_list_t, bb_mask = detect_text_hats(file_train_names, train_path, debug_text_hats)
+                bb_list_t = detect_text_hats(file_train_names, train_path, debug_text_hats)
+#                bb_list_t, bb_mask = detect_text_hats(file_train_names, train_path, debug_text_hats)
                 saveTextBoxArray(save_bb,bb_list_t)
-                maskList = bb_mask
+#                maskList = bb_mask
             if(config['Features'].get('preprocess').as_bool("evaluate_bb")):
                 namefile_pkl = config['Features']['preprocess']["pickle_eval_textBox"]
                 main_evaluate_bb(namefile_pkl,bb_list_t)
 
         img_width = config["Features"].as_int("image_width")
         detector = config["Features"]["detect"]
-        kp_t, f_t = detect_all_kp(file_train_names, train_path, detector, image_width=img_width, mask=maskList)
+        kp_t, f_t = detect_all_kp(file_train_names, train_path, detector, image_width=img_width, mask=bb_list_t)
         kp_q, f_q = detect_all_kp(file_query_names, query_path, detector, image_width=img_width, rotAngle=angle_query)
         
         computer = config["Features"]["compute"]

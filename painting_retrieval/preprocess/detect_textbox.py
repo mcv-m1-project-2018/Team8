@@ -120,34 +120,56 @@ def obtain_bb(image, debug=True):
         endBB = (0,0,0,0)
     return endBB
 
+def load_textbb(filename):
+    with open(filename, 'rb') as pickle_file:
+        index = pckl.load(pickle_file)
+    endbb = index[0]
+    return endbb
+
+def save_textbb(filename, endbb):
+    index = [endbb]
+    # Dump the keypoints
+    f = open(filename, "wb")
+    pckl.dump(index,f)
+    f.close()
+    
+import os
+textbb_folder_name = "/textbb/"
 def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
+    textbb_folder = image_path+textbb_folder_name
+    if not os.path.exists(textbb_folder):
+        os.makedirs(textbb_folder)
+    
+    
     n_images = len(file_names)
     bb_all_list = []
-    bb_all_mask = []
+#    bb_all_mask = []
 #    for i in tqdm(range(len(file_names))):
     i = 0
-
     while i < n_images:
         print(i,file_names[i])
         name = file_names[i]
+        filename = textbb_folder+"_"+name+".txt"
         imageNameFile = image_path + "/" + name
         image = cv.imread(imageNameFile)
         # image, factor = resize_keeping_ar(image)
-
-        endbb = obtain_bb(image, debug_text_bb_thresholds)
-        x, y, w, h = endbb
-
-        mx = 0.05
-        my = 0.2
-        x -= int(w*mx)
-        y -= int(h*my)
-        w += int(2*w*mx)
-        h += int(2*h*my)
-        endbb = x,y,w,h
-        
+        if(os.path.isfile(filename)):
+            endbb = load_textbb(filename)
+        else:
+            endbb = obtain_bb(image, debug_text_bb_thresholds)
+            x, y, w, h = endbb
+    
+            mx = 0.05
+            my = 0.2
+            x -= int(w*mx)
+            y -= int(h*my)
+            w += int(2*w*mx)
+            h += int(2*h*my)
+            endbb = x,y,w,h
+            save_textbb(filename, endbb)
         bb_all_list.append(endbb)
-        rare_mask = generateMaskFrombb(endbb,image.shape)
-        bb_all_mask.append(rare_mask)
+#        rare_mask = generateMaskFrombb(endbb,image.shape)
+#        bb_all_mask.append(rare_mask)
 
         if(debug_text_bb_thresholds):
 
@@ -161,7 +183,7 @@ def detect_text_hats(file_names, image_path, debug_text_bb_thresholds=False):
                 i+=1
         else:
             i+=1
-    return bb_all_list, bb_all_mask
+    return bb_all_list
 
 
 

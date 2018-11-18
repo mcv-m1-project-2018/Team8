@@ -14,6 +14,8 @@ import pickle as pckl
 import imutils
 import cv2
 
+from preprocess.detect_textbox import generateMaskFrombb
+
 kp_folder_name = "keypoints/"
 
 def resize_keeping_ar(im, desired_width=300):
@@ -78,7 +80,9 @@ def detect_all_kp(names, path, descriptor, colorspace="gray", image_width=-1, ma
                 img = imutils.rotate_bound(img, rotAngle[i])
             
             if(len(mask) > 0):
-                m = mask[i]
+#                m = mask[i]
+                mbox = mask[i]
+                m = generateMaskFrombb(mbox, img.shape)
                 if(image_width > 0):
                     m = resize_keeping_ar(mask[i], image_width)
 

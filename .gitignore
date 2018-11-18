@@ -1,14 +1,21 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# Dataset data
+Dataset/
 
+# Images
 *.jpg
 *.jpeg
 *.png
 *.JPG
 *.JPEG
 *.PNG
+
+#########PYTHON############
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
 
 # C extensions
 *.so
@@ -112,8 +119,5 @@ venv.bak/
 
 # visual studio code settings
 .vscode/
-
-# Dataset data
-Dataset/
 
 .idea/
